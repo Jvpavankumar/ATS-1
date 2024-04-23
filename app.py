@@ -1195,17 +1195,22 @@ Thanks,
 
 
 
-@app.route('/logout')
+@app.route('/logout', methods=['POST'])
 def logout():
-    user_type = session["user_type"] 
-    if user_type == "management":
-        session_timeout_msg = request.args.get('message')
-        session.clear()
-        return redirect(url_for('index',session_timeout_msg=session_timeout_msg))
-    else:
-        session_timeout_msg = request.args.get('message')
-        session.clear()
-        return redirect(url_for('recruiter_login',session_timeout_msg=session_timeout_msg))
+    data = request.json
+    
+    if data:
+        user_type = data.get("user_type")
+        message = data.get("message")
+
+        if user_type == "management":
+            session.clear()
+            return jsonify({"status": "success", "message": message}), 200
+        else:
+            session.clear()
+            return jsonify({"status": "success", "message": message}), 200
+    
+    return jsonify({"status": "error", "message": "No JSON data provided"}), 400
 
 
 from datetime import datetime
