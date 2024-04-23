@@ -59,7 +59,7 @@ ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 from datetime import timedelta
-
+#hello
 
 # Specify the folder where uploaded resumes will be stored
 # UPLOAD_FOLDER = 'static/'
