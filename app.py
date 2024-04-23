@@ -1989,35 +1989,45 @@ def verify_checkbox():
     db.session.commit()
     return redirect(url_for('active_users'))
 
-@app.route('/change_password', methods=['GET', 'POST'])
+@app.route('/change_password', methods=['GET','POST'])
 def change_password():
-    user_name = session['user_name']
-    user_type = session['user_type']
-    username = session['username']
-    if request.method == 'POST':
+    if 'user_name' in session and 'user_type' in session and 'username' in session:
+        user_name = session['user_name']
         user_type = session['user_type']
-        username = request.form['username']
-        old_password = request.form['old_password']
-        new_password = request.form['new_password']
-        confirm_password = request.form['confirm_password']
+        username = session['username']
 
-        user = User.query.filter_by(username=username).first()
+        data = request.json
 
-        if user and user.password == old_password:
-            if new_password == confirm_password:
-                # Update the user's password in the database
-                user.password = new_password
-                db.session.commit()
-                if user_type == 'management':
-                    return redirect(url_for('index',password_message = 'Password changed successfully.'))  # Redirect to a relevant page
+        if data:
+            form_username = data.get('username')
+            old_password = data.get('old_password')
+            new_password = data.get('new_password')
+            confirm_password = data.get('confirm_password')
+
+            if username == form_username:
+                user = User.query.filter_by(username=username).first()
+
+                if user and user.password == old_password:
+                    if new_password == confirm_password:
+                        # Update the user's password in the database
+                        user.password = new_password
+                        db.session.commit()
+                        if user_type == 'management':
+                            return jsonify({"message": "Password changed successfully."})
+                        else:
+                            return jsonify({"message": "Password changed successfully."})
+                    else:
+                        return jsonify({"error": "New password and confirm password do not match."}), 400
                 else:
-                    return redirect(url_for('recruiter_login', password_message='Password changed successfully.'))
+                    return jsonify({"error": "Invalid username or old password."}), 400
             else:
-                flash('New password and confirm password do not match.', 'danger')
+                return jsonify({"error": "Logged in user does not match the provided username."}), 400
         else:
-            flash('Invalid username or old password.', 'danger')
+            return jsonify({"error": "No JSON data provided."}), 400
 
-    return render_template('change_password.html',user_name=user_name,user_type=user_type,username=username)
+    else:
+        return jsonify({"error": "Unauthorized: You must log in to access this page"}), 401
+    
 
 
 @app.route('/delete_job_post_message/<int:job_id>')
