@@ -44,7 +44,7 @@ app.config['MAIL_USERNAME'] = 'saiganeshkanuparthi@gmail.com'
 app.config['MAIL_PASSWORD'] = 'tozvnmxbcejynxpe'
 mail = Mail(app)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:' + quote_plus('Ganesh@2022') + '@localhost:5432/ATS'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 # postgres://deployment_a6q2_user:4H824pzaagOBoLSxKOrrV1XQzZomoTfo@dpg-civ1935iuiedpv4p8ejg-a.oregon-postgres.render.com/deployment_a6q2
 
 app.config['SECRET_KEY'] = secrets.token_hex(16)
