@@ -586,7 +586,7 @@ def management_login():
 
 from flask import jsonify
 
-@app.route('/candidate_details/<int:candidate_id>/<user_type>/<int:page_no>')
+@app.route('/candidate_details/<int:candidate_id>/<user_type>/<int:page_no>', methods=['GET'])
 def candidate_details(candidate_id, user_type, page_no):
     user_name = session.get('user_name')
     count_notification_no = Notification.query.filter(Notification.notification_status == 'false', Notification.recruiter_name == user_name).count()
