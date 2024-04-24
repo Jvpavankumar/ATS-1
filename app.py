@@ -698,11 +698,12 @@ def dashboard():
     return jsonify({'status': 'error', 'message': 'User not logged in'})
 
 # Mocked function for demonstration
+# Mocked function for demonstration
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'pdf', 'doc', 'docx'}
 
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'pdf', 'doc', 'docx'}
+
+import binascii  
 
 @app.route('/add_candidate', methods=['POST'])
 def add_candidate():
@@ -734,6 +735,24 @@ def add_candidate():
         linkedin = data.get('linkedin')
         notice_period = data.get('notice_period')
         holding_offer = data.get('holding_offer')
+        resume = data.get('resume')
+        
+        # print("resume", type(resume))  # Print the type of the resume field
+        # print("resume value:", resume)  # Print the value of the resume field
+        
+        # Check if the resume is a hexadecimal string and convert it to bytes
+        if isinstance(resume, str):
+            # Remove leading backslashes and split the string into pairs of hexadecimal digits
+            hex_string = resume.replace("\\", "").replace("\\", "")
+            # Decode the hexadecimal string to bytes using binascii.unhexlify()
+            resume = binascii.unhexlify(hex_string)
+            print("resume after conversion: ", resume)
+
+        elif isinstance(resume, bytes):
+            resume = resume
+        else:
+            raise ValueError("Resume must be either a hexadecimal string or bytes.")
+        
 
         # Check if the user is logged in
         if 'user_id' in session and 'user_type' in session:
@@ -759,19 +778,7 @@ def add_candidate():
             if not matching_job_post:
                 return jsonify({"error_message": "Job on hold"})
 
-            filename = None
-            resume_binary = None
-
-            # Check if resume file is uploaded and allowed
-            if 'resume' in request.files:
-                resume_file = request.files['resume']
-                if resume_file and allowed_file(resume_file.filename):
-                    # Convert the resume file to binary data
-                    resume_binary = resume_file.read()
-                    filename = secure_filename(resume_file.filename)
-                else:
-                    return jsonify({"error_message": "Invalid file extension. Please upload a PDF or DOC file."})
-
+            
             # Create new candidate object
             new_candidate = Candidate(
                 user_id=user_id,
@@ -783,7 +790,6 @@ def add_candidate():
                 current_company=current_company,
                 position=position,
                 profile=profile,
-                resume=resume_binary,
                 current_job_location=current_job_location,
                 preferred_job_location=preferred_job_location,
                 qualifications=qualifications,
@@ -799,6 +805,7 @@ def add_candidate():
                 status='None',
                 remarks=data.get('remarks'),
                 skills=skills,
+                resume=resume,
                 period_of_notice=data.get('months') if notice_period == 'no' else None,
                 last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
                 buyout='buyout' in data
