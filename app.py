@@ -701,6 +701,9 @@ def dashboard():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'pdf', 'doc', 'docx'}
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'pdf', 'doc', 'docx'}
+
 @app.route('/add_candidate', methods=['POST'])
 def add_candidate():
     try:
@@ -731,7 +734,6 @@ def add_candidate():
         linkedin = data.get('linkedin')
         notice_period = data.get('notice_period')
         holding_offer = data.get('holding_offer')
-        resume = data.get('resume')
 
         # Check if the user is logged in
         if 'user_id' in session and 'user_type' in session:
@@ -760,15 +762,15 @@ def add_candidate():
             filename = None
             resume_binary = None
 
-            # # Check if resume file is uploaded and allowed
-            # if 'resume' in request.files:
-            #     resume_file = request.files['resume']
-            #     if resume_file and allowed_file(resume_file.filename):
-            #         # Convert the resume file to binary data
-            #         resume_binary = resume_file.read()
-            #         filename = secure_filename(resume_file.filename)
-            #     else:
-            #         return jsonify({"error_message": "Invalid file extension. Please upload a PDF or DOC file."})
+            # Check if resume file is uploaded and allowed
+            if 'resume' in request.files:
+                resume_file = request.files['resume']
+                if resume_file and allowed_file(resume_file.filename):
+                    # Convert the resume file to binary data
+                    resume_binary = resume_file.read()
+                    filename = secure_filename(resume_file.filename)
+                else:
+                    return jsonify({"error_message": "Invalid file extension. Please upload a PDF or DOC file."})
 
             # Create new candidate object
             new_candidate = Candidate(
@@ -781,7 +783,7 @@ def add_candidate():
                 current_company=current_company,
                 position=position,
                 profile=profile,
-                
+                resume=resume_binary,
                 current_job_location=current_job_location,
                 preferred_job_location=preferred_job_location,
                 qualifications=qualifications,
@@ -797,7 +799,6 @@ def add_candidate():
                 status='None',
                 remarks=data.get('remarks'),
                 skills=skills,
-                resume=resume,
                 period_of_notice=data.get('months') if notice_period == 'no' else None,
                 last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
                 buyout='buyout' in data
@@ -815,7 +816,6 @@ def add_candidate():
 
     except Exception as e:
         return jsonify({"error_message": str(e)})
-
 
         
 from flask import jsonify
