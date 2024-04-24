@@ -625,23 +625,26 @@ def candidate_details(candidate_id, user_type, page_no):
 
 
 
-# Search String Changed
-@app.route('/dashboard', methods=["POST"])
+@app.route('/dashboard', methods=['POST'])
 def dashboard():
-    print(session)
-    edit_candidate_message = request.args.get('edit_candidate_message')
-    if 'user_id' in session and 'user_type' in session:
-        page_no = request.args.get('page_no')
-        candidate_message = request.args.get('candidate_message')
-        signup_message = request.args.get('signup_message')
-        job_message = request.args.get('job_message')
-        update_candidate_message = request.args.get('update_candidate_message')
-        delete_message = request.args.get("delete_message")
+    data = request.json
+    print(data)  # Just to verify if data is received properly
 
-        user_id = session['user_id']
-        user_type = session['user_type']
-        user_name = session['user_name']
+    edit_candidate_message = data.get('edit_candidate_message')
+    page_no = data.get('page_no')
+    candidate_message = data.get('candidate_message')
+    signup_message = data.get('signup_message')
+    job_message = data.get('job_message')
+    update_candidate_message = data.get('update_candidate_message')
+    delete_message = data.get("delete_message")
 
+    user_id = data.get('user_id')
+    user_type = data.get('user_type')
+    user_name = data.get('user_name')
+
+    response_data = {}
+
+    if user_id and user_type:
         if user_type == 'recruiter':
             recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
             if recruiter:
@@ -651,51 +654,98 @@ def dashboard():
                                                                   Notification.recruiter_name == user_name).count()
                 career_count_notification_no = Career_notification.query.filter(Career_notification.notification_status == 'false',
                                                                   Career_notification.recruiter_name == user_name).count()
-                return jsonify({
-                    'status': 'success',
-                    'user': recruiter.serialize(),
+                response_data = {
+                    'user': {
+                        'id': recruiter.id,
+                        'name': recruiter.name,
+                        # Add more attributes as needed
+                    },
                     'user_type': user_type,
                     'user_name': user_name,
-                    'candidates': [candidate.serialize() for candidate in candidates],
+                    'candidates': [{
+                        'id': candidate.id,
+                        'name': candidate.name,
+                        # Add more attributes as needed
+                    } for candidate in candidates],
                     'candidate_message': candidate_message,
                     'update_candidate_message': update_candidate_message,
                     'count_notification_no': count_notification_no,
                     'edit_candidate_message': edit_candidate_message,
                     'page_no': page_no,
                     'career_count_notification_no': career_count_notification_no
-                })
+                }
         elif user_type == 'management':
             users = User.query.all()
             candidates = Candidate.query.filter(Candidate.reference.is_(None)).all()
             candidates = sorted(candidates, key=lambda candidate: candidate.id)
-            JobsPosted = JobPost.query.all()
-            return jsonify({
-                'status': 'success',
-                'users': [user.serialize() for user in users],
+            jobs = JobPost.query.all()
+            response_data = {
+                'users': [{
+                    'id': user.id,
+                    'name': user.name,
+                    # Add more attributes as needed
+                } for user in users],
                 'user_type': user_type,
                 'user_name': user_name,
-                'candidates': [candidate.serialize() for candidate in candidates],
-                'update_candidate_message': update_candidate_message,
-                'candidate_message': candidate_message,
-                'delete_message': delete_message,
-                'JobsPosted': [job.serialize() for job in JobsPosted],
+                'candidates': [{
+                    'id': candidate.id,
+                    'name': candidate.name,
+                    # Add more attributes as needed
+                } for candidate in candidates],
+                'jobs': [{
+                    'id': job.id,
+                    'client': job.client,
+                    'experience_min': job.experience_min,
+                    'experience_max': job.experience_max,
+                    'budget_min': job.budget_min,
+                    'budget_max': job.budget_max,
+                    'location': job.location,
+                    'shift_timings': job.shift_timings,
+                    'notice_period': job.notice_period,
+                    'role': job.role,
+                    'detailed_jd': job.detailed_jd,
+                    'jd_pdf': job.jd_pdf,
+                    'mode': job.mode,
+                    'recruiter': job.recruiter,
+                    'management': job.management,
+                    'date_created': job.date_created,
+                    'time_created': job.time_created,
+                    'job_status': job.job_status,
+                    'job_type': job.job_type,
+                    'skills': job.skills,
+                    'notification': job.notification
+                    # Add more attributes as needed
+                } for job in jobs],
                 'signup_message': signup_message,
                 'job_message': job_message,
                 'page_no': page_no,
                 'edit_candidate_message': edit_candidate_message
-            })
+            }
         else:
             user = User.query.filter_by(id=user_id).first()
             if user:
                 candidates = Candidate.query.filter_by(recruiter=user.name).all()  # Filter candidates by user's name
-                return jsonify({
-                    'status': 'success',
-                    'user': user.serialize(),
+                response_data = {
+                    'user': {
+                        'id': user.id,
+                        'name': user.name,
+                        # Add more attributes as needed
+                    },
                     'user_type': user_type,
-                    'candidates': [candidate.serialize() for candidate in candidates]
-                })
+                    'candidates': [{
+                        'id': candidate.id,
+                        'name': candidate.name,
+                        # Add more attributes as needed
+                    } for candidate in candidates]
+                }
+    else:
+        response_data = {"message": "User ID or User Type missing"}
 
-    return jsonify({'status': 'error', 'message': 'User not logged in'})
+    # Convert date objects to string representations before returning the response
+    for job in response_data.get('jobs', []):
+        job['date_created'] = job['date_created'].isoformat()
+
+    return Response(json.dumps(response_data, default=str), content_type='application/json')
 
 # Mocked function for demonstration
 # Mocked function for demonstration
