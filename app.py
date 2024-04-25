@@ -638,13 +638,13 @@ def dashboard():
     update_candidate_message = data.get('update_candidate_message')
     delete_message = data.get("delete_message")
 
-    user_id = data.get('user_id')
+    # user_id = data.get('user_id')
     user_type = data.get('user_type')
     user_name = data.get('user_name')
 
     response_data = {}
 
-    if user_id and user_type:
+    # if user_id and user_type:
         if user_type == 'recruiter':
             recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
             if recruiter:
@@ -750,8 +750,8 @@ def dashboard():
                         # Add more attributes as needed
                     } for candidate in candidates]
                 }
-    else:
-        response_data = {"message": "User ID or User Type missing"}
+    # else:
+    #     response_data = {"message": "User ID or User Type missing"}
 
     # Convert date objects to string representations before returning the response
     for job in response_data.get('jobs', []):
