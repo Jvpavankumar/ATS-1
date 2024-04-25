@@ -527,7 +527,8 @@ def recruiter_login():
 
         # Check if the user exists and the password is correct
         user = User.query.filter_by(username=username, password=password, user_type='recruiter').first()
-
+        user_id=user.id
+        print(user_id)
         if user:
             if user.is_active:  # Check if the user is active
                 if user.is_verified:
@@ -537,7 +538,7 @@ def recruiter_login():
                     session['username'] = user.username
                     session['user_name'] = user.name
                     session['JWT Token'] = secrets.token_hex(16)
-                    return jsonify({'status': 'success', 'redirect': url_for('dashboard')})
+                    return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id':user_id})
                 else:
                     message = 'Your account is not verified yet. Please check your email for the verification link.'
             else:
@@ -565,7 +566,8 @@ def management_login():
 
     # Check if the user exists and the password is correct
     user = User.query.filter_by(username=username, password=password, user_type='management').first()
-
+    user_id=user.id
+    print(user_id)
     if user:
         if user.is_active:  # Check if the user is active
             if user.is_verified:
@@ -575,7 +577,7 @@ def management_login():
                 session['username'] = user.username
                 session['user_name'] = user.name
                 session['JWT Token'] = secrets.token_hex(16)
-                return jsonify({'status': 'success', 'redirect': url_for('dashboard')})
+                return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id':user_id})
             else:
                 message = 'Your account is not verified yet. Please check your email for the verification link.'
         else:
@@ -584,6 +586,7 @@ def management_login():
         message = 'Invalid username or password'
 
     return jsonify({'status': 'error', 'message': message, 'verification_msg_manager': verification_msg_manager})
+
 
 from flask import jsonify
 
