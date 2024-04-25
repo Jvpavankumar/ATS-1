@@ -1700,24 +1700,41 @@ def edit_job_post(job_id):
 
 @app.route('/view_all_jobs', methods=['GET'])
 def view_all_jobs():
-    no_doc_message = request.args.get("no_doc_message")
-    status_message = request.args.get("status_message")
-    job_message = request.args.get('job_message')
-    post_delete_message = request.args.get("post_delete_message")
-    print(post_delete_message)
-    page_no = request.args.get('page_no')
-    id = request.args.get('id')
-    job_id = request.args.get('job_id')
-    client = request.args.get('client')
-    role = request.args.get('role')
-    user_name = session['user_name']
-    # Retrieve all job posts from the database
-    job_posts = JobPost.query.filter_by(job_status='Active').order_by(JobPost.id).all()
+    # Get data from JSON request
+    data = request.json
 
+    # Extract any parameters you need from the JSON data
+    user_name = data['username']
+
+    # Retrieve all job posts from the database
+    job_posts_active = JobPost.query.filter_by(job_status='Active').order_by(JobPost.id).all()
     job_posts_hold = JobPost.query.filter_by(job_status='Hold').order_by(JobPost.id).all()
 
-    # Render a template with the job posts data
-    return render_template('all_job_posts.html', job_posts=job_posts,job_posts_hold=job_posts_hold,user_name=user_name,status_message=status_message,job_message=job_message,id=id,client=client,role=role,post_delete_message=post_delete_message,no_doc_message=no_doc_message,page_no=page_no,job_id=job_id)
+    # Construct JSON response
+    response_data = {
+        "user_name": user_name,
+        "job_posts_active": [
+            {
+                "id": job_post.id,
+                "client": job_post.client,
+                "role": job_post.role,
+                # Include other attributes as needed
+            }
+            for job_post in job_posts_active
+        ],
+        "job_posts_hold": [
+            {
+                "id": job_post.id,
+                "client": job_post.client,
+                "role": job_post.role,
+                # Include other attributes as needed
+            }
+            for job_post in job_posts_hold
+        ]
+    }
+
+    # Return JSON response
+    return jsonify(response_data)
 
 def send_notification(recruiter_email):
     msg = Message('New Job Posted', sender='saiganeshkanuparthi@gmail.com', recipients=[recruiter_email])
