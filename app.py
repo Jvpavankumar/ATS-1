@@ -658,6 +658,8 @@ def dashboard():
                     'user': {
                         'id': recruiter.id,
                         'name': recruiter.name,
+                        'user_type': recruiter.user_type,
+                        'email': recruiter.email
                         # Add more attributes as needed
                     },
                     'user_type': user_type,
@@ -665,6 +667,7 @@ def dashboard():
                     'candidates': [{
                         'id': candidate.id,
                         'name': candidate.name,
+                        'email': candidate.email,
                         # Add more attributes as needed
                     } for candidate in candidates],
                     'candidate_message': candidate_message,
@@ -683,6 +686,9 @@ def dashboard():
                 'users': [{
                     'id': user.id,
                     'name': user.name,
+                    'user_type': user.user_type,
+                    'email': user.email
+                     
                     # Add more attributes as needed
                 } for user in users],
                 'user_type': user_type,
@@ -690,6 +696,12 @@ def dashboard():
                 'candidates': [{
                     'id': candidate.id,
                     'name': candidate.name,
+                    'email': candidate.email,
+                    'mobile': candidate.mobile,
+                    'client':candidate.client,
+                    'skills':candidate.skills,
+                    'recruiter':candidate.recruiter,
+                    'resume': candidate.resume
                     # Add more attributes as needed
                 } for candidate in candidates],
                 'jobs': [{
