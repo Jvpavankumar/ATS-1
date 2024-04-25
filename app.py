@@ -380,14 +380,16 @@ def generate_otp():
    
 @app.route('/reset_password', methods=['POST'])
 def reset_password():
+    # data=request.json
     if request.method == 'POST':
-        username = request.json.get('username')
-        email = request.json.get('email')
-        otp = request.json.get('otp')
+        # username =data['username']
+        # email = data['email']
+        otp = request.json['otp']
         new_password = request.json.get('new_password')
         confirm_password = request.json.get('confirm_password')
 
-        user = User.query.filter_by(username=username, email=email).first()
+        # user = User.query.filter_by(username=username, email=email).first()
+        user = User.query.filter_by(otp=otp).first()
 
         if user and user.otp == otp and new_password == confirm_password and user.user_type == 'recruiter':
             # Update the user's password in the database
@@ -403,7 +405,6 @@ def reset_password():
             return jsonify({'status': 'error', 'message': 'Invalid OTP or password confirmation. Please try again.'})
 
     return jsonify({'status': 'error', 'message': 'Invalid request method.'})
-
 
 @app.route('/verify/<token>')
 def verify(token):
