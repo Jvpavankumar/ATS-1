@@ -1648,7 +1648,8 @@ def post_job():
                 for email in recruiter_emails:
                     send_notification(email)
 
-                return jsonify({"message": "Job posted Sucessfully"}), 200
+                # Return the job_id along with the success message
+                return jsonify({"message": "Job posted successfully", "job_id": new_job_post.id}), 200
             else:
                 return jsonify({"error": "Invalid user type"}), 400
         else:
@@ -1659,6 +1660,7 @@ def post_job():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 @app.route('/update_job_status/<int:job_id>', methods=['POST'])
