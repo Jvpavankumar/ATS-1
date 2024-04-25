@@ -695,6 +695,7 @@ def dashboard():
                 'user_name': user_name,
                 'candidates': [{
                     'id': candidate.id,
+                    'job_id':candidate.job_id,
                     'name': candidate.name,
                     'email': candidate.email,
                     'mobile': candidate.mobile,
