@@ -629,6 +629,8 @@ def candidate_details(candidate_id, user_type, page_no):
 
 
 
+import json
+
 @app.route('/dashboard', methods=['POST'])
 def dashboard():
     data = request.json
@@ -672,6 +674,8 @@ def dashboard():
                         'id': candidate.id,
                         'name': candidate.name,
                         'email': candidate.email,
+                        "time_created":str(candidate.time_created),
+                        "date_created": str(candidate.date_created)
                         # Add more attributes as needed
                     } for candidate in candidates],
                     'candidate_message': candidate_message,
@@ -705,8 +709,11 @@ def dashboard():
                     'mobile': candidate.mobile,
                     'client':candidate.client,
                     'skills':candidate.skills,
+                    "profile": candidate.profile, 
                     'recruiter':candidate.recruiter,
-                    'resume': candidate.resume
+                    'resume': candidate.resume,
+                    "time_created":str(candidate.time_created),
+                    "date_created": str(candidate.date_created)
                     # Add more attributes as needed
                 } for candidate in candidates],
                 'jobs': [{
@@ -763,6 +770,7 @@ def dashboard():
         job['date_created'] = job['date_created'].isoformat()
 
     return Response(json.dumps(response_data, default=str), content_type='application/json')
+
 
 # Mocked function for demonstration
 # Mocked function for demonstration
