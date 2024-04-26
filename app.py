@@ -1697,7 +1697,7 @@ def edit_job_post(job_id):
     # Handle the case where the job post with the given job_id is not found
     return "Job post not found"
 
-@app.route('/view_all_jobs', methods=['GET'])
+@app.route('/view_all_jobs', methods=['POST'])
 def view_all_jobs():
     # Get data from JSON request
     data = request.json
