@@ -803,23 +803,18 @@ def add_candidate():
         notice_period = data.get('notice_period')
         holding_offer = data.get('holding_offer')
         resume = data.get('resume')
-        
-        # print("resume", type(resume))  # Print the type of the resume field
-        # print("resume value:", resume)  # Print the value of the resume field
-        
+
         # Check if the resume is a hexadecimal string and convert it to bytes
         if isinstance(resume, str):
             # Remove leading backslashes and split the string into pairs of hexadecimal digits
             hex_string = resume.replace("\\", "").replace("\\", "")
             # Decode the hexadecimal string to bytes using binascii.unhexlify()
             resume = binascii.unhexlify(hex_string)
-            print("resume after conversion: ", resume)
 
         elif isinstance(resume, bytes):
             resume = resume
         else:
             raise ValueError("Resume must be either a hexadecimal string or bytes.")
-        
 
         # Check if the user is logged in
         if 'user_id' in session and 'user_type' in session:
@@ -845,7 +840,6 @@ def add_candidate():
             if not matching_job_post:
                 return jsonify({"error_message": "Job on hold"})
 
-            
             # Create new candidate object
             new_candidate = Candidate(
                 user_id=user_id,
@@ -884,7 +878,7 @@ def add_candidate():
             db.session.add(new_candidate)
             db.session.commit()
 
-            return jsonify({"message": "Candidate Added Successfully"})
+            return jsonify({"message": "Candidate Added Successfully", "candidate_id": new_candidate.id})
 
         return jsonify({"error_message": "User not logged in"})
 
@@ -1723,6 +1717,21 @@ def view_all_jobs():
                 "id": job_post.id,
                 "client": job_post.client,
                 "role": job_post.role,
+                "experience_min": job_post.experience_min,
+                "experience_max": job_post.experience_max,
+                "budget_min": job_post.budget_min,
+                "budget_max": job_post.budget_max,
+                "location": job_post.location,
+                "shift_timings": job_post.shift_timings,
+                "notice_period": job_post.notice_period,
+                "detailed_jd": job_post.detailed_jd,
+                "jd_pdf": job_post.jd_pdf,  # Assuming this is a binary field containing PDF data
+                "mode": job_post.mode,
+                "recruiter": job_post.recruiter,
+                "management": job_post.management,
+                "job_status": job_post.job_status,
+                "job_type": job_post.job_type,
+                "skills": job_post.skills
                 # Include other attributes as needed
             }
             for job_post in job_posts_active
@@ -1732,6 +1741,21 @@ def view_all_jobs():
                 "id": job_post.id,
                 "client": job_post.client,
                 "role": job_post.role,
+                "experience_min": job_post.experience_min,
+                "experience_max": job_post.experience_max,
+                "budget_min": job_post.budget_min,
+                "budget_max": job_post.budget_max,
+                "location": job_post.location,
+                "shift_timings": job_post.shift_timings,
+                "notice_period": job_post.notice_period,
+                "detailed_jd": job_post.detailed_jd,
+                "jd_pdf": job_post.jd_pdf,  # Assuming this is a binary field containing PDF data
+                "mode": job_post.mode,
+                "recruiter": job_post.recruiter,
+                "management": job_post.management,
+                "job_status": job_post.job_status,
+                "job_type": job_post.job_type,
+                "skills": job_post.skills
                 # Include other attributes as needed
             }
             for job_post in job_posts_hold
@@ -1740,6 +1764,7 @@ def view_all_jobs():
 
     # Return JSON response
     return jsonify(response_data)
+
 
 def send_notification(recruiter_email):
     msg = Message('New Job Posted', sender='saiganeshkanuparthi@gmail.com', recipients=[recruiter_email])
