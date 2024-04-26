@@ -2174,13 +2174,17 @@ def delete_job_post_message(job_id):
     role = job_post.role
     return redirect(url_for('view_all_jobs',client=client,role=role,id=id))
 
-@app.route('/delete_job_post/<int:job_id>')
+@app.route('/delete_job_post/<int:job_id>', methods=['POST'])
 def delete_job_post(job_id):
+    # data=request.json
+    # job_id=data['job_id']
     job_post = JobPost.query.get(job_id)
-    JobPost.query.filter_by(id=job_id).delete()
-    db.session.commit()
-    return redirect(url_for('view_all_jobs',post_delete_message="Job Post Deleted Sucessfully"))
-
+    if job_post:
+        JobPost.query.filter_by(id=job_id).delete()
+        db.session.commit()
+        return jsonify({"message": "Job Post Deleted Successfully"}), 200
+    else:
+        return jsonify({"error": "Job Post not found"}), 404
 
 @app.route('/download_jd/<int:job_id>')
 def download_jd(job_id):
