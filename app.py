@@ -1731,7 +1731,9 @@ def view_all_jobs():
                 "management": job_post.management,
                 "job_status": job_post.job_status,
                 "job_type": job_post.job_type,
-                "skills": job_post.skills
+                "skills": job_post.skills,
+                "date_created": str(job_post.date_created),
+                "time_created": str(job_post.time_created)
                 # Include other attributes as needed
             }
             for job_post in job_posts_active
@@ -1755,7 +1757,9 @@ def view_all_jobs():
                 "management": job_post.management,
                 "job_status": job_post.job_status,
                 "job_type": job_post.job_type,
-                "skills": job_post.skills
+                "skills": job_post.skills,
+                "date_created": str(job_post.date_created),
+                "time_created": str(job_post.time_created)
                 # Include other attributes as needed
             }
             for job_post in job_posts_hold
@@ -1764,7 +1768,6 @@ def view_all_jobs():
 
     # Return JSON response
     return jsonify(response_data)
-
 
 def send_notification(recruiter_email):
     msg = Message('New Job Posted', sender='saiganeshkanuparthi@gmail.com', recipients=[recruiter_email])
