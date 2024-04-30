@@ -1417,11 +1417,9 @@ from datetime import datetime
 
 # Search String Changed
 @app.route('/edit_candidate/<int:candidate_id>/<int:page_no>/<search_string>', methods=['GET', 'POST'])
-@app.route('/edit_candidate/<int:candidate_id>/<int:page_no>', methods=['GET', 'POST'])
-def edit_candidate(candidate_id, page_no):
+@app.route('/edit_candidate/<int:candidate_id>', methods=['POST'])
+def edit_candidate(candidate_id):
     if 'user_id' in session and 'user_type' in session:
-        user_id = session['user_id']
-        user_type = session['user_type']
         user_name = session['user_name']
         count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
                                                           Notification.recruiter_name == user_name).count()
@@ -1435,45 +1433,43 @@ def edit_candidate(candidate_id, page_no):
 
             # Retrieve the candidate object
             candidate = Candidate.query.get(candidate_id)
+            if candidate:
+                # Update the candidate fields with the new data
+                candidate.name = data.get('name')
+                candidate.mobile = data.get('mobile')
+                candidate.email = data.get('email')
+                candidate.client = data.get('client')
+                candidate.current_company = data.get('current_company')
+                candidate.position = data.get('position')
+                candidate.profile = data.get('profile')
+                candidate.current_job_location = data.get('current_job_location')
+                candidate.preferred_job_location = data.get('preferred_job_location')
+                candidate.qualifications = data.get('qualifications')
+                experience = data.get('total_experience_years')
+                exp_months = data.get('total_experience_months')
+                if experience is not None and exp_months is not None:
+                    candidate.experience = f"{experience}.{exp_months}"
+                else:
+                    return jsonify({"error_message": "Experience or experience months is missing"}), 400
+                candidate.current_ctc = f"{data['currency_type_current']} {data['current_ctc']}"
+                candidate.expected_ctc = f"{data['currency_type_except']} {data['expected_ctc']}"
+                candidate.notice_period = data.get('notice_period')
+                candidate.reason_for_job_change = data.get('reason_for_job_change')
+                candidate.linkedin_url = data.get('linkedin')
+                candidate.remarks = data.get('remarks')
+                candidate.skills = data.get('skills')
+                candidate.holding_offer = data.get('holding_offer')
+                candidate.total = data.get('total')
+                candidate.package_in_lpa = data.get('package_in_lpa')
+                candidate.period_of_notice = data.get('period_of_notice')
 
-            # Update the candidate fields with the new data
-            candidate.name = data.get('name')
-            candidate.mobile = data.get('mobile')
-            candidate.email = data.get('email')
-            candidate.client = data.get('client')
-            candidate.current_company = data.get('current_company')
-            candidate.position = data.get('position')
-            candidate.profile = data.get('profile')
-            candidate.current_job_location = data.get('current_job_location')
-            candidate.preferred_job_location = data.get('preferred_job_location')
-            candidate.qualifications = data.get('qualifications')
-            experience = data.get('experience')
-            exp_months = data.get('exp_months')
-            if experience is not None and exp_months is not None:
-                candidate.experience = f"{experience}.{exp_months}"
+                db.session.commit()
+                return jsonify({"message": "Candidate Details Edited Successfully"})
             else:
-                return jsonify({"error_message": "Experience or experience months is missing"}), 400
-            candidate.current_ctc = data.get('current_ctc')
-            candidate.expected_ctc = data.get('expected_ctc')
-            currency_type_current = data['currency_type_current']
-            currency_type_except = data['currency_type_except']
-            candidate.current_ctc = f"{currency_type_current} {data['current_ctc']}"
-            candidate.expected_ctc = f"{currency_type_except} {data['expected_ctc']}"
-            candidate.notice_period = data.get('notice_period')
-            candidate.reason_for_job_change = data.get('reason_for_job_change')
-            candidate.linkedin_url = data.get('linkedin')
-            candidate.remarks = data.get('remarks')
-            candidate.skills = data.get('skills')
-            candidate.holding_offer = data.get('holding_offer')
-            candidate.total = data.get('total')
-            candidate.package_in_lpa = data.get('package_in_lpa')
-            candidate.period_of_notice = data.get('period_of_notice')
-
-            db.session.commit()
-
-            return jsonify({"message": "Candidate Details Edited Successfully"})
+                return jsonify({"error_message": "Candidate not found"}), 404
 
     return jsonify({"error_message": "Unauthorized: You must log in to access this page"}), 401
+
 
 @app.route('/edit_candidate_careers/<int:candidate_id>/<int:page_no>/<search_string>', methods=['GET', 'POST'])
 @app.route('/edit_candidate_careers/<int:candidate_id>/<int:page_no>', methods=['GET', 'POST'])
