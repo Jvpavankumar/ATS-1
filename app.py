@@ -2222,15 +2222,26 @@ def disable_user():
 @app.route('/active_users', methods=['POST'])
 def update_user_status():
     data = request.json
-    user_id = data['user_id']
-    new_status = data['new_status']
+    user_id = data.get('user_id')
+    new_status = data.get('new_status')
 
     try:
         user = User.query.get(user_id)
         if user:
             user.is_verified = new_status
             db.session.commit()
-            return jsonify({"message": "User status updated successfully"})
+
+            # Fetch updated active users list
+            active_users_manager = User.query.filter_by(is_active=True, user_type='management').all()
+            active_users_manager = sorted(active_users_manager, key=lambda user: user.id)
+            active_users_recruiter = User.query.filter_by(is_active=True, user_type='recruiter').all()
+            active_users_recruiter = sorted(active_users_recruiter, key=lambda user: user.id)
+
+            return jsonify({
+                "message": "User status updated successfully",
+                "active_users_manager": [user.serialize() for user in active_users_manager],
+                "active_users_recruiter": [user.serialize() for user in active_users_recruiter]
+            })
         else:
             return jsonify({"message": "User not found"}), 404
     except Exception as e:
