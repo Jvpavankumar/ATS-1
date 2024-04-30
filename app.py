@@ -2222,7 +2222,7 @@ def disable_user():
 @app.route('/active_users', methods=['POST'])
 def update_user_status():
     data = request.json
-    user_id = data.get['user_id']
+    user_id = data['user_id']
     new_status = data['new_status']  
 
     # Assuming you have a User model with a status field
