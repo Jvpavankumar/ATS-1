@@ -2222,11 +2222,11 @@ def disable_user():
 @app.route('/active_users', methods=['POST'])
 def update_user_status():
     data = request.json
-    user_id = data.get('user_id')
+    username = data.get('user_name')
     new_status = data.get('new_status')
 
     try:
-        user = User.query.get(user_id)
+        user = User.query.filter_by(username=username).first()
         if user:
             user.is_verified = new_status
             db.session.commit()
@@ -2239,6 +2239,7 @@ def update_user_status():
 
             return jsonify({
                 "message": "User status updated successfully",
+                "username": username,
                 "active_users_manager": [user.serialize() for user in active_users_manager],
                 "active_users_recruiter": [user.serialize() for user in active_users_recruiter]
             })
