@@ -1123,9 +1123,9 @@ def verify_token(token):
         return None
 
 # Search String Changed
-@app.route('/update_candidate/<int:candidate_id>/<page_no>/<search_string>', methods=['GET', 'POST'])
-@app.route('/update_candidate/<int:candidate_id>/<page_no>', methods=['POST'])
-def update_candidate(candidate_id, page_no):
+# @app.route('/update_candidate/<int:candidate_id>/<page_no>/<search_string>', methods=['GET', 'POST'])
+@app.route('/update_candidate/<int:candidate_id>', methods=['POST'])
+def update_candidate(candidate_id):
     if 'user_id' in session and 'user_type' in session:
         user_id = session['user_id']
         user_type = session['user_type']
@@ -1169,7 +1169,7 @@ def update_candidate(candidate_id, page_no):
 
             db.session.commit()
 
-            if candidate_status == "SCREENING" or candidate_status == "SCREEN REJECTED":
+            if candidate_status in ["SCREENING", "SCREEN REJECTED", "NO SHOW", "DROP", "CANDIDATE HOLD", "OFFERED - DECLINED", "DUPLICATE"]:
                 candidate_name = candidate.name
                 candidate_position = candidate.position
                 candidate_email = candidate.email
@@ -1179,41 +1179,32 @@ def update_candidate(candidate_id, page_no):
                 if user_type == 'recruiter' or user_type == 'management':
                     user_email = User.query.get(session.get('user_id')).email
 
-                    message = f'Dear {candidate.name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate.position.upper()} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {candidate.client.upper()} regarding your interview. \n\n        Current Status :  "{candidate.status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
-                pass
-            elif candidate_status == "NO SHOW" or candidate_status == "DROP" or candidate_status == "CANDIDATE HOLD" or candidate_status == "OFFERED - DECLINED" or candidate_status == "DUPLICATE":
-                pass
+                    if candidate_status in ["SCREENING", "SCREEN REJECTED"]:
+                        message = f'Dear {candidate.name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate.position.upper()} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {candidate.client.upper()} regarding your interview. \n\n        Current Status :  "{candidate.status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
+                    else:
+                        message = f'Dear {candidate.name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate.position.upper()} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {candidate.client.upper()} regarding your interview. \n\n        Previous Status : "{previous_status}"\n\n        Current Status :  "{candidate.status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
             else:
-                candidate_name = candidate.name
-                candidate_position = candidate.position
-                candidate_email = candidate.email
-
-                user_type = session.get('user_type')
-
-                if user_type == 'recruiter' or user_type == 'management':
-                    user_email = User.query.get(session.get('user_id')).email
-
-                    message = f'Dear {candidate.name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate.position.upper()} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {candidate.client.upper()} regarding your interview. \n\n        Previous Status : "{previous_status}"\n\n        Current Status :  "{candidate.status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
-                pass
+                message = None
+                candidate_name = None
+                candidate_position = None
+                candidate_email = None
 
             return jsonify({
-                "message": "Candidate Status Updated Successfully",
-                "user_id": user_id,
-                "user_type": user_type,
-                "user_name": user_name,
-                "count_notification_no": count_notification_no,
-                "career_count_notification_no": career_count_notification_no,
-                "recruiter": recruiter,
-                "management": management,
-                "recruiter_email": recruiter_email,
-                "management_email": management_email,
-                "candidate_name": candidate_name,
-                "candidate_position": candidate_position,
-                "candidate_email": candidate_email,
-                "message": message
-            })
-
-    return jsonify({"error_message": "Unauthorized: You must log in to access this page"}), 500
+            "message": "Candidate Status Updated Successfully",
+            "user_id": user_id,
+            "user_type": user_type,
+            "user_name": user_name,
+            "count_notification_no": count_notification_no,
+            "career_count_notification_no": career_count_notification_no,
+            "recruiter": recruiter,
+            "management": management ,  # Return empty string if management is None
+            "recruiter_email": recruiter_email,
+            "management_email": management_email ,  # Return empty string if management_email is None
+            "candidate_name": candidate_name if candidate_name is not None else "",  # Return empty string if candidate_name is None
+            "candidate_position": candidate_position if candidate_position is not None else "",  # Return empty string if candidate_position is None
+            "candidate_email": candidate_email if candidate_email is not None else "",  # Return empty string if candidate_email is None
+            "message": message if message is not None else ""  # Return empty string if message is None
+        })
 
 
 @app.route('/update_candidate_careers/<int:candidate_id>/<page_no>/<search_string>', methods=['GET', 'POST'])
