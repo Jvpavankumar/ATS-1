@@ -2219,24 +2219,21 @@ def disable_user():
 
     return render_template('deactivate_user.html', message='', active_users=User.query.filter_by(is_active=True).all(),user_name=user_name)
 
-@app.route('/active_users', methods=['GET'])
-def active_users():
-    if 'user_name' in session:
-        user_name = session['user_name']
+@app.route('/active_users', methods=['POST'])
+def update_user_status():
+    data = request.json
+    user_id = data.get['user_id']
+    new_status = data['new_status']  
+
+    # Assuming you have a User model with a status field
+    user = User.query.get(user_id)
+    if user:
+        user.status = new_status
+        db.session.commit()
+        return jsonify({"message": "User status updated successfully"})
     else:
-        user_name = None
-
-    active_users_manager = User.query.filter_by(is_active=True, user_type='management').all()
-    active_users_manager = sorted(active_users_manager, key=lambda user: user.id)
-    active_users_recruiter = User.query.filter_by(is_active=True, user_type='recruiter').all()
-    active_users_recruiter = sorted(active_users_recruiter, key=lambda user: user.id)
-    
-    return jsonify({
-        "active_users_manager": [user.serialize() for user in active_users_manager],
-        "active_users_recruiter": [user.serialize() for user in active_users_recruiter],
-        "user_name": user_name
-    })
-
+        return jsonify({"message": "User not found"}), 404
+        
 @app.route('/verify_checkbox', methods=['POST'])
 def verify_checkbox():
     data = request.json
