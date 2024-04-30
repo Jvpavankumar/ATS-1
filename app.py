@@ -2223,16 +2223,20 @@ def disable_user():
 def update_user_status():
     data = request.json
     user_id = data['user_id']
-    new_status = data['new_status']  
+    new_status = data['new_status']
 
-    # Assuming you have a User model with a status field
-    user = User.query.get(user_id)
-    if user:
-        user.status = new_status
-        db.session.commit()
-        return jsonify({"message": "User status updated successfully"})
-    else:
-        return jsonify({"message": "User not found"}), 404
+    try:
+        user = User.query.get(user_id)
+        if user:
+            user.is_verified = new_status
+            db.session.commit()
+            return jsonify({"message": "User status updated successfully"})
+        else:
+            return jsonify({"message": "User not found"}), 404
+    except Exception as e:
+        db.session.rollback()  # Rollback changes in case of error
+        return jsonify({"message": "Error updating user status", "error": str(e)}), 500
+
         
 @app.route('/verify_checkbox', methods=['POST'])
 def verify_checkbox():
