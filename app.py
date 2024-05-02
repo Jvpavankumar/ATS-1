@@ -1159,7 +1159,7 @@ def update_candidate(candidate_id):
                 user_email = None
                 management_email = None
 
-            candidate = Candidate.query.get(candidate_id)
+            candidate = Candidate.query.filter_by(candidate_id).first()
             print(candidate)
             
             previous_status = candidate.status
