@@ -1149,13 +1149,13 @@ def update_candidate(candidate_id):
                 management = None
 
             if user_type == 'recruiter':
-                recruiter_email = User.query.get(user_id).email
+                user_email = User.query.get(user_id).email
                 management_email = None
             elif user_type == 'management':
-                recruiter_email = None
+                user_email = None
                 management_email = User.query.get(user_id).email
             else:
-                recruiter_email = None
+                user_email = None
                 management_email = None
 
             candidate = Candidate.query.get(candidate_id)
@@ -1174,20 +1174,25 @@ def update_candidate(candidate_id):
                 candidate_position = candidate.position
                 candidate_email = candidate.email
 
-                user_type = session.get('user_type')
+                if candidate_position:
+                    candidate_position = candidate_position.upper()
+                else:
+                    candidate_position = ""
 
-                if user_type == 'recruiter' or user_type == 'management':
-                    user_email = User.query.get(session.get('user_id')).email
+                if candidate.client:
+                    client = candidate.client.upper()
+                else:
+                    client = ""
 
-                    if candidate_status in ["SCREENING", "SCREEN REJECTED"]:
-                        message = f'Dear {candidate.name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate.position.upper()} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {candidate.client.upper()} regarding your interview. \n\n        Current Status :  "{candidate.status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
-                    else:
-                        message = f'Dear {candidate.name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate.position.upper()} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {candidate.client.upper()} regarding your interview. \n\n        Previous Status : "{previous_status}"\n\n        Current Status :  "{candidate.status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
+                if candidate_status in ["SCREENING", "SCREEN REJECTED"]:
+                    message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
+                else:
+                    message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Previous Status : "{previous_status}"\n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
             else:
-                message = None
-                candidate_name = None
-                candidate_position = None
-                candidate_email = None
+                message = ""
+                candidate_name = ""
+                candidate_position = ""
+                candidate_email = ""
 
             return jsonify({
             "message": "Candidate Status Updated Successfully",
@@ -1197,14 +1202,15 @@ def update_candidate(candidate_id):
             "count_notification_no": count_notification_no,
             "career_count_notification_no": career_count_notification_no,
             "recruiter": recruiter,
-            "management": management ,  # Return empty string if management is None
-            "recruiter_email": recruiter_email,
-            "management_email": management_email ,  # Return empty string if management_email is None
-            "candidate_name": candidate_name if candidate_name is not None else "",  # Return empty string if candidate_name is None
-            "candidate_position": candidate_position if candidate_position is not None else "",  # Return empty string if candidate_position is None
-            "candidate_email": candidate_email if candidate_email is not None else "",  # Return empty string if candidate_email is None
-            "message": message if message is not None else ""  # Return empty string if message is None
+            "management": management,
+            "recruiter_email": user_email,
+            "management_email": management_email,
+            "candidate_name": candidate_name,
+            "candidate_position": candidate_position,
+            "candidate_email": candidate_email,
+            "message": message
         })
+
 
 
 @app.route('/update_candidate_careers/<int:candidate_id>/<page_no>/<search_string>', methods=['GET', 'POST'])
