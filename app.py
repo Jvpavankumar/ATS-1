@@ -1128,9 +1128,12 @@ from flask import session, jsonify
 
 @app.route('/update_candidate/<int:candidate_id>', methods=['POST'])
 def update_candidate(candidate_id):
-    user_id = session['user_id']
-    user_type = session['user_type']
-    user_name = session['user_name']
+    data = request.json
+
+    user_id = data['user_id']
+    user = User.query.filter_by(id=user_id).first()
+    user_type = user.user_type
+    user_name = user.user_name
     count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
                                                       Notification.recruiter_name == user_name).count()
     career_count_notification_no = Career_notification.query.filter(
