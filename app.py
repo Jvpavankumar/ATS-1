@@ -1211,7 +1211,7 @@ def update_candidate(candidate_id):
             "candidate_position": candidate_position,
             "candidate_email": candidate_email,
             "message": message
-        })
+        }),200
 
 
 
