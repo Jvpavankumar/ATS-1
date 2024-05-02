@@ -1128,6 +1128,7 @@ from flask import session, jsonify
 
 @app.route('/update_candidate/<int:candidate_id>', methods=['POST'])
 def update_candidate(candidate_id):
+    print("Session :",session)
     print(type(candidate_id))
     if 'user_id' in session and 'user_type' in session:
         user_id = session['user_id']
