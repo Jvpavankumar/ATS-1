@@ -1160,6 +1160,7 @@ def update_candidate(candidate_id):
                 management_email = None
 
             candidate = Candidate.query.get(candidate_id)
+            print(candidate)
             
             previous_status = candidate.status
 
