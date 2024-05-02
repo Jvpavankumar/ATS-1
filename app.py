@@ -1140,8 +1140,6 @@ def update_candidate(candidate_id):
         Career_notification.notification_status == 'false',
         Career_notification.recruiter_name == user_name).count()
     if request.method == 'POST':
-        user_id = session['user_id']
-        user_type = session['user_type']
         if user_type == 'recruiter':
             recruiter = User.query.get(user_id).name
             management = None
