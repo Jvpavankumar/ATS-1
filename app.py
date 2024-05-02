@@ -1126,7 +1126,6 @@ def verify_token(token):
 # @app.route('/update_candidate/<int:candidate_id>/<page_no>/<search_string>', methods=['GET', 'POST'])
 @app.route('/update_candidate/<int:candidate_id>', methods=['POST'])
 def update_candidate(candidate_id):
-    candidate_id=int(candidate_id)
     if 'user_id' in session and 'user_type' in session:
         user_id = session['user_id']
         user_type = session['user_type']
