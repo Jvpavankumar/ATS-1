@@ -1133,7 +1133,7 @@ def update_candidate(candidate_id):
     user_id = data['user_id']
     user = User.query.filter_by(id=user_id).first()
     user_type = user.user_type
-    user_name = user.user_name
+    user_name = user.username
     count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
                                                       Notification.recruiter_name == user_name).count()
     career_count_notification_no = Career_notification.query.filter(
