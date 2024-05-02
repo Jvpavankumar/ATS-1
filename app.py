@@ -1128,94 +1128,91 @@ from flask import session, jsonify
 
 @app.route('/update_candidate/<int:candidate_id>', methods=['POST'])
 def update_candidate(candidate_id):
-    print("Session :",session)
-    print(type(candidate_id))
-    if 'user_id' in session and 'user_type' in session:
+    user_id = session['user_id']
+    user_type = session['user_type']
+    user_name = session['user_name']
+    count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
+                                                      Notification.recruiter_name == user_name).count()
+    career_count_notification_no = Career_notification.query.filter(
+        Career_notification.notification_status == 'false',
+        Career_notification.recruiter_name == user_name).count()
+    if request.method == 'POST':
         user_id = session['user_id']
         user_type = session['user_type']
-        user_name = session['user_name']
-        count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
-                                                          Notification.recruiter_name == user_name).count()
-        career_count_notification_no = Career_notification.query.filter(
-            Career_notification.notification_status == 'false',
-            Career_notification.recruiter_name == user_name).count()
-        if request.method == 'POST':
-            user_id = session['user_id']
-            user_type = session['user_type']
-            if user_type == 'recruiter':
-                recruiter = User.query.get(user_id).name
-                management = None
-            elif user_type == 'management':
-                recruiter = None
-                management = User.query.get(user_id).name
+        if user_type == 'recruiter':
+            recruiter = User.query.get(user_id).name
+            management = None
+        elif user_type == 'management':
+            recruiter = None
+            management = User.query.get(user_id).name
+        else:
+            recruiter = None
+            management = None
+
+        if user_type == 'recruiter':
+            user_email = User.query.get(user_id).email
+            management_email = None
+        elif user_type == 'management':
+            user_email = None
+            management_email = User.query.get(user_id).email
+        else:
+            user_email = None
+            management_email = None
+
+        candidate = Candidate.query.filter_by(id=candidate_id).first()
+        print(candidate)
+        
+        previous_status = candidate.status
+
+        candidate_status = request.json.get('candidate_status')
+        candidate_comment = request.json.get('comments')
+
+        candidate.status = candidate_status
+        candidate.comments = candidate_comment
+
+        db.session.commit()
+
+        if candidate_status in ["SCREENING", "SCREEN REJECTED", "NO SHOW", "DROP", "CANDIDATE HOLD", "OFFERED - DECLINED", "DUPLICATE"]:
+            candidate_name = candidate.name
+            candidate_position = candidate.position
+            candidate_email = candidate.email
+
+            if candidate_position:
+                candidate_position = candidate_position.upper()
             else:
-                recruiter = None
-                management = None
-
-            if user_type == 'recruiter':
-                user_email = User.query.get(user_id).email
-                management_email = None
-            elif user_type == 'management':
-                user_email = None
-                management_email = User.query.get(user_id).email
-            else:
-                user_email = None
-                management_email = None
-
-            candidate = Candidate.query.filter_by(id=candidate_id).first()
-            print(candidate)
-            
-            previous_status = candidate.status
-
-            candidate_status = request.json.get('candidate_status')
-            candidate_comment = request.json.get('comments')
-
-            candidate.status = candidate_status
-            candidate.comments = candidate_comment
-
-            db.session.commit()
-
-            if candidate_status in ["SCREENING", "SCREEN REJECTED", "NO SHOW", "DROP", "CANDIDATE HOLD", "OFFERED - DECLINED", "DUPLICATE"]:
-                candidate_name = candidate.name
-                candidate_position = candidate.position
-                candidate_email = candidate.email
-
-                if candidate_position:
-                    candidate_position = candidate_position.upper()
-                else:
-                    candidate_position = ""
-
-                if candidate.client:
-                    client = candidate.client.upper()
-                else:
-                    client = ""
-
-                if candidate_status in ["SCREENING", "SCREEN REJECTED"]:
-                    message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
-                else:
-                    message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Previous Status : "{previous_status}"\n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
-            else:
-                message = ""
-                candidate_name = ""
                 candidate_position = ""
-                candidate_email = ""
 
-            return jsonify({
-            "message": "Candidate Status Updated Successfully",
-            "user_id": user_id,
-            "user_type": user_type,
-            "user_name": user_name,
-            "count_notification_no": count_notification_no,
-            "career_count_notification_no": career_count_notification_no,
-            "recruiter": recruiter,
-            "management": management,
-            "recruiter_email": user_email,
-            "management_email": management_email,
-            "candidate_name": candidate_name,
-            "candidate_position": candidate_position,
-            "candidate_email": candidate_email,
-            "message": message
-        })
+            if candidate.client:
+                client = candidate.client.upper()
+            else:
+                client = ""
+
+            if candidate_status in ["SCREENING", "SCREEN REJECTED"]:
+                message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
+            else:
+                message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Previous Status : "{previous_status}"\n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
+        else:
+            message = ""
+            candidate_name = ""
+            candidate_position = ""
+            candidate_email = ""
+
+        return jsonify({
+        "message": "Candidate Status Updated Successfully",
+        "user_id": user_id,
+        "user_type": user_type,
+        "user_name": user_name,
+        "count_notification_no": count_notification_no,
+        "career_count_notification_no": career_count_notification_no,
+        "recruiter": recruiter,
+        "management": management,
+        "recruiter_email": user_email,
+        "management_email": management_email,
+        "candidate_name": candidate_name,
+        "candidate_position": candidate_position,
+        "candidate_email": candidate_email,
+        "message": message
+    })
 
 @app.route('/update_candidate_careers/<int:candidate_id>/<page_no>/<search_string>', methods=['GET', 'POST'])
 @app.route('/update_candidate_careers/<int:candidate_id>/<page_no>', methods=['GET', 'POST'])
