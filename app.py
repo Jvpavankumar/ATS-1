@@ -1128,6 +1128,7 @@ def verify_token(token):
 def update_candidate(candidate_id):
     print(type(candidate_id))
     if 'user_id' in session and 'user_type' in session:
+        print("Hello")
         user_id = session['user_id']
         user_type = session['user_type']
         user_name = session['user_name']
