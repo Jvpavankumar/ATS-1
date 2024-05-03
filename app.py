@@ -8,7 +8,7 @@ from datetime import datetime
 from itsdangerous import URLSafeTimedSerializer, BadSignature
 from sqlalchemy import or_
 from sqlalchemy import and_ 
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirectF
 import psycopg2
 from datetime import date, datetime
 import ast
@@ -1418,8 +1418,10 @@ from datetime import datetime
 # @app.route('/edit_candidate/<int:candidate_id>/<int:page_no>/<search_string>', methods=['GET', 'POST'])
 @app.route('/edit_candidate/<int:candidate_id>', methods=['POST'])
 def edit_candidate(candidate_id):
-    if 'user_id' in session and 'user_type' in session:
-        user_name = session['user_name']
+        data = request.json
+        user_id = data['user_id']
+        user = User.query.filter_by(id=user_id).first()
+        user_name = user.username
         count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
                                                           Notification.recruiter_name == user_name).count()
         career_count_notification_no = Career_notification.query.filter(
@@ -1460,8 +1462,6 @@ def edit_candidate(candidate_id):
             else:
                 return jsonify({"error_message": "Candidate not found"}), 404
 
-    return jsonify({"error_message": "Unauthorized: You must log in to access this page"}), 401
-    
 
 @app.route('/edit_candidate_careers/<int:candidate_id>/<int:page_no>/<search_string>', methods=['GET', 'POST'])
 @app.route('/edit_candidate_careers/<int:candidate_id>/<int:page_no>', methods=['GET', 'POST'])
