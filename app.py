@@ -943,8 +943,8 @@ def add_candidate():
 
         elif isinstance(resume, bytes):
             resume = resume
-        else:
-            raise ValueError("Resume must be either a hexadecimal string or bytes.")
+        # else:
+        #     raise ValueError("Resume must be either a hexadecimal string or bytes.")
 
         # Check if the user is logged in
         if 'user_id' in session and 'user_type' in session:
