@@ -562,21 +562,20 @@ def recruiter_login():
         'session_timeout_msg': session_timeout_msg,
         'password_message': password_message
     })
-    
 
-import base64
+
+import hashlib
 
 @app.route('/login/management', methods=['POST'])
 def management_login():
     username = request.json.get('username')
-    encoded_password = request.json.get('password')
-    verification_msg_manager = request.args.get('verification_msg_manager')
+    password = request.json.get('password')
 
-    # Decode the encoded password
-    password = base64.b64decode(encoded_password).decode()
+    # Hash the provided password using SHA-256
+    hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
     # Check if the user exists and the password is correct
-    user = User.query.filter_by(username=username, password=password, user_type='management').first()
+    user = User.query.filter_by(username=username, password=hashed_password, user_type='management').first()
 
     if user:
         if user.is_active:  # Check if the user is active
@@ -595,7 +594,8 @@ def management_login():
     else:
         message = 'Invalid username or password'
 
-    return jsonify({'status': 'error', 'message': message, 'verification_msg_manager': verification_msg_manager})
+    return jsonify({'status': 'error', 'message': message})
+
 
 from flask import jsonify
 
