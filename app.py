@@ -1460,7 +1460,7 @@ def edit_candidate(candidate_id):
                 db.session.commit()
                 return jsonify({"message": "Candidate Details Edited Successfully"})
             else:
-                return jsonify({"error_message": "Candidate not found"}), 404
+                return jsonify({"error_message": "Candidate not found"}), 500
 
 
 @app.route('/edit_candidate_careers/<int:candidate_id>/<int:page_no>/<search_string>', methods=['GET', 'POST'])
