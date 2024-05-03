@@ -933,6 +933,7 @@ def add_candidate():
         holding_offer = data.get('holding_offer')
         resume = data.get('resume')
 
+
         # Check if the resume is a hexadecimal string and convert it to bytes
         if isinstance(resume, str):
             # Remove leading backslashes and split the string into pairs of hexadecimal digits
@@ -942,8 +943,8 @@ def add_candidate():
 
         elif isinstance(resume, bytes):
             resume = resume
-        # else:
-        #     raise ValueError("Resume must be either a hexadecimal string or bytes.")
+        else:
+            raise ValueError("Resume must be either a hexadecimal string or bytes.")
 
         # Check if the user is logged in
         if 'user_id' in session and 'user_type' in session:
