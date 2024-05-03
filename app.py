@@ -1414,7 +1414,7 @@ def logout():
 from datetime import datetime
 
 # Search String Changed
-@app.route('/edit_candidate/<int:candidate_id>/<int:page_no>/<search_string>', methods=['GET', 'POST'])
+# @app.route('/edit_candidate/<int:candidate_id>/<int:page_no>/<search_string>', methods=['GET', 'POST'])
 @app.route('/edit_candidate/<int:candidate_id>', methods=['POST'])
 def edit_candidate(candidate_id):
     if 'user_id' in session and 'user_type' in session:
@@ -1443,14 +1443,7 @@ def edit_candidate(candidate_id):
                 candidate.current_job_location = data.get('current_job_location')
                 candidate.preferred_job_location = data.get('preferred_job_location')
                 candidate.qualifications = data.get('qualifications')
-                experience = data.get('total_experience_years')
-                exp_months = data.get('total_experience_months')
-                if experience is not None and exp_months is not None:
-                    candidate.experience = f"{experience}.{exp_months}"
-                else:
-                    return jsonify({"error_message": "Experience or experience months is missing"}), 400
-                candidate.current_ctc = f"{data['currency_type_current']} {data['current_ctc']}"
-                candidate.expected_ctc = f"{data['currency_type_except']} {data['expected_ctc']}"
+                candidate.experience = data.get('experience')
                 candidate.notice_period = data.get('notice_period')
                 candidate.reason_for_job_change = data.get('reason_for_job_change')
                 candidate.linkedin_url = data.get('linkedin')
@@ -1467,7 +1460,7 @@ def edit_candidate(candidate_id):
                 return jsonify({"error_message": "Candidate not found"}), 404
 
     return jsonify({"error_message": "Unauthorized: You must log in to access this page"}), 401
-
+    
 
 @app.route('/edit_candidate_careers/<int:candidate_id>/<int:page_no>/<search_string>', methods=['GET', 'POST'])
 @app.route('/edit_candidate_careers/<int:candidate_id>/<int:page_no>', methods=['GET', 'POST'])
