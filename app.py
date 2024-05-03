@@ -521,10 +521,12 @@ def recruiter_login():
         username = request.json.get('username')
         password = request.json.get('password')
 
+        # Hash the entered password
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
         # Check if the user exists and the password is correct
-        user = User.query.filter_by(username=username, password=password, user_type='recruiter').first()
-        user_id=user.id
-        print(user_id)
+        user = User.query.filter_by(username=username, password=hashed_password, user_type='recruiter').first()
+
         if user:
             if user.is_active:  # Check if the user is active
                 if user.is_verified:
@@ -534,7 +536,7 @@ def recruiter_login():
                     session['username'] = user.username
                     session['user_name'] = user.name
                     session['JWT Token'] = secrets.token_hex(16)
-                    return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id':user_id})
+                    return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id': user.id})
                 else:
                     message = 'Your account is not verified yet. Please check your email for the verification link.'
             else:
