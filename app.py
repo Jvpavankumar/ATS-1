@@ -564,8 +564,8 @@ def management_login():
     encoded_password = request.json.get('password')
     verification_msg_manager = request.args.get('verification_msg_manager')
 
-    # Decode the encoded password
-    password = base64.b64decode(encoded_password).decode()
+    # # Decode the encoded password
+    # password = base64.b64decode(encoded_password).decode()
 
     # Check if the user exists and the password is correct
     user = User.query.filter_by(username=username, password=password, user_type='management').first()
