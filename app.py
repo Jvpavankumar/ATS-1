@@ -901,17 +901,19 @@ def allowed_file(filename):
 
 import binascii  
 
+import binascii  
+
 @app.route('/add_candidate', methods=['POST'])
 def add_candidate():
     try:
-        # Retrieve user session data
-        user_id = session.get('user_id')
-        user_type = session.get('user_type')
-        user_name = session.get('user_name')
-
+        
         # Retrieve request data from JSON
         data = request.json
-        user_id = data.get('user_id')
+        user_id = data['user_id']
+        user = User.query.filter_by(id=user_id).first()
+        user_type = user.user_type
+        user_name = user.username
+
         job_id = data.get('job_id')
         client = data.get('client')
         name = data.get('name')
@@ -943,17 +945,12 @@ def add_candidate():
 
         elif isinstance(resume, bytes):
             resume = resume
-        # else:
-        #     raise ValueError("Resume must be either a hexadecimal string or bytes.")
+        else:
+            raise ValueError("Resume must be either a hexadecimal string or bytes.")
 
-        # Check if the user is logged in
-        if 'user_id' in session and 'user_type' in session:
-            if request.method == 'POST':
-                # Retrieve the logged-in user's ID and user type from the session
-                user_id = session['user_id']
-                user_type = session['user_type']
-                user_name = session['user_name']
-
+        # # Check if the user is logged in
+        if request.method == 'POST':
+              
             # Retrieve the recruiter and management names based on user type
             if user_type == 'recruiter':
                 recruiter = User.query.get(user_id).name
@@ -1010,11 +1007,11 @@ def add_candidate():
 
             return jsonify({"message": "Candidate Added Successfully", "candidate_id": new_candidate.id})
 
-        return jsonify({"error_message": "User not logged in"})
+        return jsonify({"error_message": "Method not found"})
 
     except Exception as e:
         return jsonify({"error_message": str(e)})
-
+        
         
 from flask import jsonify
 
