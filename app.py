@@ -421,6 +421,7 @@ def verify(token):
         return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
     return jsonify({'status': 'error', 'message': 'An error occurred while verifying your account.'})
 
+import hashlib
 import random
 import string
 
@@ -429,7 +430,6 @@ def generate_random_password(length=8):
     digits = string.digits
     password = ''.join(random.choice(digits) for _ in range(length - 3))
     return "Mak" + password
-
 
 @app.route('/signup', methods=['POST'])
 def signup():
@@ -448,6 +448,8 @@ def signup():
 
             # Generate a random password
             password = generate_random_password()
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
             created_by = user_name
 
             user = User.query.filter(or_(User.username == username, User.email == email, User.name == name)).first()
@@ -455,20 +457,14 @@ def signup():
             if user:
                 return jsonify({'status': 'error', 'message': 'Account with the same Username, Email or Name Already exists.'})
 
-            new_user = User(username=username, password=password, name=name, email=email, user_type=user_type, created_by=created_by)
-
+            new_user = User(username=username, password=hashed_password, name=name, email=email, user_type=user_type, created_by=created_by)
+            
             db.session.add(new_user)
             db.session.commit()
 
-            # Generate a verification token
-            verification_token = generate_verification_token(new_user.id)
-
-            # Create the verification link
-            verification_link = url_for('verify', token=verification_token, _external=True)
-
             # Send the verification email
             msg = Message('Account Verification', sender='saiganeshkanuparthi@gmail.com', recipients=[new_user.email])
-            msg.body = f'Hello {new_user.name},\n\n We are pleased to inform you that your account has been successfully created for the ATS Makonis Talent Track Pro. Here are your login credentials:\n\nUsername: {new_user.username}\nPassword: {new_user.password}\n\nTo complete the account setup, kindly click on the verification link below : \n{verification_link}\n\n Please note that the verification link will expire after 24 hours. \n\n After successfully verifying your account, you can access the application using the following link : \n\n Application Link (Post Verification): http://vms.makonissoft.com:1818/ \n\n If you have any questions or need assistance, please feel free to reach out. \n\n Best regards, '
+            msg.body = f'Hello {new_user.name},\n\n We are pleased to inform you that your account has been successfully created for the ATS Makonis Talent Track Pro. Here are your login credentials:\n\nUsername: {new_user.username}\nPassword: {password}\n\n Please note that the verification link will expire after 24 hours. \n\n After successfully verifying your account, you can access the application using the following link : \n\n Application Link (Post Verification): https://ats-i3pk.onrender.com \n\n If you have any questions or need assistance, please feel free to reach out. \n\n Best regards, '
             mail.send(msg)
 
             return jsonify({'status': 'success', 'message': 'A verification email has been sent to your email address. Please check your inbox.'})
