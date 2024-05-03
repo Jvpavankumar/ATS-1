@@ -2251,6 +2251,9 @@ def verify_checkbox():
     db.session.commit()
     return redirect(url_for('active_users'))
 
+import hashlib
+from flask_mail import Message
+
 @app.route('/change_password', methods=['GET','POST'])
 def change_password():
     if 'user_name' in session and 'user_type' in session and 'username' in session:
@@ -2269,19 +2272,32 @@ def change_password():
             if username == form_username:
                 user = User.query.filter_by(username=username).first()
 
-                if user and user.password == old_password:
-                    if new_password == confirm_password:
-                        # Update the user's password in the database
-                        user.password = new_password
-                        db.session.commit()
-                        if user_type == 'management':
-                            return jsonify({"message": "Password changed successfully."})
+                if user:
+                    # Hash the provided old password
+                    hashed_old_password = hashlib.sha256(old_password.encode()).hexdigest()
+
+                    # Compare the hashed old password with the one stored in the database
+                    if user.password == hashed_old_password:
+                        if new_password == confirm_password:
+                            # Update the user's password in the database
+                            user.password = hashlib.sha256(new_password.encode()).hexdigest()
+                            db.session.commit()
+
+                            # Send the password change notification email
+                            msg = Message('Password Changed', sender='saiganeshkanuparthi@gmail.com.com', recipients=[user.email])
+                            msg.body = f'Hello {user.name},\n\nYour password has been successfully changed. Here are your updated credentials:\n\nUsername: {user.username}\nPassword: {new_password}'
+                            mail.send(msg)
+
+                            if user_type == 'management':
+                                return jsonify({"message": "Password changed successfully."})
+                            else:
+                                return jsonify({"message": "Password changed successfully."})
                         else:
-                            return jsonify({"message": "Password changed successfully."})
+                            return jsonify({"error": "New password and confirm password do not match."}), 400
                     else:
-                        return jsonify({"error": "New password and confirm password do not match."}), 400
+                        return jsonify({"error": "Invalid old password."}), 400
                 else:
-                    return jsonify({"error": "Invalid username or old password."}), 400
+                    return jsonify({"error": "User not found."}), 400
             else:
                 return jsonify({"error": "Logged in user does not match the provided username."}), 400
         else:
@@ -2289,7 +2305,6 @@ def change_password():
 
     else:
         return jsonify({"error": "Unauthorized: You must log in to access this page"}), 401
-    
 
 
 @app.route('/delete_job_post_message/<int:job_id>')
