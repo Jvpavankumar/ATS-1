@@ -474,6 +474,8 @@ def signup():
         return jsonify({'status': 'error', 'message': 'You must be logged in to create a recruiter account.'})
     
 
+import hashlib
+
 @app.route('/signup-onetime', methods=['POST'])
 def signup_onetime():
     if request.method == 'POST':
@@ -484,11 +486,14 @@ def signup_onetime():
         user_type = 'management'
         registration_completed = 'one_time'
 
+        # Hash the password using SHA-256
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
         user_onetime = User.query.filter_by(registration_completed='one_time').first()
         if user_onetime:
             return jsonify({'status': 'error', 'message': 'The one-time registration for this application has already been completed.'})
 
-        new_user = User(username=username, password=password, name=name,
+        new_user = User(username=username, password=hashed_password, name=name,
                         email=email, user_type=user_type, registration_completed=registration_completed)
 
         db.session.add(new_user)
@@ -500,9 +505,12 @@ def signup_onetime():
         # Create the verification link
         verification_link = url_for('verify', token=verification_token, _external=True)
 
+        # Construct the message body with username and plaintext password
+        message_body = f'Hello {new_user.name},\n\nWe are pleased to inform you that your account has been successfully created for the ATS Makonis Talent Track Pro.\n\nYour login credentials:\n\nUsername: {new_user.username}\nPassword: {password}\n\nTo complete the account setup, kindly click on the verification link below:\n{verification_link}\n\nPlease note that the verification link will expire after 24 hours.\n\nAfter successfully verifying your account, you can access the application using the following link:\n\nApplication Link (Post Verification): http://vms.makonissoft.com:1818/\n\nIf you have any questions or need assistance, please feel free to reach out.\n\nBest regards,'
+
         # Send the verification email
         msg = Message('Account Verification', sender='saiganeshkanuparthi@gmail.com', recipients=[new_user.email])
-        msg.body = f'Hello {new_user.name},\n\n We are pleased to inform you that your account has been successfully created for the ATS Makonis Talent Track Pro.\n\nTo complete the account setup, kindly click on the verification link below : \n{verification_link}\n\n Please note that the verification link will expire after 24 hours. \n\n After successfully verifying your account, you can access the application using the following link : \n\n Application Link (Post Verification): http://vms.makonissoft.com:1818/ \n\n If you have any questions or need assistance, please feel free to reach out. \n\n Best regards, '
+        msg.body = message_body
         mail.send(msg)
 
         return jsonify({'status': 'success', 'message': 'A verification email has been sent to your email address. Please check your inbox.'})
