@@ -1040,51 +1040,51 @@ def get_job_role():
 
 @app.route('/delete_candidate/<int:candidate_id>', methods=["POST"])
 def delete_candidate(candidate_id):
-    if 'user_id' in session and 'user_type' in session:
-        user_type = session['user_type']
-        user_name = session['user_name']
+    data = request.json
+    user_id = data['user_id']
+    user = User.query.filter_by(id=user_id).first()
+    user_type = user.user_type
+    username=user.username
+    
+    if user_type == 'management':
+        candidate = Candidate.query.filter_by(id=candidate_id).first()
 
-        if user_type == 'management':
-            candidate = Candidate.query.filter_by(id=candidate_id).first()
+        if candidate:
+            if request.method == "POST":
+                # Save deletion details before deleting the candidate
+                deleted_candidate = Deletedcandidate(
+                    username=username,
+                    candidate_name=candidate.name,
+                    candidate_email=candidate.email,
+                    client=candidate.client,
+                    profile=candidate.profile,
+                    status=candidate.status
+                )
+                db.session.add(deleted_candidate)
+                db.session.commit()
 
-            if candidate:
-                if request.method == "POST":
-                    # Save deletion details before deleting the candidate
-                    deleted_candidate = Deletedcandidate(
-                        username=user_name,
-                        candidate_name=candidate.name,
-                        candidate_email=candidate.email,
-                        client=candidate.client,
-                        profile=candidate.profile,
-                        status=candidate.status
-                    )
-                    db.session.add(deleted_candidate)
-                    db.session.commit()
+                # Delete the candidate
+                Candidate.query.filter_by(id=candidate_id).delete()
+                db.session.commit()
 
-                    # Delete the candidate
-                    Candidate.query.filter_by(id=candidate_id).delete()
-                    db.session.commit()
+                return jsonify({"message": "Candidate details deleted successfully"})
 
-                    return jsonify({"message": "Candidate details deleted successfully"})
+            return jsonify({
+                "candidate": {
+                    "id": candidate.id,
+                    "name": candidate.name,
+                    "email": candidate.email,
+                    "client": candidate.client,
+                    "profile": candidate.profile,
+                    "status": candidate.status
+                },
+                "user_name": username
+            })
 
-                return jsonify({
-                    "candidate": {
-                        "id": candidate.id,
-                        "name": candidate.name,
-                        "email": candidate.email,
-                        "client": candidate.client,
-                        "profile": candidate.profile,
-                        "status": candidate.status
-                    },
-                    "user_name": user_name
-                })
+        else:
+            return jsonify({"message": "Candidate not found"}), 404
 
-            else:
-                return jsonify({"error_message": "Candidate not found"}), 404
-
-        return jsonify({"error_message": "Unauthorized: Only management can delete candidates"}), 401
-
-    return jsonify({"error_message": "Unauthorized: You must log in to access this page"}), 401
+    return jsonify({"message": "Unauthorized: Only management can delete candidates"}), 401
 
 
 @app.route('/delete_candidate_recruiter/<int:candidate_id>', methods=["GET", "POST"])
