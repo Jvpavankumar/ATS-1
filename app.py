@@ -1371,8 +1371,7 @@ Thanks,
     return redirect(url_for('career_dashboard'))
 
 
-
-@@app.route('/logout', methods=['POST'])
+@app.route('/logout', methods=['POST'])
 def logout():
     data = request.json
     
