@@ -1373,7 +1373,10 @@ Thanks,
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    data = request.json
+    user_id = data['user_id']
+    user = User.query.filter_by(id=user_id).first()
+    # user_type = user.user_type
+    # user_name = user.username
     
     if data:
         user_type = data.get("user_type")
