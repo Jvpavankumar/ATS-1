@@ -1372,7 +1372,7 @@ Thanks,
 
 
 
-@app.route('/logout', methods=['POST'])
+@@app.route('/logout', methods=['POST'])
 def logout():
     data = request.json
     
@@ -1380,12 +1380,7 @@ def logout():
         user_type = data.get("user_type")
         message = data.get("message")
 
-        if user_type == "management":
-            session.clear()
-            return jsonify({"status": "success", "message": message}), 200
-        else:
-            session.clear()
-            return jsonify({"status": "success", "message": message}), 200
+        return jsonify({"status": "success", "message": message}), 200
     
     return jsonify({"status": "error", "message": "No JSON data provided"}), 400
 
