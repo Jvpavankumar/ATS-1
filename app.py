@@ -1371,21 +1371,32 @@ Thanks,
     return redirect(url_for('career_dashboard'))
 
 
+from flask import jsonify
+
 @app.route('/logout', methods=['POST'])
 def logout():
-    data=request.json
-    user_id = data['user_id']
-    user = User.query.filter_by(id=user_id).first()
-    # user_type = user.user_type
-    # user_name = user.username
+    data = request.json
     
     if data:
-        user_type = data.get("user_type")
-        message = data.get("message")
+        user_id = data.get('user_id')
+        
+        if user_id:
+            user = User.query.filter_by(id=user_id).first()
+            
+            if user:
+                user_type = user.user_type
+                user_name = user.username
+                
+                message = data.get("message")
 
-        return jsonify({"status": "success", "message": message}), 200
+                return jsonify({"status": "success", "message": message}), 200
+            
+            return jsonify({"status": "error", "message": "User not found"}), 404
+        else:
+            return jsonify({"status": "error", "message": "'user_id' not provided in JSON data"}), 400
     
     return jsonify({"status": "error", "message": "No JSON data provided"}), 400
+
 
 
 from datetime import datetime
