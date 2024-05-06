@@ -2071,74 +2071,76 @@ def download_resumes():
     return send_file(zip_filename, as_attachment=True)
 
 
-@app.route('/assign_job/<int:job_id>', methods=['GET','POST'])
+@app.route('/assign_job/<int:job_id>', methods=['POST'])
 def assign_job(job_id):
-    if 'user_name' in session:
-        user_name = session['user_name']
-    else:
-        user_name = None
+    data = request.json
+    user_id = data['user_id']
+    user = User.query.filter_by(id=user_id).first()
+    
+    if not user:
+        return jsonify({"error_message": "User not found"}), 404
+    
+    user_type = user.user_type
+    username = user.username
+    job_post = JobPost.query.get(job_id)  # Retrieve the job post by its ID
 
-    if 'user_id' in session and 'user_type' in session and session['user_type'] == 'management':
-        job_post = JobPost.query.get(job_id)  # Retrieve the job post by its ID
+    if not job_post:
+        return jsonify({"error_message": "Job not found"}), 404
 
-        if not job_post:
-            return jsonify({"error_message": "Job not found"}), 404
+    current_recruiters = job_post.recruiter.split(', ') if job_post.recruiter else []
 
-        current_recruiters = job_post.recruiter.split(', ') if job_post.recruiter else []
+    if request.method == 'POST':
+        new_recruiter_names = data.get('recruiters', [])
+        all_recruiter_names = current_recruiters + new_recruiter_names
+        joined_recruiters = ', '.join(all_recruiter_names)
+        job_post.recruiter = joined_recruiters
+        db.session.commit()
 
-        if request.method == 'POST':
-            new_recruiter_names = request.json.get('recruiters', [])
-            all_recruiter_names = current_recruiters + new_recruiter_names
-            joined_recruiters = ', '.join(all_recruiter_names)
-            job_post.recruiter = joined_recruiters
-            db.session.commit()
+        # Send notification emails to the newly assigned recruiters
+        new_recruiter_emails = [recruiter.email for recruiter in
+                                User.query.filter(User.name.in_(new_recruiter_names),
+                                                    User.user_type == 'recruiter')]
+        for email in new_recruiter_emails:
+            send_notification(email)
 
-            # Send notification emails to the newly assigned recruiters
-            new_recruiter_emails = [recruiter.email for recruiter in
-                                    User.query.filter(User.name.in_(new_recruiter_names),
-                                                      User.user_type == 'recruiter')]
-            for email in new_recruiter_emails:
-                send_notification(email)
+        # Define an empty list to hold Notification instances
+        notifications = []
 
-            # Define an empty list to hold Notification instances
-            notifications = []
-
-            if ',' in joined_recruiters:
-                recruiter_names_lst = joined_recruiters.split(',')
-                for recruiter_name in recruiter_names_lst:
-                    if recruiter_name.strip() in new_recruiter_names:
-                        notification_status = False  # Set the initial status
-                        notification = Notification(
-                            recruiter_name=recruiter_name.strip(),
-                            notification_status=notification_status
-                        )
-                        # Append each Notification instance to the notifications list
-                        notifications.append(notification)
-            else:
-                recruiter_name = joined_recruiters
-                if recruiter_name in new_recruiter_names:
+        if ',' in joined_recruiters:
+            recruiter_names_lst = joined_recruiters.split(',')
+            for recruiter_name in recruiter_names_lst:
+                if recruiter_name.strip() in new_recruiter_names:
                     notification_status = False  # Set the initial status
                     notification = Notification(
-                        recruiter_name=recruiter_name,
+                        recruiter_name=recruiter_name.strip(),
                         notification_status=notification_status
                     )
                     # Append each Notification instance to the notifications list
                     notifications.append(notification)
+        else:
+            recruiter_name = joined_recruiters
+            if recruiter_name in new_recruiter_names:
+                notification_status = False  # Set the initial status
+                notification = Notification(
+                    recruiter_name=recruiter_name,
+                    notification_status=notification_status
+                )
+                # Append each Notification instance to the notifications list
+                notifications.append(notification)
 
-            # Commit the notifications to the database session
-            db.session.add_all(notifications)
-            db.session.commit()
-            return jsonify({"message": "Job re-assigned successfully"}), 200
+        # Commit the notifications to the database session
+        db.session.add_all(notifications)
+        db.session.commit()
+        return jsonify({"message": "Job re-assigned successfully"}), 200
 
-        recruiter_names = [recruiter.name for recruiter in User.query.filter_by(user_type='recruiter')]
-        return jsonify({
-            "user_name": user_name,
-            "job_post": job_post.serialize(),
-            "current_recruiters": current_recruiters,
-            "recruiters": recruiter_names
-        })
+    recruiter_names = [recruiter.name for recruiter in User.query.filter_by(user_type='recruiter')]
+    return jsonify({
+        "user_name": username,
+        "job_post": job_post.serialize(),
+        "current_recruiters": current_recruiters,
+        "recruiters": recruiter_names
+    })
 
-    return jsonify({"error_message": "Unauthorized: You must log in as management user to access this page"}), 401
 
 
 @app.route('/assign_candidate', methods=['POST'])
