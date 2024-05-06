@@ -1785,21 +1785,49 @@ def post_job():
 
 
 
+from flask import jsonify
+
 @app.route('/update_job_status/<int:job_id>', methods=['POST'])
 def update_job_status(job_id):
+    data = request.json
+    user_id = data['user_id']
+    user = User.query.filter_by(id=user_id).first()
+
+    if not user:
+        return jsonify({"success": False, "error": "User not found"}), 404
+
+    user_type = user.user_type
+    username = user.username
+
     # Retrieve the job post from the database based on the provided job_id
     job_post = JobPost.query.get(job_id)
 
     if job_post:
+        try:
+            # Extract the new job status from the form data
+            new_job_status = data['new_job_status']
 
-        new_job_status = request.form['new_job_status']
-        job_post.job_status = new_job_status
+            # Update the job status
+            job_post.job_status = new_job_status
 
-        db.session.commit()
+            # Commit the changes to the database
+            db.session.commit()
+
+            # Return a JSON response indicating success
+            return jsonify({"success": True, "message": "Job status updated successfully"})
         
+        except KeyError:
+            # If 'new_job_status' key is missing in form data
+            return jsonify({"success": False, "error": "Missing 'new_job_status' in form data"}), 400
+        
+        except Exception as e:
+            # Handle other exceptions
+            db.session.rollback()  # Rollback any changes made to the session
+            return jsonify({"success": False, "error": str(e)}), 500
 
-        return redirect(url_for('view_all_jobs'))
-    return "Job post not found"
+    # If job_post is None (job not found)
+    return jsonify({"success": False, "error": "Job post not found"}), 404
+
 
 @app.route('/edit_job_post/<int:job_id>', methods=['GET', 'POST'])
 def edit_job_post(job_id):
