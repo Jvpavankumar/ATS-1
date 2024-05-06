@@ -1387,15 +1387,13 @@ def logout():
                 user_type = user.user_type
                 user_name = user.username
                 
-                message = data.get("message")
-
-                return jsonify({"status": "success", "message": message}), 200
+                return jsonify({"message": "Logged out successfully"}), 200
             
-            return jsonify({"status": "error", "message": "User not found"}), 404
+            return jsonify({"message": "User not found"}), 404
         else:
-            return jsonify({"status": "error", "message": "'user_id' not provided in JSON data"}), 400
+            return jsonify({"message": "'user_id' not provided in JSON data"}), 400
     
-    return jsonify({"status": "error", "message": "No JSON data provided"}), 400
+    return jsonify({"message": "No JSON data provided"}), 400
 
 
 
