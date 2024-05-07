@@ -991,7 +991,7 @@ def add_candidate():
         return jsonify({"error_message": "Method not found"})
 
     except Exception as e:
-        return jsonify({"error_message": str(e)})
+        return jsonify({"error_message": str(e)}),500
         
         
 from flask import jsonify
