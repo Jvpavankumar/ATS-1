@@ -666,10 +666,6 @@ def dashboard():
                 candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None))).all()  # Filter candidates by recruiter's name
                 candidates = sorted(candidates, key=lambda candidate: candidate.id)
                 jobs = JobPost.query.filter_by(recruiter=recruiter.name).all()  # Filter jobs by recruiter's name
-                count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
-                                                                  Notification.recruiter_name == user_name).count()
-                career_count_notification_no = Career_notification.query.filter(Career_notification.notification_status == 'false',
-                                                                  Career_notification.recruiter_name == user_name).count()
                 response_data = {
                     'user': {
                         'id': recruiter.id,
@@ -738,8 +734,10 @@ def dashboard():
                     } for job in jobs],
                     'edit_candidate_message': edit_candidate_message,
                     'page_no': page_no,
-                    'count_notification_no': count_notification_no,
-                    'career_count_notification_no': career_count_notification_no
+                    'count_notification_no': Notification.query.filter(Notification.notification_status == 'false',
+                                                                        Notification.recruiter_name == user_name).count(),
+                    'career_count_notification_no': Career_notification.query.filter(Career_notification.notification_status == 'false',
+                                                                                      Career_notification.recruiter_name == user_name).count()
                 }
         elif user_type == 'management':
             users = User.query.all()
@@ -884,7 +882,7 @@ def dashboard():
                     } for candidate in candidates],
                 }
     else:
-        response_data = {"message": "User ID or User Type missing"},500
+        response_data = {"message": "User ID or User Type missing"}
 
     # Convert date objects to string representations before returning the response
     for job in response_data.get('jobs', []):
