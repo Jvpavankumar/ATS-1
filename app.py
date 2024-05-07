@@ -708,9 +708,10 @@ def dashboard():
                         'resume': candidate.resume,
                         'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                         'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
-                        'buyout': candidate.buyout
+                        'buyout': candidate.buyout,
                         'date_created':candidate.date_created,
                         'time_created':candidate.time_created
+
             
                         # Add more attributes as needed
                     } for candidate in candidates],
