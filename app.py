@@ -732,7 +732,7 @@ def dashboard():
                         'notification': job.notification
                         # Add more attributes as needed
                     } for job in jobs],
-                    'count_notification_no': count_notification_no,
+                    # 'count_notification_no': count_notification_no,
                     'edit_candidate_message': edit_candidate_message,
                     'page_no': page_no,
                     'career_count_notification_no': career_count_notification_no
