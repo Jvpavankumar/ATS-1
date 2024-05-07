@@ -711,6 +711,30 @@ def dashboard():
 
                         # Add more attributes as needed
                     } for candidate in candidates],
+                    'jobs': [{
+                    'id': job.id,
+                    'client': job.client,
+                    'experience_min': job.experience_min,
+                    'experience_max': job.experience_max,
+                    'budget_min': job.budget_min,
+                    'budget_max': job.budget_max,
+                    'location': job.location,
+                    'shift_timings': job.shift_timings,
+                    'notice_period': job.notice_period,
+                    'role': job.role,
+                    'detailed_jd': job.detailed_jd,
+                    'jd_pdf': job.jd_pdf,
+                    'mode': job.mode,
+                    'recruiter': job.recruiter,
+                    'management': job.management,
+                    'date_created': job.date_created,
+                    'time_created': job.time_created,
+                    'job_status': job.job_status,
+                    'job_type': job.job_type,
+                    'skills': job.skills,
+                    'notification': job.notification
+                    # Add more attributes as needed
+                } for job in jobs],
                     'candidate_message': candidate_message,
                     'update_candidate_message': update_candidate_message,
                     'count_notification_no': count_notification_no,
