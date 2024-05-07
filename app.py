@@ -638,8 +638,6 @@ def candidate_details(candidate_id, user_type, page_no):
 
 
 
-import json
-
 @app.route('/dashboard', methods=['POST'])
 def dashboard():
     data = request.json
@@ -653,9 +651,11 @@ def dashboard():
     update_candidate_message = data.get('update_candidate_message')
     delete_message = data.get("delete_message")
 
+    # data = request.json
     user_id = data['user_id']
-    user_type = data.get('user_type')
-    user_name = data.get('user_name')
+    user = User.query.filter_by(id=user_id).first()
+    user_type = user.user_type
+    user_name = user.username
 
     response_data = {}
 
@@ -666,6 +666,10 @@ def dashboard():
                 candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None))).all()  # Filter candidates by recruiter's name
                 candidates = sorted(candidates, key=lambda candidate: candidate.id)
                 jobs = JobPost.query.filter_by(recruiter=recruiter.name).all()  # Filter jobs by recruiter's name
+                count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
+                                                                  Notification.recruiter_name == user_name).count()
+                career_count_notification_no = Career_notification.query.filter(Career_notification.notification_status == 'false',
+                                                                  Career_notification.recruiter_name == user_name).count()
                 response_data = {
                     'user': {
                         'id': recruiter.id,
@@ -734,10 +738,8 @@ def dashboard():
                     } for job in jobs],
                     'edit_candidate_message': edit_candidate_message,
                     'page_no': page_no,
-                    'count_notification_no': Notification.query.filter(Notification.notification_status == 'false',
-                                                                        Notification.recruiter_name == user_name).count(),
-                    'career_count_notification_no': Career_notification.query.filter(Career_notification.notification_status == 'false',
-                                                                                      Career_notification.recruiter_name == user_name).count()
+                    'count_notification_no': count_notification_no,
+                    'career_count_notification_no': career_count_notification_no
                 }
         elif user_type == 'management':
             users = User.query.all()
@@ -889,7 +891,6 @@ def dashboard():
         job['date_created'] = job['date_created'].isoformat()
 
     return Response(json.dumps(response_data, default=str), content_type='application/json')
-
 
 
 # Mocked function for demonstration
