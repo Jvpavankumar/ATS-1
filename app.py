@@ -665,7 +665,7 @@ def dashboard():
             if recruiter:
                 candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None))).all()  # Filter candidates by recruiter's name
                 candidates = sorted(candidates, key=lambda candidate: candidate.id)
-                jobs = JobPost.query.filter_by(recruiter=recruiter.name).all()  # Filter jobs by recruiter's name
+                jobs = JobPost.query.filter_by(recruiter=user_name).all()  # Filter jobs by recruiter's name
                 count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
                                                                   Notification.recruiter_name == user_name).count()
                 career_count_notification_no = Career_notification.query.filter(Career_notification.notification_status == 'false',
