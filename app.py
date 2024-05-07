@@ -1592,31 +1592,33 @@ def allowed_file(filename):
 
 from flask import send_file
 
-@app.route('/download_resume/<int:candidate_id>')
+import io
+import os
+import base64
+from flask import redirect, url_for, send_file
+from your_module import Candidate  # Import your Candidate model from your_module
+
+@app.route('/download_resume/<int:candidate_id>', methods=['GET'])
 def download_resume(candidate_id):
     candidate = Candidate.query.get(candidate_id)
+
     if candidate is None or candidate.resume is None:
         return redirect(url_for('dashboard'))
 
-    # Save the resume file from the database
-    resume_file = io.BytesIO(candidate.resume)
-    is_pdf = resume_file.getvalue().startswith(b"%PDF")
-    if is_pdf : 
-        resume_filename = f"{candidate.name}_resume.pdf"  # Set the filename as desired
-        resume_path = os.path.join(app.config['UPLOAD_FOLDER'], resume_filename)
-        with open(resume_path, 'wb') as file:
-            file.write(candidate.resume)
+    # Decode the base64 encoded resume
+    resume_data = candidate.resume.split(',')[1]  # Get the data part after the comma
+    resume_bytes = base64.b64decode(resume_data)
 
-        # Send the saved resume file for download
-        return send_file(resume_path, as_attachment=True)
+    # Determine the file extension
+    if candidate.resume.startswith("data:application/pdf"):
+        resume_filename = f"{candidate.name}_resume.pdf"
     else:
-        resume_filename = f"{candidate.name}_resume.docx"  # Set the filename as desired
-        resume_path = os.path.join(app.config['UPLOAD_FOLDER'], resume_filename)
-        with open(resume_path, 'wb') as file:
-            file.write(candidate.resume)
+        resume_filename = f"{candidate.name}_resume.docx"
 
-        # Send the saved resume file for download
-        return send_file(resume_path, as_attachment=True)
+    # Send the resume data for download
+    return send_file(io.BytesIO(resume_bytes),
+                     attachment_filename=resume_filename,
+                     as_attachment=True)
 
 # @app.route('/post_job', methods=['GET', 'POST'])
 @app.route('/post_job', methods=['POST'])
