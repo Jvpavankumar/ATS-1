@@ -1596,9 +1596,8 @@ import io
 import os
 import base64
 from flask import redirect, url_for, send_file
-from your_module import Candidate  # Import your Candidate model from your_module
 
-@app.route('/download_resume/<int:candidate_id>', methods=['GET'])
+@app.route('/download_resume/<int:candidate_id>', methods=['GET','POST'])
 def download_resume(candidate_id):
     candidate = Candidate.query.get(candidate_id)
 
