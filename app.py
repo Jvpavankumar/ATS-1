@@ -884,7 +884,7 @@ def dashboard():
                     } for candidate in candidates],
                 }
     else:
-        response_data = {"message": "User ID or User Type missing"}
+        response_data = {"message": "User ID or User Type missing"},500
 
     # Convert date objects to string representations before returning the response
     for job in response_data.get('jobs', []):
