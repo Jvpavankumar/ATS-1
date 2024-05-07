@@ -665,10 +665,7 @@ def dashboard():
             if recruiter:
                 candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None))).all()  # Filter candidates by recruiter's name
                 candidates = sorted(candidates, key=lambda candidate: candidate.id)
-                count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
-                                                                  Notification.recruiter_name == user_name).count()
-                career_count_notification_no = Career_notification.query.filter(Career_notification.notification_status == 'false',
-                                                                  Career_notification.recruiter_name == user_name).count()
+                jobs = JobPost.query.filter_by(recruiter=recruiter.name).all()  # Filter jobs by recruiter's name
                 response_data = {
                     'user': {
                         'id': recruiter.id,
@@ -708,35 +705,33 @@ def dashboard():
                         'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                         'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
                         'buyout': candidate.buyout
-
+            
                         # Add more attributes as needed
                     } for candidate in candidates],
                     'jobs': [{
-                    'id': job.id,
-                    'client': job.client,
-                    'experience_min': job.experience_min,
-                    'experience_max': job.experience_max,
-                    'budget_min': job.budget_min,
-                    'budget_max': job.budget_max,
-                    'location': job.location,
-                    'shift_timings': job.shift_timings,
-                    'notice_period': job.notice_period,
-                    'role': job.role,
-                    'detailed_jd': job.detailed_jd,
-                    'jd_pdf': job.jd_pdf,
-                    'mode': job.mode,
-                    'recruiter': job.recruiter,
-                    'management': job.management,
-                    'date_created': job.date_created,
-                    'time_created': job.time_created,
-                    'job_status': job.job_status,
-                    'job_type': job.job_type,
-                    'skills': job.skills,
-                    'notification': job.notification
-                    # Add more attributes as needed
-                } for job in jobs],
-                    'candidate_message': candidate_message,
-                    'update_candidate_message': update_candidate_message,
+                        'id': job.id,
+                        'client': job.client,
+                        'experience_min': job.experience_min,
+                        'experience_max': job.experience_max,
+                        'budget_min': job.budget_min,
+                        'budget_max': job.budget_max,
+                        'location': job.location,
+                        'shift_timings': job.shift_timings,
+                        'notice_period': job.notice_period,
+                        'role': job.role,
+                        'detailed_jd': job.detailed_jd,
+                        'jd_pdf': job.jd_pdf,
+                        'mode': job.mode,
+                        'recruiter': job.recruiter,
+                        'management': job.management,
+                        'date_created': job.date_created,
+                        'time_created': job.time_created,
+                        'job_status': job.job_status,
+                        'job_type': job.job_type,
+                        'skills': job.skills,
+                        'notification': job.notification
+                        # Add more attributes as needed
+                    } for job in jobs],
                     'count_notification_no': count_notification_no,
                     'edit_candidate_message': edit_candidate_message,
                     'page_no': page_no,
