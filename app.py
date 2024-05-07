@@ -917,17 +917,17 @@ def add_candidate():
         resume = data.get('resume')
 
 
-        # Check if the resume is a hexadecimal string and convert it to bytes
-        if isinstance(resume, str):
-            # Remove leading backslashes and split the string into pairs of hexadecimal digits
-            hex_string = resume.replace("\\", "").replace("\\", "")
-            # Decode the hexadecimal string to bytes using binascii.unhexlify()
-            resume = binascii.unhexlify(hex_string)
+        # # Check if the resume is a hexadecimal string and convert it to bytes
+        # if isinstance(resume, str):
+        #     # Remove leading backslashes and split the string into pairs of hexadecimal digits
+        #     hex_string = resume.replace("\\", "").replace("\\", "")
+        #     # Decode the hexadecimal string to bytes using binascii.unhexlify()
+        #     resume = binascii.unhexlify(hex_string)
 
-        elif isinstance(resume, bytes):
-            resume = resume
-        # else:
-        #     raise ValueError("Resume must be either a hexadecimal string or bytes.")
+        # elif isinstance(resume, bytes):
+        #     resume = resume
+        # # else:
+        # #     raise ValueError("Resume must be either a hexadecimal string or bytes.")
 
         # # Check if the user is logged in
         if request.method == 'POST':
