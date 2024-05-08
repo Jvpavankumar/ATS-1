@@ -581,11 +581,14 @@ def management_login():
     # Check if the user exists and the password is correct
     user = User.query.filter_by(username=username, password=hashed_password, user_type='management').all()
 
-    for users in user:
-        print(users.password)
+    # for users in user:
+    #     print(users.password)
 
-    print(hashed_password,user.password)
+    # print(hashed_password,user.password)
     if user:
+        user = users[0]
+
+        print(user.password)  # Print the password of the user
         if user.is_active:  # Check if the user is active
             if user.is_verified:
                 # Set the user session variables
