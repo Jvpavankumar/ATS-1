@@ -443,12 +443,7 @@ def signup():
         name = request.json.get('name')
         email = request.json.get('email')
         user_type = request.json.get('user_type')
-        # created_by = request.json.get('user_name')  # Extracting user_name from request
-
-        # Check if required fields are provided
-        # if not all([username, name, email, user_type, created_by]):
-        #     return jsonify({'status': 'error', 'message': 'All fields are required'})
-
+        
         # Generate a random password
         password = generate_random_password()
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
@@ -456,9 +451,9 @@ def signup():
         user = User.query.filter(or_(User.username == username, User.email == email, User.name == name)).first()
 
         if user:
-            return jsonify({'status': 'error', 'message': 'Account with the same Username, Email or Name Already exists.'})
+            return jsonify({'status': 'error', 'message': 'Account with the same Username, Email, or Name already exists.'})
 
-        new_user = User(username=username, password=hashed_password, name=name, email=email, user_type=user_type, created_by=created_by)
+        new_user = User(username=username, password=hashed_password, name=name, email=email, user_type=user_type, created_by='')  # created_by is empty for now
         
         db.session.add(new_user)
         db.session.commit()
@@ -471,7 +466,7 @@ def signup():
         return jsonify({'message': 'A verification email has been sent to your email address. Please check your inbox.'})
     else:
         return jsonify({'message': 'You do not have permission to create recruiter accounts.'})
-    
+
 
 import hashlib
 
