@@ -1664,7 +1664,7 @@ def post_job():
         data = request.json
         user_id = data['user_id']
         user = User.query.filter_by(id=user_id).first()
-        user_name = user.username
+        # user_name = user.username
         # Check if the "user_name" field exists
         if user_name:
             user_type = user.user_type
