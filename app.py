@@ -2364,17 +2364,17 @@ def change_password():
                         else:
                             return jsonify({"message": "Password changed successfully for regular user."})
                     else:
-                        return jsonify({"error": "New password and confirm password do not match."}), 400
+                        return jsonify({"message": "New password and confirm password do not match."}) 
                 else:
-                    return jsonify({"error": "Invalid old password."}), 400
+                    return jsonify({"message": "Invalid old password."})
             else:
-                return jsonify({"error": "Logged in user does not match the provided username."}), 400
+                return jsonify({"message": "Logged in user does not match the provided username."})
         else:
-            return jsonify({"error": "User not found."}), 400
+            return jsonify({"message": "User not found."})
     else:
-        return jsonify({"error": "No JSON data provided."}), 400
+        return jsonify({"message": "No JSON data provided."})
 
-    # return jsonify({"error": "Unauthorized: You must log in to access this page"}), 400
+    # return jsonify({"error": "Unauthorized: You must log in to access this page"})
 
 
 @app.route('/delete_job_post_message/<int:job_id>')
