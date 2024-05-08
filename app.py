@@ -434,6 +434,7 @@ def generate_random_password(length=8):
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.json
+    print(data)
     user_id = data['user_id']
     user = User.query.filter_by(id=user_id).first()
     user_type = user.user_type
