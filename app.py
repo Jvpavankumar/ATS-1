@@ -443,11 +443,11 @@ def signup():
         name = request.json.get('name')
         email = request.json.get('email')
         user_type = request.json.get('user_type')
-        created_by = request.json.get('user_name')  # Extracting user_name from request
+        # created_by = request.json.get('user_name')  # Extracting user_name from request
 
         # Check if required fields are provided
-        if not all([username, name, email, user_type, created_by]):
-            return jsonify({'status': 'error', 'message': 'All fields are required'})
+        # if not all([username, name, email, user_type, created_by]):
+        #     return jsonify({'status': 'error', 'message': 'All fields are required'})
 
         # Generate a random password
         password = generate_random_password()
