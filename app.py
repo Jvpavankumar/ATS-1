@@ -2281,8 +2281,8 @@ def update_user_status():
     try:
         user = User.query.filter_by(username=username).first()
         if user:
-            user.is_verified = new_status
-            db.session.commit()
+            # user.is_verified = new_status
+            # db.session.commit()
 
             # Fetch updated active users list
             active_users_manager = User.query.filter_by(is_active=True, user_type='management').all()
