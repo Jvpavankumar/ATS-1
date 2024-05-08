@@ -2318,15 +2318,13 @@ from flask_mail import Message
 
 @app.route('/change_password', methods=['GET','POST'])
 def change_password():
-    if 'user_name' in session and 'user_type' in session and 'username' in session:
-        user_name = session['user_name']
-        user_type = session['user_type']
-        username = session['username']
-
-        data = request.json
-
+    data = request.json
+    user_id = data['user_id']
+    user = User.query.filter_by(id=user_id).first()
+    user_type = user.user_type
+    user_name = user.username
         if data:
-            form_username = data.get('username')
+            username = data.get('username')
             old_password = data.get('old_password')
             new_password = data.get('new_password')
             confirm_password = data.get('confirm_password')
