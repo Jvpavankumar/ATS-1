@@ -2329,7 +2329,7 @@ def change_password():
             new_password = data.get('new_password')
             confirm_password = data.get('confirm_password')
 
-            if username == form_username:
+            if username == user_name:
                 user = User.query.filter_by(username=username).first()
 
                 if user:
