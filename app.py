@@ -1676,8 +1676,8 @@ def post_job():
                 mode = data.get('mode')
                 job_status = data.get('job_status')
                 job_type = data.get('job_type')
-                skills = data.get('skills'),
-                Job_Type_details=data.get('Job_Type_details')
+                # skills = data.get('skills')
+                # Job_Type_details=data.get('Job_Type_details')
 
                 if job_type == 'Contract':
                     Job_Type_details = data.get('Job_Type_details')
@@ -1712,8 +1712,8 @@ def post_job():
                     management=user.username,
                     job_status=job_status,
                     job_type=job_type,
-                    skills=skills,
-                    Job_Type_details=Job_Type_details
+                    skills=skills
+                    # Job_Type_details=Job_Type_details
                 )
 
                 new_job_post.notification = 'no'
