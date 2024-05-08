@@ -570,42 +570,42 @@ def recruiter_login():
 
 import hashlib
 
+import hashlib
+
 @app.route('/login/management', methods=['POST'])
 def management_login():
     username = request.json.get('username')
     password = request.json.get('password')
-
-    # Hash the provided password using SHA-256
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()
-
-    # Check if the user exists and the password is correct
-    user = User.query.filter_by(username=username, password=hashed_password, user_type='management').all()
-
-    # for users in user:
-    #     print(users.password)
-
-    # print(hashed_password,user.password)
+    verification_msg_manager = request.args.get('verification_msg_manager')
+    
+    # Check if the user exists
+    user = User.query.filter_by(username=username, user_type='management').first()
+    
     if user:
-        user = users[0]
-
-        print(user.password)  # Print the password of the user
-        if user.is_active:  # Check if the user is active
-            if user.is_verified:
-                # Set the user session variables
-                session['user_id'] = user.id
-                session['user_type'] = user.user_type
-                session['username'] = user.username
-                session['user_name'] = user.name
-                session['JWT Token'] = secrets.token_hex(16)
-                return jsonify({'status': 'success', 'redirect': url_for('dashboard'), 'user_id': user.id})
+        # Hash the provided password using the same hash function and parameters used to hash the passwords in the database
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        
+        # Compare the hashed password with the hashed password stored in the database
+        if hashed_password == user.password:
+            if user.is_active:  # Check if the user is active
+                if user.is_verified:
+                    # Set the user session variables
+                    session['user_id'] = user.id
+                    session['user_type'] = user.user_type
+                    session['username'] = user.username
+                    session['user_name'] = user.name
+                    session['JWT Token'] = secrets.token_hex(16)
+                    return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id':user.id})
+                else:
+                    message = 'Your account is not verified yet. Please check your email for the verification link.'
             else:
-                message = 'Your account is not verified yet. Please check your email for the verification link.'
+                message = 'Your account is not active. Please contact the administrator.'
         else:
-            message = 'Your account is not active. Please contact the administrator.'
+            message = 'Invalid username or password'
     else:
         message = 'Invalid username or password'
 
-    return jsonify({'status': 'error', 'message': message})
+    return jsonify({'status': 'error', 'message': message, 'verification_msg_manager': verification_msg_manager})
 
 
 from flask import jsonify
