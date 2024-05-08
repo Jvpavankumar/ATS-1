@@ -2324,15 +2324,15 @@ def update_user_status():
         return jsonify({"message": "Error updating user status", "error": str(e)}), 500
 
         
-@app.route('/verify_checkbox', methods=['POST'])
-def verify_checkbox():
-    data = request.json
-    user_id = data.get('userId')
-    checked = data.get('checked')
-    user = User.query.get(user_id)
-    user.is_verified = checked
-    db.session.commit()
-    return redirect(url_for('active_users'))
+# @app.route('/verify_checkbox', methods=['POST'])
+# def verify_checkbox():
+#     data = request.json
+#     user_id = data.get('userId')
+#     checked = data.get('checked')
+#     user = User.query.get(user_id)
+#     user.is_verified = checked
+#     db.session.commit()
+#     return redirect(url_for('active_users'))
 
 import hashlib
 from flask_mail import Message
