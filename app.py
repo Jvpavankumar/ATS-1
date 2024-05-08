@@ -378,6 +378,8 @@ def generate_otp():
     
 
    
+import hashlib
+
 @app.route('/reset_password', methods=['POST'])
 def reset_password():
     # data=request.json
@@ -387,24 +389,31 @@ def reset_password():
         otp = request.json['otp']
         new_password = request.json.get('new_password')
         confirm_password = request.json.get('confirm_password')
-
+        new_password_hashed = hashlib.sha256(new_password.encode()).hexdigest()
         # user = User.query.filter_by(username=username, email=email).first()
         user = User.query.filter_by(otp=otp).first()
-
+        old_password_hashed = hashlib.sha256(new_password.encode()).hexdigest()
         if user and user.otp == otp and new_password == confirm_password and user.user_type == 'recruiter':
-            # Update the user's password in the database
-            user.password = new_password
-            db.session.commit()
-            return jsonify({'status': 'success', 'message': 'Password changed successfully.'})
+            if new_password_hashed != old_password_hashed:
+                # Update the user's password in the database
+                user.password = new_password
+                db.session.commit()
+                return jsonify({ 'message': 'Password changed successfully.'})
+            else:
+                return jsonify({ 'message': 'New password is same as the old password'})
         elif user and user.otp == otp and new_password == confirm_password and user.user_type == 'management':
-            # Update the user's password in the database
-            user.password = new_password
-            db.session.commit()
-            return jsonify({'status': 'success', 'message': 'Password changed successfully.'})
+            if new_password_hashed != old_password_hashed:
+                # Update the user's password in the database
+                user.password = new_password
+                db.session.commit()
+                return jsonify({ 'message': 'Password changed successfully.'})
+            else:
+                return jsonify({ 'message': 'New password is same as the old password'})
         else:
-            return jsonify({'status': 'error', 'message': 'Invalid OTP or password confirmation. Please try again.'})
+            return jsonify({ 'message': 'Invalid OTP or password confirmation. Please try again.'})
 
-    return jsonify({'status': 'error', 'message': 'Invalid request method.'})
+    return jsonify({ 'message': 'Invalid request method.'})
+    
 
 @app.route('/verify/<token>')
 def verify(token):
