@@ -396,7 +396,7 @@ def reset_password():
         if user and user.otp == otp and new_password == confirm_password and user.user_type == 'recruiter':
             if new_password_hashed != old_password_hashed:
                 # Update the user's password in the database
-                user.password = new_password
+                user.password = new_password_hashed
                 db.session.commit()
                 return jsonify({ 'message': 'Password changed successfully.'})
             else:
@@ -404,7 +404,7 @@ def reset_password():
         elif user and user.otp == otp and new_password == confirm_password and user.user_type == 'management':
             if new_password_hashed != old_password_hashed:
                 # Update the user's password in the database
-                user.password = new_password
+                user.password = new_password_hashed
                 db.session.commit()
                 return jsonify({ 'message': 'Password changed successfully.'})
             else:
