@@ -582,7 +582,7 @@ def management_login():
     user = User.query.filter_by(username=username, password=hashed_password, user_type='management').all()
 
     for users in user:
-        print(users)
+        print(users.password)
 
     print(hashed_password,user.password)
     if user:
