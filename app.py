@@ -1644,6 +1644,7 @@ def download_resume(candidate_id):
                      attachment_filename=resume_filename,
                      as_attachment=True)
 
+
 # @app.route('/post_job', methods=['GET', 'POST'])
 @app.route('/post_job', methods=['POST'])
 def post_job():
@@ -1652,48 +1653,34 @@ def post_job():
         data = request.json
         user_id = data['user_id']
         user = User.query.filter_by(id=user_id).first()
-        user_type = user.user_type
         user_name = user.username
         # Check if the "user_name" field exists
         if user_name:
-            # # Continue processing the request
-            # user_id = json_data.get('user_id')
-            # user_type = json_data.get('user_type')
+            user_type = user.user_type
 
             if user_type == 'management':
-                if user_type == 'recruiter':
-                    recruiter_names = [User.query.get(user_id).name]
-                    management = None
-                elif user_type == 'management':
-                    management = User.query.get(user_id).name
-                else:
-                    management = None
-
-                # Retrieve other form data from the JSON request
-                client = json_data.get('client')
-                experience_min = json_data.get('experience_min')
-                experience_max = json_data.get('experience_max')
-                budget_min = json_data.get('budget_min')
-                budget_max = json_data.get('budget_max')
-                currency_type_min = json_data.get('currency_type_min')
-                currency_type_max = json_data.get('currency_type_max')
+                client = data.get('client')
+                experience_min = data.get('experience_min')
+                experience_max = data.get('experience_max')
+                budget_min = data.get('budget_min')
+                budget_max = data.get('budget_max')
+                currency_type_min = data.get('currency_type_min')
+                currency_type_max = data.get('currency_type_max')
                 budget_min = currency_type_min + ' ' + budget_min
-                budget_max = currency_type_max + ' ' + budget_max  
-                location = json_data.get('location')
-                shift_timings = json_data.get('shift_timings')
-                notice_period = json_data.get('notice_period')
-                role = json_data.get('role')
-                detailed_jd = json_data.get('detailed_jd')
-                mode = json_data.get('mode')
-                job_status = json_data.get('job_status')
-                job_type = json_data.get('Job_Type')
-                skills = json_data.get('skills')
+                budget_max = currency_type_max + ' ' + budget_max
+                location = data.get('location')
+                shift_timings = data.get('shift_timings')
+                notice_period = data.get('notice_period')
+                role = data.get('role')
+                detailed_jd = data.get('detailed_jd')
+                mode = data.get('mode')
+                job_status = data.get('job_status')
+                job_type = data.get('job_type')
+                skills = data.get('skills')
 
                 if job_type == 'Contract':
-                    Job_Type_details = json_data.get('Job_Type_details')
+                    Job_Type_details = data.get('Job_Type_details')
                     job_type = job_type + '(' + Job_Type_details + ' Months )'
-                else:
-                    pass
 
                 filename = None
                 jd_binary = None
@@ -1703,12 +1690,8 @@ def post_job():
                         # Convert the resume file to binary data
                         jd_binary = jd_file.read()
                         filename = secure_filename(jd_file.filename)
-                    else:
-                        pass
-                else:
-                    pass
 
-                recruiter_names = json_data.get('recruiter', [])
+                recruiter_names = data.get('recruiter', [])
                 joined_recruiters = ', '.join(recruiter_names)
 
                 new_job_post = JobPost(
@@ -1722,15 +1705,15 @@ def post_job():
                     notice_period=notice_period,
                     role=role,
                     detailed_jd=detailed_jd,
-                    jd_pdf = jd_binary,
+                    jd_pdf=jd_binary,
                     mode=mode,
                     recruiter=joined_recruiters,
-                    management=management,
+                    management=user.username,
                     job_status=job_status,
-                    job_type = job_type,
+                    job_type=job_type,
                     skills=skills
                 )
-                
+
                 new_job_post.notification = 'no'
                 new_job_post.date_created = date.today()
                 new_job_post.time_created = datetime.now().time()
@@ -1748,7 +1731,6 @@ def post_job():
                         )
                         # Append each Notification instance to the notifications list
                         notifications.append(notification)
-                        db.session.add_all(notifications)
                 else:
                     recruiter_name = joined_recruiters
                     notification_status = False
@@ -1757,17 +1739,18 @@ def post_job():
                         notification_status=notification_status
                     )
                     # Append each Notification instance to the notifications list
-                    db.session.add(notification)
-
-                # Associate the notifications list with the new_job_post object
-                new_job_post.notifications = notifications
+                    notifications.append(notification)
 
                 # Add the new_job_post and all associated notifications to the session
                 db.session.add(new_job_post)
+                db.session.add_all(notifications)
                 db.session.commit()
 
                 # Retrieve the email addresses of the recruiters
-                recruiter_emails = [recruiter.email for recruiter in User.query.filter(User.name.in_(recruiter_names), User.user_type == 'recruiter',User.is_active == True, User.is_verified == True)]
+                recruiter_emails = [recruiter.email for recruiter in User.query.filter(User.username.in_(recruiter_names),
+                                                                                         User.user_type == 'recruiter',
+                                                                                         User.is_active == True,
+                                                                                         User.is_verified == True)]
                 for email in recruiter_emails:
                     send_notification(email)
 
@@ -1783,7 +1766,6 @@ def post_job():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 
 from flask import jsonify
