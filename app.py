@@ -392,7 +392,7 @@ def reset_password():
         new_password_hashed = hashlib.sha256(new_password.encode()).hexdigest()
         # user = User.query.filter_by(username=username, email=email).first()
         user = User.query.filter_by(otp=otp).first()
-        old_password_hashed = hashlib.sha256(new_password.encode()).hexdigest()
+        old_password_hashed = hashlib.sha256(user.password.encode()).hexdigest()
         if user and user.otp == otp and new_password == confirm_password and user.user_type == 'recruiter':
             if new_password_hashed != old_password_hashed:
                 # Update the user's password in the database
