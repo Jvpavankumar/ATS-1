@@ -579,7 +579,11 @@ def management_login():
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
 
     # Check if the user exists and the password is correct
-    user = User.query.filter_by(username=username, password=hashed_password, user_type='management').first()
+    user = User.query.filter_by(username=username, password=hashed_password, user_type='management').all()
+
+    for users in user:
+        print(users)
+
     print(hashed_password,user.password)
     if user:
         if user.is_active:  # Check if the user is active
