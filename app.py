@@ -2349,8 +2349,9 @@ def change_password():
                 hashed_old_password = hashlib.sha256(old_password.encode()).hexdigest()
                 if user.password == hashed_old_password:
                     if new_password == confirm_password:
-                        # Update the user's password in the database
-                        user.password = hashlib.sha256(new_password.encode()).hexdigest()
+                        # Hash the new password before storing it in the database
+                        hashed_new_password = hashlib.sha256(new_password.encode()).hexdigest()
+                        user.password = hashed_new_password
                         db.session.commit()
 
                         # Send the password change notification email
@@ -2373,7 +2374,7 @@ def change_password():
     else:
         return jsonify({"error": "No JSON data provided."}), 400
 
-    return jsonify({"error": "Unauthorized: You must log in to access this page"}), 401
+    # return jsonify({"error": "Unauthorized: You must log in to access this page"}), 400
 
 
 @app.route('/delete_job_post_message/<int:job_id>')
