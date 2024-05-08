@@ -1649,16 +1649,16 @@ def download_resume(candidate_id):
 def post_job():
     try:
         # Accessing the JSON data from the request
-        json_data = request.json
-        
-        # Accessing the "user_name" field from the JSON data
-        user_name = json_data.get('user_name')
-
+        data = request.json
+        user_id = data['user_id']
+        user = User.query.filter_by(id=user_id).first()
+        user_type = user.user_type
+        user_name = user.username
         # Check if the "user_name" field exists
         if user_name:
-            # Continue processing the request
-            user_id = json_data.get('user_id')
-            user_type = json_data.get('user_type')
+            # # Continue processing the request
+            # user_id = json_data.get('user_id')
+            # user_type = json_data.get('user_type')
 
             if user_type == 'management':
                 if user_type == 'recruiter':
