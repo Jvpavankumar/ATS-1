@@ -2255,22 +2255,33 @@ def assign_candidate():
     return jsonify({"error_message": "Unauthorized: You must log in as management user to access this page"}), 401
 
 
+from flask import jsonify
+
 @app.route('/disable_user', methods=['GET', 'POST'])
 def disable_user():
-    user_name = session['user_name']
+    data=request.json
+    user_name = data['user_name']
+    user_status= data['user_status']
     if request.method == 'POST':
         username = request.form.get('user_name')
         user = User.query.filter_by(username=username).first()
+        
 
         if user is None:
-            return render_template('deactivate_user.html', message='User not found', active_users=User.query.filter_by(is_active=True).all())
+            return jsonify({'message': 'User not found'})
 
-        user.is_active = False
+        user.is_verify = user_status
         db.session.commit()
 
-        return render_template('deactivate_user.html', message='User deactivated successfully',user_name=user_name, active_users=User.query.filter_by(is_active=True).all())
+        if user_status==True:
+            return jsonify({'message': 'User Account verified successfully'})
+        else:
+            return jsonify({'message': 'User Account un-verified successfully'})
 
-    return render_template('deactivate_user.html', message='', active_users=User.query.filter_by(is_active=True).all(),user_name=user_name)
+    active_users = User.query.filter_by(is_active=True).all()
+    active_users_data = [{'username': user.username, 'email': user.email} for user in active_users]
+    return jsonify({'message': '', 'active_users': active_users_data, 'user_name': user_name})
+
 
 @app.route('/active_users', methods=['POST'])
 def update_user_status():
