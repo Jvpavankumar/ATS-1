@@ -396,7 +396,10 @@ def reset_password():
                 user.password = new_password_hashed
                 db.session.commit()
                 # Send the updated password to the user's email
-                send_email(user.email, 'Password Changed', f'Your password for username {user.username} has been successfully changed to {new_password}')
+                # send_email(user.email, 'Password Changed', f'Your password for username {user.username} has been successfully changed to {new_password}')
+                msg = Message('Password Changed', sender='saiganeshkanuparthi@gmail.com', recipients=[user.email])
+                msg.body = f'Hello {user.name},\n\nYour password has been successfully changed. Here are your updated credentials:\n\nUsername: {user.username}\nPassword: {new_password}'
+                mail.send(msg)
 
                 return jsonify({ 'message': 'Password changed successfully.'})
             else:
