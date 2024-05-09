@@ -2276,7 +2276,7 @@ def disable_user():
     user_status = data.get('user_status')
 
     if request.method == 'POST':
-        management_account_id =  # ID of management account
+        management_account_id = user_id  # ID of management account
 
         if user_id != management_account_id:
             return jsonify({'message': 'Unauthorized access. Only management account can change verification status'})
