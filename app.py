@@ -2293,19 +2293,24 @@ def disable_user():
         if management_user:
             management_user.is_verified = user_status
 
-    db.session.commit()
-
-    # Return different messages based on user_type
-    if user.user_type == 'management':
-        if user_status:
-            return jsonify({'message': 'Verification status updated for management account'}), 200
-        else:
-            return jsonify({'message': 'Verification status updated to unverified for management account'}), 200
-    elif user.user_type == 'recruiter':
-        if user_status:
-            return jsonify({'message': 'Verification status updated for recruiter account'}), 200
-        else:
-            return jsonify({'message': 'Verification status updated to unverified for recruiter account'}), 200
+    try:
+        db.session.commit()
+        # Return different messages based on user_type
+        if user.user_type == 'management':
+            if user_status:
+                return jsonify({'message': 'Verification status updated for management account'}), 200
+            else:
+                return jsonify({'message': 'Verification status updated to unverified for management account'}), 200
+        elif user.user_type == 'recruiter':
+            if user_status:
+                return jsonify({'message': 'Verification status updated for recruiter account'}), 200
+            else:
+                return jsonify({'message': 'Verification status updated to unverified for recruiter account'}), 200
+    except Exception as e:
+        # Log the exception or return an error message
+        db.session.rollback()
+        return jsonify({'message': 'Failed to update verification status'}), 500
+        
 
 @app.route('/active_users', methods=['POST'])
 def update_user_status():
