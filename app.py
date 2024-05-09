@@ -602,6 +602,23 @@ def management_login():
 
     return jsonify({'status': 'error', 'message': message, 'verification_msg_manager': verification_msg_manager})
 
+@app.route('/get_recruiters', methods=['GET'])   
+def get_recruiters_list():
+    recruiters = User.query.filter_by(user_type='recruiter').all()
+    
+    # Assuming you want to return a list of dictionaries containing user details
+    recruiters_list = []
+    for recruiter in recruiters:
+        recruiter_dict = {
+            'id': recruiter.id,
+            'username': recruiter.username,
+            'user_type': recruiter.user_type
+            # Add more fields if needed
+        }
+        recruiters_list.append(recruiter_dict)
+    
+    return jsonify(recruiters_list)
+
 
 from flask import jsonify
 
@@ -2264,6 +2281,7 @@ def assign_candidate():
         })
 
     return jsonify({"error_message": "Unauthorized: You must log in as management user to access this page"}), 401
+
 
 
 from flask import jsonify
