@@ -391,19 +391,18 @@ def reset_password():
         user = User.query.filter_by(otp=otp).first()
 
         if user and user.otp == otp and new_password == confirm_password:
-            old_password_hashed = hashlib.sha256(user.password.encode()).hexdigest()
-            if new_password_hashed != old_password_hashed:
+            # Check if the new password is different from the old password
+            if new_password_hashed != user.password:  # comparing hashes
                 user.password = new_password_hashed
                 db.session.commit()
                 # Send the updated password to the user's email
-                # send_email(user.email, 'Password Changed', f'Your password for username {user.username} has been successfully changed to {new_password}')
                 msg = Message('Password Changed', sender='saiganeshkanuparthi@gmail.com', recipients=[user.email])
                 msg.body = f'Hello {user.name},\n\nYour password has been successfully changed. Here are your updated credentials:\n\nUsername: {user.username}\nPassword: {new_password}'
                 mail.send(msg)
 
                 return jsonify({ 'message': 'Password changed successfully.'})
             else:
-                return jsonify({ 'message': 'New password is same as the old password'})
+                return jsonify({ 'message': 'New password is the same as the old password'})
         else:
             return jsonify({ 'message': 'Invalid OTP or password confirmation. Please try again.'})
 
