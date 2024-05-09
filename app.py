@@ -2270,13 +2270,19 @@ from flask import jsonify
 
 @app.route('/disable_user', methods=['GET', 'POST'])
 def disable_user():
-    data=request.json
-    user_name = data['user_name']
-    user_status= data['user_status']
+    data = request.json
+    user_id = data.get('user_id')
+    user_name = data.get('user_name')
+    user_status = data.get('user_status')
+
     if request.method == 'POST':
+        management_account_id =  # ID of management account
+
+        if user_id != management_account_id:
+            return jsonify({'message': 'Unauthorized access. Only management account can change verification status'})
+
         username = request.form.get('user_name')
         user = User.query.filter_by(username=username).first()
-        
 
         if user is None:
             return jsonify({'message': 'User not found'})
@@ -2284,7 +2290,7 @@ def disable_user():
         user.is_verify = user_status
         db.session.commit()
 
-        if user_status==True:
+        if user_status:
             return jsonify({'message': 'User Account verified successfully'})
         else:
             return jsonify({'message': 'User Account un-verified successfully'})
