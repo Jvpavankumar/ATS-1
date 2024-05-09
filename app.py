@@ -2268,37 +2268,40 @@ def assign_candidate():
 
 from flask import jsonify
 
-@app.route('/disable_user', methods=['GET', 'POST'])
+@app.route('/disable_user', methods=['POST'])
 def disable_user():
     data = request.json
-    user_id = data.get('user_id')
-    # user_name = data.get('user_name')
-    user_status = data.get('user_status')
+    user_name = data.get('user_name')
+    new_status = data.get('new_status')
+    management_user_id = data.get('management_user_id')  # Assuming this field is present in the JSON data
 
     if request.method == 'POST':
-        management_account_id = user_id  # ID of management account
+        management_user = User.query.filter_by(id=management_user_id).first()
 
-        if user_id != management_account_id:
-            return jsonify({'message': 'Unauthorized access. Only management account can change verification status'})
+        if management_user is None:
+            return jsonify({'message': 'Management account not found'})
 
-        username = request.form.get('user_name')
-        user = User.query.filter_by(username=username).first()
+        if management_user.user_type != 'management':
+            return jsonify({'message': 'Specified user is not a management account'})
+
+        user = User.query.filter_by(username=user_name).first()
 
         if user is None:
             return jsonify({'message': 'User not found'})
 
-        user.is_verify = user_status
+        user.is_verified = new_status
         db.session.commit()
 
-        if user_status:
-            return jsonify({'message': 'User Account verified successfully'})
+        # Fetch active users data after updating verification status
+        active_users = User.query.filter_by(is_active=True).all()
+        active_users_data = [{'username': user.username, 'email': user.email} for user in active_users]
+
+        if new_status:
+            return jsonify({'message': 'User Account verified successfully', 'active_users': active_users_data, 'user_name': user_name})
         else:
-            return jsonify({'message': 'User Account un-verified successfully'})
+            return jsonify({'message': 'User Account un-verified successfully', 'active_users': active_users_data, 'user_name': user_name})
 
-    active_users = User.query.filter_by(is_active=True).all()
-    active_users_data = [{'username': user.username, 'email': user.email} for user in active_users]
-    return jsonify({'message': '', 'active_users': active_users_data, 'user_name': user_name})
-
+    return jsonify({'message': 'Invalid request'})
 
 @app.route('/active_users', methods=['POST'])
 def update_user_status():
