@@ -2268,38 +2268,32 @@ def assign_candidate():
 
 from flask import jsonify
 
-@app.route('/disable_user', methods=['POST'])
+@app.route('/disable_user', methods=['GET', 'POST'])
 def disable_user():
-    data = request.json
-    user_name = data.get('user_name')
-    new_status = data.get('new_status')
-    management_user_id = data.get('management_user_id')
-
+    data=request.json
+    user_name = data['user_name']
+    user_status= data['user_status']
     if request.method == 'POST':
-        management_user = User.query.filter_by(id=management_user_id, user_type='management').first()
-
-        if management_user is None:
-            return jsonify({'message': 'Management account not found'})
-
-        user = User.query.filter_by(username=user_name).first()
+        username = request.form.get('user_name')
+        user = User.query.filter_by(username=username).first()
+        
 
         if user is None:
             return jsonify({'message': 'User not found'})
 
-        user.is_verified = new_status
-        user.is_active = new_status  # Update is_active status too
+        user.is_verify = user_status
         db.session.commit()
 
-        # Fetch active users data after updating verification status
-        active_users = User.query.filter_by(is_active=True).all()
-        active_users_data = [{'username': user.username, 'email': user.email} for user in active_users]
-
-        if new_status:
-            return jsonify({'message': 'User status updated successfully', 'active_users': active_users_data, 'user_name': user_name})
+        if user_status==True:
+            return jsonify({'message': 'User Account verified successfully'})
         else:
-            return jsonify({'message': 'User status updated successfully', 'active_users': active_users_data, 'user_name': user_name})
+            return jsonify({'message': 'User Account un-verified successfully'})
 
-    return jsonify({'message': 'Invalid request'})
+    active_users = User.query.filter_by(is_active=True).all()
+    active_users_data = [{'username': user.username, 'email': user.email} for user in active_users]
+    return jsonify({'message': '', 'active_users': active_users_data, 'user_name': user_name})
+
+
     
 
 @app.route('/active_users', methods=['POST'])
