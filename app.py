@@ -2272,7 +2272,7 @@ from flask import jsonify
 def disable_user():
     data = request.json
     user_id = data.get('user_id')
-    user_name = data.get('user_name')
+    # user_name = data.get('user_name')
     user_status = data.get('user_status')
 
     if request.method == 'POST':
