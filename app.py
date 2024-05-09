@@ -2273,16 +2273,13 @@ def disable_user():
     data = request.json
     user_name = data.get('user_name')
     new_status = data.get('new_status')
-    management_user_id = data.get('management_user_id')  # Assuming this field is present in the JSON data
+    management_user_id = data.get('management_user_id')
 
     if request.method == 'POST':
-        management_user = User.query.filter_by(id=management_user_id).first()
+        management_user = User.query.filter_by(id=management_user_id, user_type='management').first()
 
         if management_user is None:
             return jsonify({'message': 'Management account not found'})
-
-        if management_user.user_type != 'management':
-            return jsonify({'message': 'Specified user is not a management account'})
 
         user = User.query.filter_by(username=user_name).first()
 
@@ -2290,6 +2287,7 @@ def disable_user():
             return jsonify({'message': 'User not found'})
 
         user.is_verified = new_status
+        user.is_active = new_status  # Update is_active status too
         db.session.commit()
 
         # Fetch active users data after updating verification status
@@ -2297,11 +2295,12 @@ def disable_user():
         active_users_data = [{'username': user.username, 'email': user.email} for user in active_users]
 
         if new_status:
-            return jsonify({'message': 'User Account verified successfully', 'active_users': active_users_data, 'user_name': user_name})
+            return jsonify({'message': 'User status updated successfully', 'active_users': active_users_data, 'user_name': user_name})
         else:
-            return jsonify({'message': 'User Account un-verified successfully', 'active_users': active_users_data, 'user_name': user_name})
+            return jsonify({'message': 'User status updated successfully', 'active_users': active_users_data, 'user_name': user_name})
 
     return jsonify({'message': 'Invalid request'})
+    
 
 @app.route('/active_users', methods=['POST'])
 def update_user_status():
