@@ -2268,31 +2268,38 @@ def assign_candidate():
 
 from flask import jsonify
 
-@app.route('/disable_user', methods=['GET', 'POST'])
+@app.route('/disable_user', methods=['POST'])
 def disable_user():
-    data=request.json
-    user_name = data['user_name']
-    user_status= data['user_status']
-    if request.method == 'POST':
-        username = request.form.get('user_name')
-        user = User.query.filter_by(username=username).first()
-        
+    data = request.json
+    user_id = data.get('user_id')
+    user_name = data.get('user_name')
+    user_status = data.get('user_status')
 
-        if user is None:
-            return jsonify({'message': 'User not found'})
+    if user_id:  # Assuming user_id is always provided
+        # Find the management user
+        management_user = User.query.filter_by(id=user_id, user_type='management').first()
 
-        user.is_verify = user_status
-        db.session.commit()
+        if management_user:
+            # Change verification status for management user
+            management_user.is_verify = user_status
 
-        if user_status==True:
-            return jsonify({'message': 'User Account verified successfully'})
+            # Change verification status for recruiter users with provided username
+            recruiter_username = user_name
+            if recruiter_username:
+                recruiter_user = User.query.filter_by(username=recruiter_username, user_type='recruiter').first()
+                if recruiter_user:
+                    recruiter_user.is_verify = user_status
+
+            db.session.commit()
+
+            if user_status:
+                return jsonify({'message': 'Verification status updated for management and specified recruiter account'})
+            else:
+                return jsonify({'message': 'Verification status updated to un-verified for management and specified recruiter account'})
         else:
-            return jsonify({'message': 'User Account un-verified successfully'})
-
-    active_users = User.query.filter_by(is_active=True).all()
-    active_users_data = [{'username': user.username, 'email': user.email} for user in active_users]
-    return jsonify({'message': '', 'active_users': active_users_data, 'user_name': user_name})
-
+            return jsonify({'message': 'Management user not found'})
+    else:
+        return jsonify({'message': 'User ID is required'})
 
     
 
