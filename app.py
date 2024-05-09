@@ -602,22 +602,51 @@ def management_login():
 
     return jsonify({'status': 'error', 'message': message, 'verification_msg_manager': verification_msg_manager})
 
+# @app.route('/get_recruiters', methods=['GET'])   
+# def get_recruiters_list():
+#     recruiters = User.query.filter_by(user_type='recruiter').all()
+    
+#     # Assuming you want to return a list of dictionaries containing user details
+#     recruiters_list = []
+#     for recruiter in recruiters:
+#         recruiter_dict = {
+#             'id': recruiter.id,
+#             'username': recruiter.username,
+#             'user_type': recruiter.user_type
+#             # Add more fields if needed
+#         }
+#         recruiters_list.append(recruiter_dict)
+    
+#     return jsonify(recruiters_list)
+
+
 @app.route('/get_recruiters', methods=['GET'])   
 def get_recruiters_list():
     recruiters = User.query.filter_by(user_type='recruiter').all()
     
-    # Assuming you want to return a list of dictionaries containing user details
-    recruiters_list = []
-    for recruiter in recruiters:
-        recruiter_dict = {
-            'id': recruiter.id,
-            'username': recruiter.username,
-            'user_type': recruiter.user_type
-            # Add more fields if needed
-        }
-        recruiters_list.append(recruiter_dict)
+    # Extracting only usernames
+    usernames = [recruiter.username for recruiter in recruiters]
     
-    return jsonify(recruiters_list)
+    return jsonify(usernames)
+
+
+@app.route('/get_recruiters_candidate', methods=['POST']) 
+def recruiter_candidate_list():
+    data = request.json
+    username = data['user_name']
+    
+    # Find the recruiter with the given username
+    recruiter = User.query.filter_by(username=username, user_type='recruiter').first()
+    
+    if recruiter:
+        # Find all candidates linked with the recruiter's username
+        candidates = Candidate.query.filter_by(recruiter=recruiter.username).all()
+        
+        # Prepare response data
+        candidates_list = [{'id': candidate.id, 'username': candidate.name, 'status':candidate.status, 'profile':candidate.profile, 'recruiter':candidate.recruiter} for candidate in candidates]
+        return jsonify(candidates_list)
+    else:
+        return jsonify({'error': 'Recruiter not found'})
 
 
 from flask import jsonify
