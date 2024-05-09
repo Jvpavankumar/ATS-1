@@ -2278,8 +2278,14 @@ def disable_user():
     if user_id is None or user_status is None or user_name is None:
         return jsonify({'message': 'User ID, user status, and user name are required'}), 400
 
-    # Find the user
-    user = User.query.filter_by(id=user_id, username=user_name).first()
+    # Find the user making the request
+    request_user = User.query.get(user_id)
+
+    if request_user is None or request_user.user_type != 'management':
+        return jsonify({'message': 'Unauthorized access'}), 403
+
+    # Find the user to be updated
+    user = User.query.filter_by(username=user_name).first()
 
     if user is None:
         return jsonify({'message': 'User not found'}), 404
@@ -2310,7 +2316,6 @@ def disable_user():
         # Log the exception or return an error message
         db.session.rollback()
         return jsonify({'message': 'Failed to update verification status'}), 500
-        
 
 @app.route('/active_users', methods=['POST'])
 def update_user_status():
