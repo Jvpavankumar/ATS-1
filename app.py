@@ -2271,9 +2271,9 @@ from flask import jsonify
 @app.route('/disable_user', methods=['POST'])
 def disable_user():
     data = request.json
-    user_id = data.get('user_id')
-    user_status = data.get('user_status')
-    user_name = data.get('user_name')
+    user_id = data['user_id']
+    user_status = data['user_status']
+    user_name = data['user_name']
 
     if user_id is None or user_status is None or user_name is None:
         return jsonify({'message': 'User ID, user status, and user name are required'}), 400
