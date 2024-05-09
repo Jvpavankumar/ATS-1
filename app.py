@@ -2272,36 +2272,40 @@ from flask import jsonify
 def disable_user():
     data = request.json
     user_id = data.get('user_id')
-    user_name = data.get('user_name')
     user_status = data.get('user_status')
+    user_name = data.get('user_name')
 
-    if user_id:  # Assuming user_id is always provided
-        # Find the management user
-        management_user = User.query.filter_by(id=user_id, user_type='management').first()
+    if user_id is None or user_status is None or user_name is None:
+        return jsonify({'message': 'User ID, user status, and user name are required'}), 400
 
+    # Find the user
+    user = User.query.filter_by(id=user_id, username=user_name).first()
+
+    if user is None:
+        return jsonify({'message': 'User not found'}), 404
+
+    # Change verification status for the user
+    user.is_verified = user_status
+
+    # If the user is a recruiter, change verification status for management user with the same username
+    if user.user_type == 'recruiter':
+        management_user = User.query.filter_by(username=user_name, user_type='management').first()
         if management_user:
-            # Change verification status for management user
-            management_user.is_verify = user_status
+            management_user.is_verified = user_status
 
-            # Change verification status for recruiter users with provided username
-            recruiter_username = user_name
-            if recruiter_username:
-                recruiter_user = User.query.filter_by(username=recruiter_username, user_type='recruiter').first()
-                if recruiter_user:
-                    recruiter_user.is_verify = user_status
+    db.session.commit()
 
-            db.session.commit()
-
-            if user_status:
-                return jsonify({'message': 'Verification status updated for management and specified recruiter account'})
-            else:
-                return jsonify({'message': 'Verification status updated to un-verified for management and specified recruiter account'})
+    # Return different messages based on user_type
+    if user.user_type == 'management':
+        if user_status:
+            return jsonify({'message': 'Verification status updated for management account'}), 200
         else:
-            return jsonify({'message': 'Management user not found'})
-    else:
-        return jsonify({'message': 'User ID is required'})
-
-    
+            return jsonify({'message': 'Verification status updated to unverified for management account'}), 200
+    elif user.user_type == 'recruiter':
+        if user_status:
+            return jsonify({'message': 'Verification status updated for recruiter account'}), 200
+        else:
+            return jsonify({'message': 'Verification status updated to unverified for recruiter account'}), 200
 
 @app.route('/active_users', methods=['POST'])
 def update_user_status():
