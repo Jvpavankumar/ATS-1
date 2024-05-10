@@ -659,7 +659,7 @@ def assign_candidate_to_a_new_recruiter():
 
     try:
         candidates_data = []
-        for candidate_data in data:
+        for candidate_data in data['candidates']:
             candidate_id = candidate_data.get('candidate_id')
             new_recruiter_username = candidate_data.get('new_recruiter')
             current_recruiter_username = candidate_data.get('current_recruiter')
