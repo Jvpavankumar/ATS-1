@@ -653,10 +653,6 @@ def recruiter_candidate_list():
 def assign_candidate_to_a_new_recruiter():
     data = request.json
 
-    # Check if the data is a list
-    if not isinstance(data, list):
-        return jsonify({"error": "Data must be a list of candidate objects"}), 400
-
     try:
         candidates_data = []
         for candidate_data in data['candidates']:
