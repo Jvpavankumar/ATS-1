@@ -438,39 +438,50 @@ def generate_random_password(length=8):
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.json
-    print(data)
     user_id = data['user_id']
     user = User.query.filter_by(id=user_id).first()
     user_type = user.user_type
+    user_name = user.username
+    user_name = session.get('user_name')
 
-    if user_type == 'management':
-        username = request.json.get('username')
-        name = request.json.get('name')
-        email = request.json.get('email')
-        user_type = request.json.get('user_type')
-        
-        # Generate a random password
-        password = generate_random_password()
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+    if 'user_id' in session and 'user_type' in session:
+        if session['user_type'] == 'management':
+            username = request.json.get('username')
+            name = request.json.get('name')
+            email = request.json.get('email')
+            user_type = request.json.get('user_type')
 
-        user = User.query.filter(or_(User.username == username, User.email == email, User.name == name)).first()
+            # Check if required fields are provided
+            if not all([username, name, email, user_type]):
+                return jsonify({'status': 'error', 'message': 'All fields are required'})
 
-        if user:
-            return jsonify({'status': 'error', 'message': 'Account with the same Username, Email, or Name already exists.'})
+            # Generate a random password
+            password = generate_random_password()
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            print("hashed_password :",type(hashed_password))
 
-        new_user = User(username=username, password=hashed_password, name=name, email=email, user_type=user_type, created_by='')  # created_by is empty for now
-        
-        db.session.add(new_user)
-        db.session.commit()
+            created_by = user_name
 
-        # Send the verification email
-        msg = Message('Account Verification', sender='saiganeshkanuparthi@gmail.com', recipients=[new_user.email])
-        msg.body = f'Hello {new_user.name},\n\n We are pleased to inform you that your account has been successfully created for the ATS Makonis Talent Track Pro. Here are your login credentials:\n\nUsername: {new_user.username}\nPassword: {password}\n\n Please note that the verification link will expire after 24 hours. \n\n After successfully verifying your account, you can access the application using the following link : \n\n Application Link (Post Verification): https://ats-i3pk.onrender.com \n\n If you have any questions or need assistance, please feel free to reach out. \n\n Best regards, '
-        mail.send(msg)
+            user = User.query.filter(or_(User.username == username, User.email == email, User.name == name)).first()
 
-        return jsonify({'message': 'A verification email has been sent to your email address. Please check your inbox.'})
+            if user:
+                return jsonify({'status': 'error', 'message': 'Account with the same Username, Email or Name Already exists.'})
+
+            new_user = User(username=username, password=hashed_password, name=name, email=email, user_type=user_type, created_by=created_by)
+            
+            db.session.add(new_user)
+            db.session.commit()
+
+            # Send the verification email
+            msg = Message('Account Verification', sender='saiganeshkanuparthi@gmail.com', recipients=[new_user.email])
+            msg.body = f'Hello {new_user.name},\n\n We are pleased to inform you that your account has been successfully created for the ATS Makonis Talent Track Pro. Here are your login credentials:\n\nUsername: {new_user.username}\nPassword: {password}\n\n Please note that the verification link will expire after 24 hours. \n\n After successfully verifying your account, you can access the application using the following link : \n\n Application Link (Post Verification): https://ats-makonis.netlify.app/ \n\n If you have any questions or need assistance, please feel free to reach out. \n\n Best regards, '
+            mail.send(msg)
+
+            return jsonify({'status': 'success', 'message': 'A verification email has been sent to your email address. Please check your inbox.'})
+        else:
+            return jsonify({'status': 'error', 'message': 'You do not have permission to create recruiter accounts.'})
     else:
-        return jsonify({'message': 'You do not have permission to create recruiter accounts.'})
+        return jsonify({'status': 'error', 'message': 'You must be logged in to create a recruiter account.'})
 
 
 import hashlib
