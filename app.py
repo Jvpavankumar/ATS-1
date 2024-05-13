@@ -528,7 +528,6 @@ def signup_onetime():
 
     return jsonify({'message': 'Invalid request method.'})
 
-
 @app.route('/login/recruiter', methods=['POST'])
 def recruiter_login():
     verification_msg = request.args.get('verification_msg')
