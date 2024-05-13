@@ -2436,7 +2436,43 @@ def update_user_status():
     except Exception as e:
         db.session.rollback()  # Rollback changes in case of error
         return jsonify({"message": "Error updating user status", "error": str(e)}), 500
+        
 
+from flask import jsonify
+
+@app.route('/deactivate_user', methods=['POST'])
+def deactivate_user():
+    data = request.json
+    user_id = data['user_id']
+    recruiter_username = data['recruiter_username']
+
+    if not user_id:
+        return jsonify({'message': 'User ID is required'})
+
+    # Find the manager user
+    manager_user = User.query.filter_by(id=user_id, user_type='management').first()
+
+    if not manager_user:
+        return jsonify({'message': 'Manager user not found'})
+
+    # If manager is not authorized to deactivate, return error message
+    if not manager_user:
+        return jsonify({'message': 'Manager user is not authorized to deactivate accounts'})
+
+    # If recruiter_username is provided, deactivate the recruiter account
+    if recruiter_username:
+        recruiter_user = User.query.filter_by(username=recruiter_username, user_type='recruiter').first()
+
+        if not recruiter_user:
+            return jsonify({'message': 'Recruiter user not found'})
+
+        recruiter_user.is_active = False
+        db.session.commit()
+        return jsonify({'message': 'Recruiter user deactivated successfully'})
+
+    # If recruiter_username is not provided, return an error message
+    return jsonify({'message': 'Recruiter username is required'})
+    
         
 # @app.route('/verify_checkbox', methods=['POST'])
 # def verify_checkbox():
