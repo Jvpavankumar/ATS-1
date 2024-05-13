@@ -477,7 +477,7 @@ def signup():
             msg.body = f'Hello {new_user.name},\n\n We are pleased to inform you that your account has been successfully created for the ATS Makonis Talent Track Pro. Here are your login credentials:\n\nUsername: {new_user.username}\nPassword: {password}\n\n Please note that the verification link will expire after 24 hours. \n\n After successfully verifying your account, you can access the application using the following link : \n\n Application Link (Post Verification): https://ats-makonis.netlify.app/ \n\n If you have any questions or need assistance, please feel free to reach out. \n\n Best regards, '
             mail.send(msg)
 
-            return jsonify({'status': 'success', 'message': 'A verification email has been sent to your email address. Please check your inbox.'})200
+            return jsonify({'status': 'success', 'message': 'A verification email has been sent to your email address. Please check your inbox.'})
         else:
             return jsonify({'status': 'error', 'message': 'You do not have permission to create recruiter accounts.'})
     else:
