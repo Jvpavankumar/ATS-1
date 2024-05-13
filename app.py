@@ -2472,8 +2472,8 @@ def deactivate_user():
     #     return jsonify({'message': 'Manager user not found'})
 
     # If manager is not authorized to deactivate, return error message
-    if not manager_user:
-        return jsonify({'message': 'Manager user is not authorized to deactivate accounts'})
+    # if not manager_user:
+    #     return jsonify({'message': 'Manager user is not authorized to deactivate accounts'})
 
     # If recruiter_username is provided, deactivate the recruiter account
     if recruiter_username:
