@@ -425,10 +425,6 @@ def verify(token):
         return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
     return jsonify({'status': 'error', 'message': 'An error occurred while verifying your account.'})
 
-import random
-import string
-from cryptography.fernet import Fernet
-
 
 import hashlib
 import random
