@@ -2468,8 +2468,8 @@ def deactivate_user():
     # Find the manager user
     manager_user = User.query.filter_by(id=user_id, user_type='management').first()
 
-    if not manager_user:
-        return jsonify({'message': 'Manager user not found'})
+    # if not manager_user:
+    #     return jsonify({'message': 'Manager user not found'})
 
     # If manager is not authorized to deactivate, return error message
     if not manager_user:
