@@ -439,7 +439,7 @@ def generate_random_password(length=8):
 @app.route('/signup', methods=['POST'])
 def signup():
     data = request.json
-    user_id = data.get('user_id')  # Extracting user_id from JSON request
+    user_id = data.get('user_id')  # Using get method to avoid KeyError
     user = User.query.filter_by(id=user_id).first()
 
     if not user:
@@ -474,9 +474,15 @@ def signup():
         db.session.add(new_user)
         db.session.commit()
 
+        # Generate a verification token
+        verification_token = generate_verification_token(new_user.id)
+
+        # Create the verification link
+        verification_link = url_for('verify', token=verification_token, _external=True)
+
         # Send the verification email
         msg = Message('Account Verification', sender='saiganeshkanuparthi@gmail.com', recipients=[new_user.email])
-        msg.body = f'Hello {new_user.name},\n\n We are pleased to inform you that your account has been successfully created for the ATS Makonis Talent Track Pro. Here are your login credentials:\n\nUsername: {new_user.username}\nPassword: {password}\n\n Please note that the verification link will expire after 24 hours. \n\n After successfully verifying your account, you can access the application using the following link : \n\n Application Link (Post Verification): https://ats-makonis.netlify.app/ \n\n If you have any questions or need assistance, please feel free to reach out. \n\n Best regards, '
+        msg.body = f'Hello {new_user.name},\n\n We are pleased to inform you that your account has been successfully created for the ATS Makonis Talent Track Pro. Here are your login credentials:\n\nUsername: {new_user.username}\nPassword: {password}\n\n Please note that the verification link will expire after 24 hours. \n\n After successfully verifying your account, you can access the application using the following link : \n\n Application Link (Post Verification): https://ats-makonis.netlify.app/ \n\n To verify your account, please click on the following link: {verification_link} \n\n If you have any questions or need assistance, please feel free to reach out. \n\n Best regards, '
         mail.send(msg)
 
         return jsonify({'status': 'success', 'message': 'A verification email has been sent to your email address. Please check your inbox.'})
