@@ -511,7 +511,7 @@ def signup_onetime():
 
         user_onetime = User.query.filter_by(registration_completed='one_time').first()
         if user_onetime:
-            return jsonify({'message': 'The one-time registration for this application has already been completed.'})
+            return jsonify({'message': 'The one-time registration for this application has already been completed.'}),400
 
         new_user = User(username=username, password=hashed_password, name=name,
                         email=email, user_type=user_type, registration_completed=registration_completed)
@@ -533,9 +533,13 @@ def signup_onetime():
         msg.body = message_body
         mail.send(msg)
 
-        return jsonify({'message': 'A verification email has been sent to your email address. Please check your inbox.'})
+        # return jsonify({'message': 'A verification email has been sent to your email address. Please check your inbox.'})
+        return jsonify({
+            'message': 'A verification email has been sent to your email address. Please check your inbox.',
+            'success_message': 'Account created successfully'
+            }),200
 
-    return jsonify({'message': 'Invalid request method.'})
+    return jsonify({'message': 'Invalid request method.'}),400
 
 @app.route('/login/recruiter', methods=['POST'])
 def recruiter_login():
