@@ -2492,11 +2492,12 @@ def deactivate_user():
             if user_status:
                 return jsonify({'message': f'{user_name} Recruiter account has been successfully activated.'})
             else:
-                return jsonify({'message': f'{user_name} Recruiter account has been successfully Deactivated. '})
+                return jsonify({'message': f'{user_name} Recruiter account has been successfully deactivated.'})
         else:
             return jsonify({'message': 'Management user not found'})
     else:
         return jsonify({'message': 'User ID is required'})
+
         
 # @app.route('/verify_checkbox', methods=['POST'])
 # def verify_checkbox():
