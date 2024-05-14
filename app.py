@@ -2645,102 +2645,56 @@ import pandas as pd
 from datetime import datetime
 import openpyxl
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+# from sqlalchemy.orm import sessionmaker
 
-@app.route('/generate_excel', methods=['GET','POST'])
+@app.route('/generate_excel', methods=['POST'])
 def generate_excel():
     data = request.json
 
-    message = data.get('message')
-    user_name = data.get('user_name')
+    user_id = data.get('user_id')
 
-    if data.get('action') == 'View Reports':
-        from_date_str = data.get('from_date')
-        to_date_str = data.get('to_date')
-        user_name = data.get('additional_value')
+    from_date_str = data.get('from_date')
+    to_date_str = data.get('to_date')
 
-        try:
-            from_date = datetime.strptime(from_date_str, "%Y-%m-%d")
-            to_date = datetime.strptime(to_date_str, "%Y-%m-%d")
-        except ValueError:
-            return jsonify({'error': 'Invalid date format. Please use YYYY-MM-DD format.'})
+    recruiter_names = data.get('recruiter_names', [])
 
-        recruiter_names = data.get('recruiter_names')
+    if not recruiter_names:
+        return jsonify({'error': 'Please select any Recruiter'})
 
-        if not recruiter_names:
-            return jsonify({'error': 'Please Select any Recruiter'})
+    try:
+        from_date = datetime.strptime(from_date_str, "%Y-%m-%d")
+        to_date = datetime.strptime(to_date_str, "%Y-%m-%d")
+    except ValueError:
+        return jsonify({'error': 'Invalid date format. Please use YYYY-MM-DD format.'})
 
-        session = Session()
-        query = session.query(Candidate).filter(
-            Candidate.recruiter.in_(recruiter_names),
-            Candidate.date_created >= from_date,
-            Candidate.date_created <= to_date
-        )
+    complete_data = [{"recruiter": recruiter_name, "date_created": date.strftime("%Y-%m-%d")} for recruiter_name in recruiter_names for date in pd.date_range(from_date, to_date)]
 
-        date_range = [from_date + timedelta(days=i) for i in range((to_date - from_date).days + 1)]
+    complete_df = pd.DataFrame(complete_data)
+    merged_df = pd.concat([pd.DataFrame(data), complete_df]).fillna(0)
 
-        data = []
-        for candidate in query:
-            data.append({
-                "recruiter": candidate.recruiter,
-                "date_created": candidate.date_created.strftime("%d-%m-%Y"),
-            })
+    grouped = merged_df.groupby(['recruiter', 'date_created']).size().reset_index(name='count')
+    grouped['date_created'] = pd.to_datetime(grouped['date_created'], format="%Y-%m-%d")
 
-        complete_data = []
-        for recruiter_name in recruiter_names:
-            for date in date_range:
-                complete_data.append({"recruiter": recruiter_name, "date_created": date.strftime("%d-%m-%Y")})
+    grouped = grouped.sort_values(by='date_created')
+    grouped['date_created'] = grouped['date_created'].dt.strftime("%Y-%m-%d")
 
-        complete_df = pd.DataFrame(complete_data)
+    pivot_table = grouped.pivot_table(index='recruiter', columns='date_created', values='count', aggfunc='sum',
+                                      fill_value=0, margins=True, margins_name='Grand Total')
 
-        merged_df = pd.concat([pd.DataFrame(data), complete_df]).fillna(0)
+    styled_pivot_table = pivot_table.copy()
 
-        grouped = merged_df.groupby(['recruiter', 'date_created']).size().reset_index(name='count')
+    recruiters = list(set(recruiter_names))
 
-        grouped['date_created'] = pd.to_datetime(grouped['date_created'], format="%d-%m-%Y")
+    styled_pivot_table_json = styled_pivot_table.to_json()
 
-        # Sort the grouped DataFrame by 'date_created'
-        grouped = grouped.sort_values(by='date_created')
+    return jsonify({
+        'recruiters': recruiters,
+        'styled_pivot_table': styled_pivot_table_json,
+        'user_name': user_name,
+        'from_date_str': from_date_str,
+        'to_date_str': to_date_str
+    })
 
-        grouped['date_created'] = grouped['date_created'].dt.strftime("%Y-%m-%d")
-
-        pivot_table = grouped.pivot_table(index='recruiter', columns='date_created', values='count', aggfunc='sum',
-                                          fill_value=0, margins=True, margins_name='Grand Total')
-
-        styled_pivot_table = pivot_table.copy()
-
-        styled_pivot_table.iloc[:-1, :-1] = styled_pivot_table.iloc[:-1, :-1].applymap(
-            lambda x: x - 1 if isinstance(x, int) else x)
-
-        recruiter_sums = styled_pivot_table.iloc[:-1, :-1].sum(axis=1)
-        date_sums = styled_pivot_table.iloc[:-1, :-1].sum()
-
-        true_grand_total = recruiter_sums.sum()
-
-        styled_pivot_table.iloc[-1, :-1] = date_sums
-        styled_pivot_table.iloc[:-1, -1] = recruiter_sums
-        styled_pivot_table.at['Grand Total', 'Grand Total'] = true_grand_total
-
-        recruiters = session.query(User).filter_by(user_type='recruiter').all()
-        recruiters = [recruiter.name for recruiter in recruiters]
-
-        styled_pivot_table_json = styled_pivot_table.to_json()
-
-        return jsonify({
-            'recruiters': recruiters,
-            'styled_pivot_table': styled_pivot_table_json,
-            'user_name': user_name,
-            'message': message,
-            'from_date_str': from_date_str,
-            'to_date_str': to_date_str
-        })
-
-    elif data.get('action') == 'Generate Report':
-        # Handle 'Generate Report' action if needed
-        pass
-
-    # Return a default response if no action matches
-    return jsonify({'error': 'Invalid action'})
 
 
 def re_send_notification(recruiter_email, job_id):
