@@ -2468,7 +2468,7 @@ def deactivate_user():
     recruiter_username = data['recruiter_username']
 
     if not user_id:
-        return jsonify({'message': 'User ID is required'})
+        return jsonify({'message': 'User ID is required'}),400
 
     # Find the manager user
     manager_user = User.query.filter_by(id=user_id, user_type='management').first()
@@ -2485,14 +2485,14 @@ def deactivate_user():
         recruiter_user = User.query.filter_by(username=recruiter_username, user_type='recruiter').first()
 
         if not recruiter_user:
-            return jsonify({'message': 'Recruiter user not found'})
+            return jsonify({'message': 'Recruiter user not found'}),400
 
         recruiter_user.is_active = False
         db.session.commit()
-        return jsonify({'message': 'Recruiter user deactivated successfully'})
+        return jsonify({'message': 'Recruiter user deactivated successfully'}),200
 
     # If recruiter_username is not provided, return an error message
-    return jsonify({'message': 'Recruiter username is required'})
+    return jsonify({'message': 'Recruiter username is required'}),400
     
         
 # @app.route('/verify_checkbox', methods=['POST'])
