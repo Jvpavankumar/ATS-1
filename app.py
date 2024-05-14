@@ -2478,8 +2478,7 @@ def deactivate_user():
 
         if management_user:
             # Change verification status for management user
-            management_user.is_verify = true
-            
+            management_user.is_verify = True
 
             # Change verification status for recruiter users with provided username
             recruiter_username = user_name
