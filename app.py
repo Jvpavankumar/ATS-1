@@ -1326,7 +1326,8 @@ def update_candidate(candidate_id):
         "candidate_name": candidate_name,
         "candidate_position": candidate_position,
         "candidate_email": candidate_email,
-        "message": message
+        # "message": message
+        "message_body": message 
     })
 
 @app.route('/update_candidate_careers/<int:candidate_id>/<page_no>/<search_string>', methods=['GET', 'POST'])
