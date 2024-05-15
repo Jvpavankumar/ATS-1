@@ -1059,6 +1059,7 @@ def add_candidate():
         notice_period = data.get('notice_period')
         holding_offer = data.get('holding_offer')
         resume = data.get('resume')
+        print("Resume : ",type(resume))
 
 
         # # Check if the resume is a hexadecimal string and convert it to bytes
