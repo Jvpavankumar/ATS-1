@@ -2618,7 +2618,7 @@ import base64
 @app.route('/view_jd/<int:job_id>', methods=['GET'])
 def view_jd(job_id):
     # Retrieve the job post data from the database using SQLAlchemy
-    user_type = session['user_type']
+    # user_type = session['user_type']
     jobpost = JobPost.query.filter_by(id=job_id).first()
     if not jobpost:
         return 'Job post not found'
