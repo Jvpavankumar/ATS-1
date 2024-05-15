@@ -689,6 +689,10 @@ def assign_candidate_to_a_new_recruiter():
 
             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
             candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
+            if candidate.profile_transfered != None:
+                candidate.profile_transfered = "YES" 
+            else:
+                candidate.profile_transfered = None
             current_recruiter = User.query.filter_by(username=current_recruiter_username, user_type='recruiter').first()
             new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
 
@@ -782,7 +786,9 @@ def dashboard():
         if user_type == 'recruiter':
             recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
             if recruiter:
-                candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None))).all()  # Filter candidates by recruiter's name
+                transferred_accounts = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None), Candidate.profile_transfered != "YES")).all()
+                print("transferred_accounts :",transferred_accounts)
+                candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None), Candidate.profile_transfered == None)).all()  # Filter candidates by recruiter's name
                 candidates = sorted(candidates, key=lambda candidate: candidate.id)
                 jobs = JobPost.query.filter_by(recruiter=user_name).all()  # Filter jobs by recruiter's name
                 count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
@@ -1013,7 +1019,6 @@ def dashboard():
         job['date_created'] = job['date_created'].isoformat()
 
     return Response(json.dumps(response_data, default=str), content_type='application/json')
-
 
 # Mocked function for demonstration
 # Mocked function for demonstration
@@ -2608,36 +2613,43 @@ def download_jd(job_id):
         return send_file(jd_path, as_attachment=True)
 
 
+import base64
+ 
 @app.route('/view_jd/<int:job_id>', methods=['GET'])
 def view_jd(job_id):
-    # Retrieve the resume data from the database using SQLAlchemy
+    # Retrieve the job post data from the database using SQLAlchemy
     user_type = session['user_type']
     jobpost = JobPost.query.filter_by(id=job_id).first()
     if not jobpost:
-        return 'Candidate not found'
-
-    # Create a file-like object (BytesIO) from the resume data
-    jd_file = io.BytesIO(jobpost.jd_pdf)
-    is_pdf = jd_file.getvalue().startswith(b"%PDF")
-
+        return 'Job post not found'
+ 
+    # Check if the job post contains a JD PDF
     if jobpost.jd_pdf:
-        if is_pdf:
-            return send_file(
-                jd_file,
-                mimetype='application/pdf',
-                as_attachment=False
-            )
-        else:
-            return send_file(
-                jd_file,
-                mimetype='application/msword',
-                as_attachment=False
-            )
+        # Decode the base64 string back to its original binary data
+        jd_binary = base64.b64decode(jobpost.jd_pdf)
+ 
+        # Create a file-like object (BytesIO) from the decoded binary data
+        jd_file = io.BytesIO(jd_binary)
+ 
+        # Check if the file is a PDF
+        is_pdf = jd_binary.startswith(b"%PDF")
+ 
+        # Determine the mimetype based on the file type
+        mimetype = 'application/pdf' if is_pdf else 'application/msword'
+ 
+        # Return the file as a response
+        return send_file(
+            jd_file,
+            mimetype=mimetype,
+            as_attachment=False
+        )
+ 
+    # If no JD PDF is available
     if user_type == 'recruiter':
-        return redirect(url_for('recruiter_job_posts',no_doc_message = 'No Document Available to View'))
+        return redirect(url_for('recruiter_job_posts', no_doc_message='No Document Available to View'))
     else:
-        return redirect(url_for('view_all_jobs',no_doc_message = 'No Document Available to View'))
-    
+        return redirect(url_for('view_all_jobs', no_doc_message='No Document Available to View'))
+        
 
 from flask import Flask, request, Response, render_template
 import pandas as pd
