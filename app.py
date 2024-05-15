@@ -1804,7 +1804,7 @@ def post_job():
                 job_type = data.get('job_type')
                 skills = data.get('skills')
                 jd_pdf=data.get('jd_pdf')
-                Job_Type_details=data.get('Job_Type_details')
+                # Job_Type_details=data.get('Job_Type_details')
 
                 if job_type == 'Contract':
                     Job_Type_details = data.get('Job_Type_details')
@@ -1839,7 +1839,6 @@ def post_job():
                     job_status=job_status,
                     job_type=job_type,
                     skills=skills,
-                    Job_Type_details=Job_Type_details,
                     jd_pdf=jd_pdf
                 )
 
