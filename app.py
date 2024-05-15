@@ -689,10 +689,10 @@ def assign_candidate_to_a_new_recruiter():
 
             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
             candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
-            if candidate.profile_transfered != None:
-                candidate.profile_transfered = "YES" 
-            else:
-                candidate.profile_transfered = None
+            # if candidate.profile_transfered != None:
+            #     candidate.profile_transfered = "YES" 
+            # else:
+            #     candidate.profile_transfered = None
             current_recruiter = User.query.filter_by(username=current_recruiter_username, user_type='recruiter').first()
             new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
 
@@ -786,9 +786,7 @@ def dashboard():
         if user_type == 'recruiter':
             recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
             if recruiter:
-                transferred_accounts = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None), Candidate.profile_transfered != "YES")).all()
-                print("transferred_accounts :",transferred_accounts)
-                candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None), Candidate.profile_transfered == None)).all()  # Filter candidates by recruiter's name
+                candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None))).all()  # Filter candidates by recruiter's name
                 candidates = sorted(candidates, key=lambda candidate: candidate.id)
                 jobs = JobPost.query.filter_by(recruiter=user_name).all()  # Filter jobs by recruiter's name
                 count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
