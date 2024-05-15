@@ -2077,6 +2077,7 @@ def view_all_jobs():
     }
 
     # Return JSON response
+    # Return JSON response
     return jsonify(response_data)
 
 def send_notification(recruiter_email):
