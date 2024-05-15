@@ -2614,8 +2614,6 @@ def download_jd(job_id):
         return send_file(jd_path, as_attachment=True)
 
 
-import base64
- 
 @app.route('/view_jd/<int:job_id>', methods=['GET'])
 def view_jd(job_id):
     # Retrieve the job post data from the database using SQLAlchemy
@@ -2641,7 +2639,6 @@ def view_jd(job_id):
         mimetype=mimetype,
         as_attachment=False
     )
-        
 
 from flask import Flask, request, Response, render_template
 import pandas as pd
