@@ -1803,20 +1803,21 @@ def post_job():
                 job_status = data.get('job_status')
                 job_type = data.get('job_type')
                 skills = data.get('skills')
-                # Job_Type_details=data.get('Job_Type_details')
+                jd_pdf=data.get('jd_pdf')
+                Job_Type_details=data.get('Job_Type_details')
 
                 if job_type == 'Contract':
                     Job_Type_details = data.get('Job_Type_details')
                     job_type = job_type + '(' + Job_Type_details + ' Months )'
 
-                filename = None
-                jd_binary = None
-                if 'jd_pdf' in request.files:
-                    jd_file = request.files['jd_pdf']
-                    if jd_file and allowed_file(jd_file.filename):
-                        # Convert the resume file to binary data
-                        jd_binary = jd_file.read()
-                        filename = secure_filename(jd_file.filename)
+                # filename = None
+                # jd_binary = None
+                # if 'jd_pdf' in request.files:
+                #     jd_file = request.files['jd_pdf']
+                #     if jd_file and allowed_file(jd_file.filename):
+                #         # Convert the resume file to binary data
+                #         jd_binary = jd_file.read()
+                #         filename = secure_filename(jd_file.filename)
 
                 recruiter_names = data.get('recruiter', [])
                 joined_recruiters = ', '.join(recruiter_names)
@@ -1838,8 +1839,9 @@ def post_job():
                     management=user.username,
                     job_status=job_status,
                     job_type=job_type,
-                    skills=skills
-                    # Job_Type_details=Job_Type_details
+                    skills=skills,
+                    Job_Type_details=Job_Type_details,
+                    jd_pdf=jd_pdf
                 )
 
                 new_job_post.notification = 'no'
