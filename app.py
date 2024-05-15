@@ -2007,6 +2007,8 @@ def edit_job_post(job_id):
     return jsonify({"error": "Job post not found"}), 404
 
 
+import base64
+
 @app.route('/view_all_jobs', methods=['POST'])
 def view_all_jobs():
     # Get data from JSON request
@@ -2035,7 +2037,7 @@ def view_all_jobs():
                 "shift_timings": job_post.shift_timings,
                 "notice_period": job_post.notice_period,
                 "detailed_jd": job_post.detailed_jd,
-                "jd_pdf": job_post.jd_pdf,  # Assuming this is a binary field containing PDF data
+                "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
                 "mode": job_post.mode,
                 "recruiter": job_post.recruiter,
                 "management": job_post.management,
@@ -2061,7 +2063,7 @@ def view_all_jobs():
                 "shift_timings": job_post.shift_timings,
                 "notice_period": job_post.notice_period,
                 "detailed_jd": job_post.detailed_jd,
-                "jd_pdf": job_post.jd_pdf,  # Assuming this is a binary field containing PDF data
+                "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
                 "mode": job_post.mode,
                 "recruiter": job_post.recruiter,
                 "management": job_post.management,
@@ -2076,7 +2078,6 @@ def view_all_jobs():
         ]
     }
 
-    # Return JSON response
     # Return JSON response
     return jsonify(response_data)
 
