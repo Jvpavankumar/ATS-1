@@ -1833,7 +1833,6 @@ def post_job():
                     notice_period=notice_period,
                     role=role,
                     detailed_jd=detailed_jd,
-                    jd_pdf=jd_binary,
                     mode=mode,
                     recruiter=joined_recruiters,
                     management=user.username,
