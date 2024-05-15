@@ -2618,11 +2618,12 @@ import base64
 @app.route('/view_jd/<int:job_id>', methods=['GET'])
 def view_jd(job_id):
     # Retrieve the job post data from the database using SQLAlchemy
-    # user_type = session['user_type']
     jobpost = JobPost.query.filter_by(id=job_id).first()
     if not jobpost:
         return 'Job post not found'
- 
+    
+    user_type = session.get('user_type')  # Assuming 'user_type' is stored in session
+
     # Check if the job post contains a JD PDF
     if jobpost.jd_pdf:
         # Decode the base64 string back to its original binary data
@@ -2643,12 +2644,6 @@ def view_jd(job_id):
             mimetype=mimetype,
             as_attachment=False
         )
- 
-    # If no JD PDF is available
-    if user_type == 'recruiter':
-        return redirect(url_for('recruiter_job_posts', no_doc_message='No Document Available to View'))
-    else:
-        return redirect(url_for('view_all_jobs', no_doc_message='No Document Available to View'))
         
 
 from flask import Flask, request, Response, render_template
