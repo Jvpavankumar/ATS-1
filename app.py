@@ -35,6 +35,7 @@ from flask_migrate import Migrate
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+app = Flask(__name__)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
@@ -2172,8 +2173,6 @@ def view_resume(candidate_id):
 
 import base64
 import io
-
-app = Flask(__name__)
 
 @app.route('/user_image/<int:user_id>', methods=['GET'])
 def user_image(user_id):
