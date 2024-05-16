@@ -2146,8 +2146,8 @@ def recruiter_job_posts():
 
 import io
 import base64
-from magic import Magic
-from flask import send_file
+from flask import send_file, Response
+import magic
 
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 def view_resume(candidate_id):
@@ -2156,22 +2156,39 @@ def view_resume(candidate_id):
     if not candidate:
         return 'Candidate not found'
 
-    # Decode the base64 encoded resume data
-    decoded_resume = base64.b64decode(candidate.resume)
+    # Check if the resume is base64 encoded
+    try:
+        decoded_resume = base64.b64decode(candidate.resume)
+        is_base64 = True
+    except:
+        decoded_resume = candidate.resume
+        is_base64 = False
 
     # Determine the mimetype based on the file content
-    magic = Magic(mime=True)
-    mimetype = magic.from_buffer(decoded_resume)
+    try:
+        mimetype = magic.Magic(mime=True).from_buffer(decoded_resume)
+    except Exception as e:
+        return f'Error determining mimetype: {str(e)}'
 
-    # Create a file-like object (BytesIO) from the decoded resume data
-    resume_file = io.BytesIO(decoded_resume)
+    # If the mimetype indicates a PDF, send the resume directly
+    if 'pdf' in mimetype.lower():
+        return send_file(
+            io.BytesIO(decoded_resume),
+            mimetype=mimetype,
+            as_attachment=False
+        )
 
-    # Send the file as a response
-    return send_file(
-        resume_file,
-        mimetype=mimetype,
-        as_attachment=False
-    )
+    # For other formats, handle them as base64 encoded files
+    if is_base64:
+        resume_file = io.BytesIO(decoded_resume)
+        return send_file(
+            resume_file,
+            mimetype=mimetype,
+            as_attachment=False
+        )
+    else:
+        return Response(decoded_resume, mimetype=mimetype)
+
 
 
 
