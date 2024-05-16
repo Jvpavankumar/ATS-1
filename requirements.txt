@@ -57,4 +57,4 @@ Werkzeug==2.3.6
 
 gunicorn
 
-python-magic-bin==0.4.18
+python-magic
