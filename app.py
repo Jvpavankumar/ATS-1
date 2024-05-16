@@ -760,6 +760,7 @@ def candidate_details(candidate_id, user_type, page_no):
         return jsonify({"error_message": "Candidate not found"}), 404
 
 
+from flask import Flask, jsonify, request, Response
 
 @app.route('/dashboard', methods=['POST'])
 def dashboard():
