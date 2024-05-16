@@ -90,6 +90,8 @@ class User(db.Model):
     created_by = db.Column(db.String(50))
     otp = db.Column(db.String(6), default=False)
     registration_completed = db.Column(db.String(50))
+    filename = db.Column(db.String(100))
+    image_file = db.Column(db.LargeBinary)
     def serialize(self):
         return {
             'id': self.id,
@@ -2165,6 +2167,36 @@ def view_resume(candidate_id):
     # Send the file as a response
     return send_file(
         resume_file,
+        mimetype=mimetype,
+        as_attachment=False
+    )
+
+
+import base64
+import io
+
+app = Flask(__name__)
+
+@app.route('/user_image/<int:user_id>', methods=['GET'])
+def user_image(user_id):
+    # Retrieve the resume data from the database using SQLAlchemy
+    user_image = User.query.filter_by(id=user_id).first()
+    if not user_image:
+        return 'Image not found'
+    
+    # Decode the base64 encoded resume data
+    decoded_image = base64.b64decode(user_image.resume)
+    
+    # Create a file-like object (BytesIO) from the decoded resume data
+    user_image_file = io.BytesIO(decoded_image)
+    
+    # Determine the mimetype based on the file content
+    is_image = decoded_image.startswith(b"\x89PNG") or decoded_image.startswith(b"\xff\xd8\xff")
+    mimetype = 'image/png' if is_image else 'image/jpeg'
+ 
+    # Send the file as a response
+    return send_file(
+        user_image_file,
         mimetype=mimetype,
         as_attachment=False
     )
