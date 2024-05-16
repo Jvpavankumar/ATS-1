@@ -2142,8 +2142,7 @@ def recruiter_job_posts():
 
     return redirect(url_for('login'))
 
-import io
-import base64
+
 import magic  # You may need to install this library, e.g., via pip install python-magic
 from flask import send_file
 
