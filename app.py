@@ -2144,36 +2144,23 @@ def recruiter_job_posts():
 
 
 
-import base64
+import io
 
+import base64
+ 
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 def view_resume(candidate_id):
     # Retrieve the resume data from the database using SQLAlchemy
     candidate = Candidate.query.filter_by(id=candidate_id).first()
     if not candidate:
         return 'Candidate not found'
-    
     # Decode the base64 encoded resume data
     decoded_resume = base64.b64decode(candidate.resume)
-    
-    # Extract the file extension from the candidate's resume filename
-    filename = candidate.resume_filename
-    if not filename:
-        return 'Resume filename not provided'
-    
-    file_extension = filename.rsplit('.', 1)[-1].lower()
-    
-    # Determine the mimetype based on the file extension
-    if file_extension == 'pdf':
-        mimetype = 'application/pdf'
-    elif file_extension in ['doc', 'docx']:
-        mimetype = 'application/msword'
-    else:
-        # Unsupported format
-        return 'Unsupported file format'
-    
     # Create a file-like object (BytesIO) from the decoded resume data
     resume_file = io.BytesIO(decoded_resume)
+    # Determine the mimetype based on the file content
+    is_pdf = decoded_resume.startswith(b"%PDF")
+    mimetype = 'application/pdf' if is_pdf else 'application/msword'
  
     # Send the file as a response
     return send_file(
@@ -2181,7 +2168,7 @@ def view_resume(candidate_id):
         mimetype=mimetype,
         as_attachment=False
     )
-    
+
 
 @app.route('/viewfull_jd/<int:id>')
 def viewfull_jd(id):
