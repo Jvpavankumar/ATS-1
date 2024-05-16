@@ -2160,7 +2160,7 @@ def view_resume(candidate_id):
     try:
         decoded_resume = base64.b64decode(candidate.resume)
         is_base64 = True
-    except:
+    except Exception as e:
         decoded_resume = candidate.resume
         is_base64 = False
 
@@ -2172,25 +2172,35 @@ def view_resume(candidate_id):
         print(f'Error determining mimetype: {str(e)}')
         return 'Error determining mimetype'
 
+    # Set the content disposition header for downloading
+    content_disposition = 'attachment; filename="resume"'
+    
     # Check if the mimetype indicates a supported format
     supported_formats = ['pdf', 'doc', 'docx']  # Add more if needed
     if any(format in mimetype.lower() for format in supported_formats):
+        # For supported formats, send the file directly
         return send_file(
             io.BytesIO(decoded_resume),
             mimetype=mimetype,
-            as_attachment=False
+            as_attachment=True,
+            attachment_filename=f"resume.{mimetype.split('/')[1]}"
         )
     else:
         # For unsupported formats, handle them as base64 encoded files
         if is_base64:
-            resume_file = io.BytesIO(decoded_resume)
-            return send_file(
-                resume_file,
+            # Return base64 decoded data
+            return Response(
+                decoded_resume,
                 mimetype=mimetype,
-                as_attachment=False
+                headers={"Content-Disposition": content_disposition}
             )
         else:
-            return Response(decoded_resume, mimetype=mimetype)
+            # Return original data
+            return Response(
+                decoded_resume,
+                mimetype=mimetype,
+                headers={"Content-Disposition": content_disposition}
+            )
 
 
 
