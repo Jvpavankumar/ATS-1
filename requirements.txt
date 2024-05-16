@@ -56,3 +56,5 @@ tzdata==2023.3
 Werkzeug==2.3.6
 
 gunicorn
+
+python-magic-bin==0.4.18
