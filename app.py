@@ -2705,13 +2705,15 @@ def generate_excel():
     grouped['date_created'] = grouped['date_created'].dt.strftime("%Y-%m-%d")
 
     pivot_table = grouped.pivot_table(index='recruiter', columns='date_created', values='count', aggfunc='sum',
-                                      fill_value=0, margins=True, margins_name='Grand Total')
+                                      fill_value=0)
+    pivot_table['Grand Total'] = pivot_table.sum(axis=1)
+    pivot_table.loc['Grand Total'] = pivot_table.sum()
 
     styled_pivot_table = pivot_table.copy()
 
     recruiters = list(set(recruiter_names))
 
-    styled_pivot_table_json = styled_pivot_table.to_json()
+    styled_pivot_table_json = styled_pivot_table.reset_index().to_json(orient='records')
 
     return jsonify({
         'recruiters': recruiters,
