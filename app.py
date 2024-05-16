@@ -2142,6 +2142,11 @@ def recruiter_job_posts():
 
     return redirect(url_for('login'))
 
+import io
+import base64
+import magic  # You may need to install this library, e.g., via pip install python-magic
+from flask import send_file
+
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 def view_resume(candidate_id):
     # Retrieve the resume data from the database using SQLAlchemy
@@ -2152,19 +2157,20 @@ def view_resume(candidate_id):
     # Decode the base64 encoded resume data
     decoded_resume = base64.b64decode(candidate.resume)
     
+    # Determine the mimetype based on the file content
+    mimetype = magic.Magic(mime=True).from_buffer(decoded_resume)
+    
+    # Validate the detected mimetype
+    if mimetype == 'application/pdf':
+        is_pdf = True
+    elif mimetype == 'application/msword':
+        is_pdf = False
+    else:
+        # Unsupported format
+        return 'Unsupported file format'
+    
     # Create a file-like object (BytesIO) from the decoded resume data
     resume_file = io.BytesIO(decoded_resume)
-    
-    # Determine the mimetype based on the file content
-    is_pdf = decoded_resume.startswith(b"%PDF")
-    is_word = decoded_resume.startswith(b"PK")
-    if is_pdf:
-        mimetype = 'application/pdf'
-    elif is_word:
-        mimetype = 'application/msword'
-    else:
-        # If neither PDF nor Word, return an error
-        return 'Unsupported file format'
  
     # Send the file as a response
     return send_file(
@@ -2172,6 +2178,7 @@ def view_resume(candidate_id):
         mimetype=mimetype,
         as_attachment=False
     )
+    
 
 @app.route('/viewfull_jd/<int:id>')
 def viewfull_jd(id):
