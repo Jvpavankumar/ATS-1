@@ -2143,9 +2143,8 @@ def recruiter_job_posts():
     return redirect(url_for('login'))
 
 
-import io
+
 import base64
-from flask import send_file
 
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 def view_resume(candidate_id):
