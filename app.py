@@ -2648,22 +2648,20 @@ def view_jd(job_id):
         return 'JD PDF not available', 404  # Return 404 Not Found status if JD PDF is not available
 
 
-from flask import Flask, request, Response, render_template
-import pandas as pd
+from flask import Flask, jsonify, request
 from datetime import datetime
-import openpyxl
-from sqlalchemy import create_engine
-# from sqlalchemy.orm import sessionmaker
+import pandas as pd
 
 @app.route('/generate_excel', methods=['POST'])
 def generate_excel():
     data = request.json
 
-    user_id = data.get('user_id')
+    if not data:
+        return jsonify({'error': 'No JSON data provided'})
 
+    user_id = data.get('user_id')
     from_date_str = data.get('from_date')
     to_date_str = data.get('to_date')
-
     recruiter_names = data.get('recruiter_names', [])
 
     if not recruiter_names:
@@ -2678,11 +2676,11 @@ def generate_excel():
     complete_data = [{"recruiter": recruiter_name, "date_created": date.strftime("%Y-%m-%d")} for recruiter_name in recruiter_names for date in pd.date_range(from_date, to_date)]
 
     complete_df = pd.DataFrame(complete_data)
+
     merged_df = pd.concat([pd.DataFrame(data), complete_df]).fillna(0)
 
     grouped = merged_df.groupby(['recruiter', 'date_created']).size().reset_index(name='count')
     grouped['date_created'] = pd.to_datetime(grouped['date_created'], format="%Y-%m-%d")
-
     grouped = grouped.sort_values(by='date_created')
     grouped['date_created'] = grouped['date_created'].dt.strftime("%Y-%m-%d")
 
@@ -2698,11 +2696,10 @@ def generate_excel():
     return jsonify({
         'recruiters': recruiters,
         'styled_pivot_table': styled_pivot_table_json,
-        'user_name': user_name,
+        'user_id': user_id,
         'from_date_str': from_date_str,
         'to_date_str': to_date_str
     })
-
 
 
 def re_send_notification(recruiter_email, job_id):
