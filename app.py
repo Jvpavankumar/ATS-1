@@ -39,7 +39,8 @@ from flask_cors import CORS
 
 
 app = Flask(__name__)
-CORS(app, origins='*')
+# CORS(app, origins='*')
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
