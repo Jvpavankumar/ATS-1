@@ -40,8 +40,6 @@ from flask_cors import CORS
 
 app = Flask(__name__)
 # CORS(app, origins='*')
-# CORS(app, resources={r"/api/*": {"origins": "*"}})
-# CORS(app, resources={r"/api/*": {"origins": "https://ats-makonis.netlify.app"}})
 
 CORS(app) 
 
