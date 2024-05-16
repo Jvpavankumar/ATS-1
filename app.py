@@ -36,6 +36,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 app = Flask(__name__)
+cors = CORS(app)
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
