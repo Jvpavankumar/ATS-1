@@ -2156,7 +2156,7 @@ def view_resume(candidate_id):
     if not candidate:
         return 'Candidate not found'
 
-    # Check if the resume is base64 encoded
+    # Decode resume if it's base64 encoded, otherwise, use as it is
     try:
         decoded_resume = base64.b64decode(candidate.resume)
         is_base64 = True
@@ -2168,26 +2168,29 @@ def view_resume(candidate_id):
     try:
         mimetype = magic.Magic(mime=True).from_buffer(decoded_resume)
     except Exception as e:
-        return f'Error determining mimetype: {str(e)}'
+        # Log the error
+        print(f'Error determining mimetype: {str(e)}')
+        return 'Error determining mimetype'
 
-    # If the mimetype indicates a PDF, send the resume directly
-    if 'pdf' in mimetype.lower():
+    # Check if the mimetype indicates a supported format
+    supported_formats = ['pdf', 'doc', 'docx']  # Add more if needed
+    if any(format in mimetype.lower() for format in supported_formats):
         return send_file(
             io.BytesIO(decoded_resume),
             mimetype=mimetype,
             as_attachment=False
         )
-
-    # For other formats, handle them as base64 encoded files
-    if is_base64:
-        resume_file = io.BytesIO(decoded_resume)
-        return send_file(
-            resume_file,
-            mimetype=mimetype,
-            as_attachment=False
-        )
     else:
-        return Response(decoded_resume, mimetype=mimetype)
+        # For unsupported formats, handle them as base64 encoded files
+        if is_base64:
+            resume_file = io.BytesIO(decoded_resume)
+            return send_file(
+                resume_file,
+                mimetype=mimetype,
+                as_attachment=False
+            )
+        else:
+            return Response(decoded_resume, mimetype=mimetype)
 
 
 
