@@ -2145,64 +2145,29 @@ def recruiter_job_posts():
 
 
 import io
-import base64
-from flask import send_file, Response
-import magic
 
+import base64
+ 
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 def view_resume(candidate_id):
     # Retrieve the resume data from the database using SQLAlchemy
     candidate = Candidate.query.filter_by(id=candidate_id).first()
     if not candidate:
         return 'Candidate not found'
-
-    # Decode resume if it's base64 encoded, otherwise, use as it is
-    try:
-        decoded_resume = base64.b64decode(candidate.resume)
-        is_base64 = True
-    except Exception as e:
-        decoded_resume = candidate.resume
-        is_base64 = False
-
+    # Decode the base64 encoded resume data
+    decoded_resume = base64.b64decode(candidate.resume)
+    # Create a file-like object (BytesIO) from the decoded resume data
+    resume_file = io.BytesIO(decoded_resume)
     # Determine the mimetype based on the file content
-    try:
-        mimetype = magic.Magic(mime=True).from_buffer(decoded_resume)
-    except Exception as e:
-        # Log the error
-        print(f'Error determining mimetype: {str(e)}')
-        return 'Error determining mimetype'
-
-    # Set the content disposition header for downloading
-    content_disposition = 'attachment; filename="resume"'
-    
-    # Check if the mimetype indicates a supported format
-    supported_formats = ['pdf', 'doc', 'docx']  # Add more if needed
-    if any(format in mimetype.lower() for format in supported_formats):
-        # For supported formats, send the file directly
-        return send_file(
-            io.BytesIO(decoded_resume),
-            mimetype=mimetype,
-            as_attachment=True,
-            attachment_filename=f"resume.{mimetype.split('/')[1]}"
-        )
-    else:
-        # For unsupported formats, handle them as base64 encoded files
-        if is_base64:
-            # Return base64 decoded data
-            return Response(
-                decoded_resume,
-                mimetype=mimetype,
-                headers={"Content-Disposition": content_disposition}
-            )
-        else:
-            # Return original data
-            return Response(
-                decoded_resume,
-                mimetype=mimetype,
-                headers={"Content-Disposition": content_disposition}
-            )
-
-
+    is_pdf = decoded_resume.startswith(b"%PDF")
+    mimetype = 'application/pdf' if is_pdf else 'application/msword'
+ 
+    # Send the file as a response
+    return send_file(
+        resume_file,
+        mimetype=mimetype,
+        as_attachment=False
+    )
 
 
 @app.route('/viewfull_jd/<int:id>')
