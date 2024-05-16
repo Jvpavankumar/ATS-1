@@ -2677,11 +2677,14 @@ def generate_excel():
 
     complete_df = pd.DataFrame(complete_data)
 
+    # Filter out rows with invalid date strings
+    complete_df = complete_df[complete_df['date_created'] != "0"]
+
     merged_df = pd.concat([pd.DataFrame(data), complete_df]).fillna(0)
 
     grouped = merged_df.groupby(['recruiter', 'date_created']).size().reset_index(name='count')
-    grouped['date_created'] = pd.to_datetime(grouped['date_created'], format="%Y-%m-%d")
-    grouped = grouped.sort_values(by='date_created')
+    grouped['date_created'] = pd.to_datetime(grouped['date_created'], errors='coerce', format="%Y-%m-%d")
+    grouped = grouped.dropna(subset=['date_created'])  # Remove rows with invalid dates
     grouped['date_created'] = grouped['date_created'].dt.strftime("%Y-%m-%d")
 
     pivot_table = grouped.pivot_table(index='recruiter', columns='date_created', values='count', aggfunc='sum',
@@ -2700,7 +2703,6 @@ def generate_excel():
         'from_date_str': from_date_str,
         'to_date_str': to_date_str
     })
-
 
 def re_send_notification(recruiter_email, job_id):
     msg = Message('Job Update Notification', sender='saich5252@gmail.com', recipients=[recruiter_email])
