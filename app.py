@@ -2143,7 +2143,8 @@ def recruiter_job_posts():
     return redirect(url_for('login'))
 
 
-import magic  # You may need to install this library, e.g., via pip install python-magic
+import io
+import base64
 from flask import send_file
 
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
@@ -2156,14 +2157,18 @@ def view_resume(candidate_id):
     # Decode the base64 encoded resume data
     decoded_resume = base64.b64decode(candidate.resume)
     
-    # Determine the mimetype based on the file content
-    mimetype = magic.Magic(mime=True).from_buffer(decoded_resume)
+    # Extract the file extension from the candidate's resume filename
+    filename = candidate.resume_filename
+    if not filename:
+        return 'Resume filename not provided'
     
-    # Validate the detected mimetype
-    if mimetype == 'application/pdf':
-        is_pdf = True
-    elif mimetype == 'application/msword':
-        is_pdf = False
+    file_extension = filename.rsplit('.', 1)[-1].lower()
+    
+    # Determine the mimetype based on the file extension
+    if file_extension == 'pdf':
+        mimetype = 'application/pdf'
+    elif file_extension in ['doc', 'docx']:
+        mimetype = 'application/msword'
     else:
         # Unsupported format
         return 'Unsupported file format'
