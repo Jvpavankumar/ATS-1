@@ -2191,56 +2191,56 @@ def view_resume(candidate_id):
 
 #     return jsonify({'message': 'Image updated successfully'}), 200
 #######################################################################################
-# from flask import request
-# import io
-
-# @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
-# def upload_user_image(user_id):
-#     data = request.json
-
-#     # Extract file name and image content
-#     filename = data.get('file_name')
-#     image_content = data.get('image_content')  # Assuming 'image_content' contains the binary data of the image
-
-#     # Find the user by user_id
-#     user = User.query.filter_by(id=user_id).first()
-#     if not user:
-#         return jsonify({'error': 'User not found'}), 404
-
-#     # Update user's filename and image content
-#     user.filename = filename
-#     user.image_file = image_content  # Assuming 'image_file' column is used to store binary data
-
-#     # Commit changes to the database
-#     db.session.commit()
-
-#     return jsonify({'message': 'Image updated successfully'}), 200
-
 from flask import request
+import io
 
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
+    data = request.json
 
-    file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
+    # Extract file name and image content
+    filename = data.get('file_name')
+    image_content = data.get('image_content')  # Assuming 'image_content' contains the binary data of the image
 
+    # Find the user by user_id
     user = User.query.filter_by(id=user_id).first()
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
-    # Save the file content to a temporary location or process it as needed
-    # Assuming you have a 'save_image' function for saving binary data
-    image_content = file.read()
-    save_image(user_id, file.filename, image_content)
+    # Update user's filename and image content
+    user.filename = filename
+    user.image_file = image_content  # Assuming 'image_file' column is used to store binary data
 
-    # Update the user's filename in the database
-    user.filename = file.filename
+    # Commit changes to the database
     db.session.commit()
 
     return jsonify({'message': 'Image updated successfully'}), 200
+
+# from flask import request
+
+# @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
+# def upload_user_image(user_id):
+#     if 'file' not in request.files:
+#         return jsonify({'error': 'No file part'}), 400
+
+#     file = request.files['file']
+#     if file.filename == '':
+#         return jsonify({'error': 'No selected file'}), 400
+
+#     user = User.query.filter_by(id=user_id).first()
+#     if not user:
+#         return jsonify({'error': 'User not found'}), 404
+
+#     # Save the file content to a temporary location or process it as needed
+#     # Assuming you have a 'save_image' function for saving binary data
+#     image_content = file.read()
+#     save_image(user_id, file.filename, image_content)
+
+#     # Update the user's filename in the database
+#     user.filename = file.filename
+#     db.session.commit()
+
+#     return jsonify({'message': 'Image updated successfully'}), 200
 
 
 
