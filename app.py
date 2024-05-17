@@ -2162,7 +2162,7 @@ def view_resume(candidate_id):
     # Check if the resume is in PDF or Microsoft Word format
     if candidate.resume:
         # If it starts with '%PDF', it's a PDF file
-        resume_content = candidate.resume.encode()
+        resume_content = base64.b64decode(candidate.resume)
         mimetype = 'application/pdf'
     else:
         # Decode the base64 encoded resume data
