@@ -2175,15 +2175,15 @@ def view_resume(candidate_id):
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
     data=request.json
-    if not data or 'image' not in data:
-        return jsonify({'error': 'No image data provided'}), 400
+    # if not data or 'image' not in data:
+    #     return jsonify({'error': 'No image data provided'}), 400
     
     filename=data['file_name']
     image_file=data['image_file']
 
     user = User.query.filter_by(id=user_id).first()
-    if not user:
-        return jsonify({'error': 'User not found'}), 400
+    # if not user:
+    #     return jsonify({'error': 'User not found'}), 400
     
     user.filename = filename
     user.image_file=image_file
