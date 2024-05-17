@@ -2172,24 +2172,50 @@ def view_resume(candidate_id):
         as_attachment=False
     )
 
+# @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
+# def upload_user_image(user_id):
+#     data=request.json
+#     # if not data or 'image' not in data:
+#     #     return jsonify({'error': 'No image data provided'}), 400
+    
+#     filename=data['file_name']
+#     image_file=data['image_file']
+
+#     user = User.query.filter_by(id=user_id).first()
+#     # if not user:
+#     #     return jsonify({'error': 'User not found'}), 400
+    
+#     user.filename = filename
+#     user.image_file=image_file
+#     db.session.commit()
+
+#     return jsonify({'message': 'Image updated successfully'}), 200
+
+from flask import request
+import io
+
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
-    data=request.json
-    # if not data or 'image' not in data:
-    #     return jsonify({'error': 'No image data provided'}), 400
-    
-    filename=data['file_name']
-    image_file=data['image_file']
+    data = request.json
 
+    # Extract file name and image content
+    filename = data.get('file_name')
+    image_content = data.get('image_content')  # Assuming 'image_content' contains the binary data of the image
+
+    # Find the user by user_id
     user = User.query.filter_by(id=user_id).first()
-    # if not user:
-    #     return jsonify({'error': 'User not found'}), 400
-    
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+
+    # Update user's filename and image content
     user.filename = filename
-    user.image_file=image_file
+    user.image_file = image_content  # Assuming 'image_file' column is used to store binary data
+
+    # Commit changes to the database
     db.session.commit()
 
     return jsonify({'message': 'Image updated successfully'}), 200
+
 
 import base64
 import io
