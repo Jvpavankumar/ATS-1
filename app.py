@@ -2520,14 +2520,14 @@ def deactivate_user():
 
             if recruiter_user:
                 # Change active status for the recruiter user
-                recruiter_user.is_active = user_status
+                recruiter_user.is_verified = user_status
                 db.session.commit()
 
                 # Get all user records
                 all_users = User.query.all()
                 
                 # Construct response data
-                user_data = [{'id': user.id, 'username': user.username, 'is_active': user.is_active} for user in all_users]
+                user_data = [{'id': user.id, 'username': user.username, 'is_active': user.is_verified} for user in all_users]
 
                 if user_status:
                     return jsonify({'message': f'Recruiter account {recruiter_username} has been successfully activated.', 'users': user_data})
