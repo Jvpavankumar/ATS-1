@@ -2172,6 +2172,31 @@ def view_resume(candidate_id):
         as_attachment=False
     )
 
+@app.route('/upload_user_image/<int:user_id>', methods=['POST'])
+def upload_user_image(user_id):
+    if 'image_file' not in request.files:
+        return jsonify({'error': 'No image file part'}), 400
+    
+    file = request.files['image_file']
+    
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            return jsonify({'error': 'User not found'}), 400
+        
+        user.image_file = filename
+        db.session.commit()
+        
+        return jsonify({'message': 'Image updated successfully'}), 200
+    else:
+        return jsonify({'error': 'File type not allowed'}), 400
+
 
 import base64
 import io
