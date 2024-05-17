@@ -763,8 +763,6 @@ def candidate_details(candidate_id, user_type, page_no):
 
 
 from flask import Flask, jsonify, request, Response
-from sqlalchemy import and_
-import json
 
 @app.route('/dashboard', methods=['POST'])
 def dashboard():
@@ -777,8 +775,9 @@ def dashboard():
     signup_message = data.get('signup_message')
     job_message = data.get('job_message')
     update_candidate_message = data.get('update_candidate_message')
-    delete_message = data.get('delete_message')
+    delete_message = data.get("delete_message")
 
+    # data = request.json
     user_id = data['user_id']
     user = User.query.filter_by(id=user_id).first()
     user_type = user.user_type
@@ -836,9 +835,10 @@ def dashboard():
                         'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                         'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
                         'buyout': candidate.buyout,
-                        'date_created': candidate.date_created,
-                        'time_created': candidate.time_created
+                        'date_created':candidate.date_created,
+                        'time_created':candidate.time_created
 
+            
                         # Add more attributes as needed
                     } for candidate in candidates],
                     'jobs': [{
@@ -915,8 +915,8 @@ def dashboard():
                         'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                         'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
                         'buyout': candidate.buyout,
-                        'date_created': candidate.date_created,
-                        'time_created': candidate.time_created
+                        'date_created':candidate.date_created,
+                        'time_created':candidate.time_created
 
                     # Add more attributes as needed
                 } for candidate in candidates],
@@ -965,39 +965,39 @@ def dashboard():
                     'user_name': user_name,
                     'candidates': [{
                         'id': candidate.id,
-                        'job_id': candidate.job_id,
+                        'job_id':candidate.job_id,
                         'name': candidate.name,
                         'email': candidate.email,
                         'mobile': candidate.mobile,
-                        'client': candidate.client,
-                        'skills': candidate.skills,
+                        'client':candidate.client,
+                        'skills':candidate.skills,
                         "profile": candidate.profile, 
-                        'recruiter': candidate.recruiter,
-                        "management": candidate.management,
+                        'recruiter':candidate.recruiter,
+                        "management":candidate.management,
                         'resume': candidate.resume,
                         'current_company': candidate.current_company,
                         'position': candidate.position,
                         'current_job_location': candidate.current_job_location,
                         'preferred_job_location': candidate.preferred_job_location,
-                        'qualifications': candidate.qualifications,
+                        'qualifications':candidate.qualifications,
                         'experience': candidate.experience,
-                        'relevant_experience': candidate.relevant_experience,
-                        'current_ctc': candidate.current_ctc,
-                        'expected_ctc': candidate.expected_ctc,
-                        "total": candidate.total,
-                        'package_in_lpa': candidate.package_in_lpa,
-                        'holding_offer': candidate.holding_offer,
+                        'relevant_experience':candidate.relevant_experience,
+                        'current_ctc':candidate.current_ctc,
+                        'experted_ctc': candidate.expected_ctc,
+                        "total":candidate.total,
+                        'package_in_lpa':candidate.package_in_lpa,
+                        'holding_offer':candidate.holding_offer,
                         'status': candidate.status,
-                        'reason_for_job_change': candidate.reason_for_job_change,
-                        'remarks': candidate.remarks,
+                        'reason_for_job_change':candidate.reason_for_job_change,
+                        'remarks':candidate.remarks,
                         'screening_done': candidate.screening_done,
                         'rejected_at_screening': candidate.rejected_at_screening,
-                        'l1_cleared': candidate.l1_cleared,
-                        'rejected_at_l1': candidate.rejected_at_l1,
+                        'l1_cleared':candidate.l1_cleared,
+                        'rejected_at_l1':candidate.rejected_at_l1,
                         "dropped_after_clearing_l1": candidate.dropped_after_clearing_l1,
-                        'l2_cleared': candidate.l2_cleared,
-                        'rejected_at_l2': candidate.rejected_at_l2,
-                        "dropped_after_clearing_l2": candidate.dropped_after_clearing_l2,
+                        'l2_cleared':candidate.l1_cleared,
+                        'rejected_at_l2':candidate.rejected_at_l1,
+                        "dropped_after_clearing_l2": candidate.dropped_after_clearing_l1,
                         'onboarded': candidate.onboarded,
                         'dropped_after_onboarding': candidate.dropped_after_onboarding,
                         'linkedin_url': candidate.linkedin_url,
@@ -1006,8 +1006,8 @@ def dashboard():
                         'reference_name': candidate.reference_name,
                         'reference_position': candidate.reference_position,
                         'reference_information': candidate.reference_information,
-                        'comments': candidate.comments,
-                        "time_created": str(candidate.time_created),
+                        'comments':candidate.comments,
+                        "time_created":str(candidate.time_created),
                         "date_created": str(candidate.date_created)
                         # Add more attributes as needed
                     } for candidate in candidates],
@@ -1015,7 +1015,12 @@ def dashboard():
     else:
         response_data = {"message": "User ID or User Type missing"}
 
-    return jsonify(response_data)
+    # Convert date objects to string representations before returning the response
+    for job in response_data.get('jobs', []):
+        job['date_created'] = job['date_created'].isoformat()
+
+    return Response(json.dumps(response_data, default=str), content_type='application/json')
+
 
 # Mocked function for demonstration
 # Mocked function for demonstration
