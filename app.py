@@ -2483,9 +2483,9 @@ def update_user_status():
             # db.session.commit()
 
             # Fetch updated active users list
-            active_users_manager = User.query.filter_by(is_active=True, user_type='management').all()
+            active_users_manager = User.query.filter_by(user_type='management').all()
             active_users_manager = sorted(active_users_manager, key=lambda user: user.id)
-            active_users_recruiter = User.query.filter_by(is_active=True, user_type='recruiter').all()
+            active_users_recruiter = User.query.filter_by(user_type='recruiter').all()
             active_users_recruiter = sorted(active_users_recruiter, key=lambda user: user.id)
 
             return jsonify({
