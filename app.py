@@ -2506,33 +2506,33 @@ from flask import jsonify
 @app.route('/deactivate_user', methods=['POST'])
 def deactivate_user():
     data = request.json
-    user_id = data.get('user_id')
-    user_name = data.get('user_name')
+    management_user_id = data.get('user_id')
+    recruiter_username = data.get('user_name')
     user_status = data.get('user_status')
 
-    if user_id:  
+    if management_user_id and recruiter_username:  
         # Find the management user
-        management_user = User.query.get(user_id)
+        management_user = User.query.get(management_user_id)
 
         if management_user and management_user.user_type == 'management':
-            # Find the user to be deactivated
-            user_to_deactivate = User.query.get(user_id)
+            # Find the recruiter user by username
+            recruiter_user = User.query.filter_by(username=recruiter_username, user_type='recruiter').first()
 
-            if user_to_deactivate:
-                # Change active status for the user
-                user_to_deactivate.is_active = user_status
+            if recruiter_user:
+                # Change active status for the recruiter user
+                recruiter_user.is_active = user_status
                 db.session.commit()
 
                 if user_status:
-                    return jsonify({'message': f'User {user_name} has been successfully activated.'})
+                    return jsonify({'message': f'Recruiter account {recruiter_username} has been successfully activated.'})
                 else:
-                    return jsonify({'message': f'User {user_name} has been successfully deactivated.'})
+                    return jsonify({'message': f'Recruiter account {recruiter_username} has been successfully deactivated.'})
             else:
-                return jsonify({'message': 'User to deactivate not found'})
+                return jsonify({'message': 'Recruiter user not found or not a recruiter user'})
         else:
             return jsonify({'message': 'Management user not found or not a management user'})
     else:
-        return jsonify({'message': 'User ID is required'})
+        return jsonify({'message': 'Both management_user_id and recruiter_username are required'})
 
         
 # @app.route('/verify_checkbox', methods=['POST'])
