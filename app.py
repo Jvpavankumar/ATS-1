@@ -2160,7 +2160,7 @@ def view_resume(candidate_id):
         return abort(404, 'Candidate not found')
 
     # Check if the resume is in PDF or Microsoft Word format
-    if candidate.resume.startswith('%PDF'):
+    if candidate.resume:
         # If it starts with '%PDF', it's a PDF file
         resume_content = candidate.resume.encode()
         mimetype = 'application/pdf'
