@@ -2174,29 +2174,22 @@ def view_resume(candidate_id):
 
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
-    if 'image_file' not in request.files:
-        return jsonify({'error': 'No image file part'}), 400
+    data=request.json
+    if not data or 'image' not in data:
+        return jsonify({'error': 'No image data provided'}), 400
     
-    file = request.files['image_file']
-    
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        
-        user = User.query.filter_by(id=user_id).first()
-        if not user:
-            return jsonify({'error': 'User not found'}), 400
-        
-        user.image_file = filename
-        db.session.commit()
-        
-        return jsonify({'message': 'Image updated successfully'}), 200
-    else:
-        return jsonify({'error': 'File type not allowed'}), 400
+    filename=data['file_name']
+    image_file=data['image_file']
 
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'}), 400
+    
+    user.filename = filename
+    user.image_file=image_file
+    db.session.commit()
+
+    return jsonify({'message': 'Image updated successfully'}), 200
 
 import base64
 import io
