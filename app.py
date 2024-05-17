@@ -2154,23 +2154,38 @@ import base64
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 def view_resume(candidate_id):
     # Retrieve the resume data from the database using SQLAlchemy
-    candidate = Candidate.query.filter_by(id=candidate_id).first()
+    candidate = Candidate.query.get(candidate_id)
     if not candidate:
-        return 'Candidate not found'
-    # Decode the base64 encoded resume data
-    decoded_resume = base64.b64decode(candidate.resume)
-    # Create a file-like object (BytesIO) from the decoded resume data
-    resume_file = io.BytesIO(decoded_resume)
+        return abort(404, 'Candidate not found')
+
+    # Check if the resume is in base64 format or PDF content format
+    if candidate.resume.startswith('%PDF'):
+        # If it starts with '%PDF', it's already in PDF content format
+        resume_content = candidate.resume.encode()
+    else:
+        # Decode the base64 encoded resume data
+        try:
+            resume_content = base64.b64decode(candidate.resume)
+        except Exception as e:
+            return abort(500, f'Error decoding resume data: {str(e)}')
+
+    # Create a file-like object (BytesIO) from the resume content
+    resume_file = io.BytesIO(resume_content)
+
     # Determine the mimetype based on the file content
-    is_pdf = decoded_resume.startswith(b"%PDF")
+    is_pdf = resume_content.startswith(b"%PDF")
     mimetype = 'application/pdf' if is_pdf else 'application/msword'
- 
+
     # Send the file as a response
-    return send_file(
+    response = send_file(
         resume_file,
         mimetype=mimetype,
         as_attachment=False
     )
+    if not response:
+        return abort(500, 'Error sending file')
+    
+    return response
 
 
 import base64
