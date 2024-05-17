@@ -2525,7 +2525,7 @@ def deactivate_user():
                 if recruiter_user:
                     recruiter_user.is_active = user_status
 
-            db.session.commit()
+                db.session.commit()
 
             if user_status:
                 return jsonify({'message': f'{user_name} Recruiter account has been successfully activated.'})
