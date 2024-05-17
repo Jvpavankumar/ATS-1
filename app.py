@@ -2191,25 +2191,22 @@ def view_resume(candidate_id):
 
 #     return jsonify({'message': 'Image updated successfully'}), 200
 #######################################################################################
-from flask import request
-import io
-
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
-    data = request.json
+    data = request.form
 
     # Extract file name and image content
     filename = data.get('file_name')
-    image_content = data.get('image_file')  # Assuming 'image_content' contains the binary data of the image
+    image_content = request.files['image_file'].read()  # Retrieve binary data of the image
 
     # Find the user by user_id
-    user = User.query.filter_by(id=user_id).first()
+    user = User.query.get(user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
     # Update user's filename and image content
     user.filename = filename
-    user.image_file = image_content  # Assuming 'image_file' column is used to store binary data
+    user.image_file = image_content
 
     # Commit changes to the database
     db.session.commit()
