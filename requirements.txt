@@ -62,3 +62,5 @@ python-magic
 Flask-Cors
 
 python-docx
+
+docx 
