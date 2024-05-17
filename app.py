@@ -2769,103 +2769,89 @@ def re_send_notification(recruiter_email, job_id):
     msg.body = f'Hello,\n\nThe job post with ID {job_id} has been updated.\n\nPlease check your dashboard for more details.'
     mail.send(msg)
 
-@app.route('/edit_post_job/<int:job_id>/<int:page_no>', methods=['GET', 'POST'])
-def edit_post_job(job_id,page_no):
-    job_message = request.args.get('job_message')
-    user_name = session.get('user_name')
+@app.route('/edit_post_job/<int:job_id>', methods=['POST'])
+def edit_post_job(job_id):
+    data = request.form
+    user_id = data['user_id']
+    user = User.query.filter_by(id=user_id).first()
+    if not user:
+        return jsonify({'error': 'User not found'})
 
-    # Retrieve the job post from the database based on the job_id
     job_post = JobPost.query.get(job_id)
+    if not job_post:
+        return jsonify({'error': 'Job not found'})
 
-    if 'user_id' in session and 'user_type' in session:
-        if session['user_type'] == 'management' and job_post:
-            if request.method == 'POST':
-                # Extract and process form data
-                client = request.form['client']
-                experience_min = request.form['experience_min']
-                experience_max = request.form['experience_max']
-                budget_min = request.form['budget_min']
-                budget_max = request.form['budget_max']
-                currency_type_min = request.form['currency_type_min']
-                currency_type_max = request.form['currency_type_max']
-                budget_min = currency_type_min + ' ' + budget_min
-                budget_max = currency_type_max + ' ' + budget_max
-                location = request.form['location']
-                shift_timings = request.form['shift_timings']
-                notice_period = request.form['notice_period']
-                role = request.form['role']
-                detailed_jd = request.form['detailed_jd']
-                mode = request.form['mode']
-                job_status = request.form['job_status']
-                job_type = request.form.get('job_type', '')
-                skills = request.form['skills']
-                
-                jd_pdf_file = request.files['jd_pdf']
-                jd_pdf_binary = job_post.jd_pdf if job_post.jd_pdf else b''
-                if jd_pdf_file.filename != '':
-                    jd_pdf_binary = jd_pdf_file.read()
+    # Extract and process form data
+    client = data['client']
+    experience_min = data['experience_min']
+    experience_max = data['experience_max']
+    budget_min = data['budget_min']
+    budget_max = data['budget_max']
+    currency_type_min = data['currency_type_min']
+    currency_type_max = data['currency_type_max']
+    budget_min = f"{currency_type_min} {budget_min}"
+    budget_max = f"{currency_type_max} {budget_max}"
+    location = data['location']
+    shift_timings = data['shift_timings']
+    notice_period = data['notice_period']
+    role = data['role']
+    detailed_jd = data['detailed_jd']
+    mode = data['mode']
+    job_status = data['job_status']
+    job_type = data.get('job_type', '')
+    skills = data['skills']
 
-                if job_type == 'Contract':
-                    job_type_details = request.form.get('job_type_details', '')
-                    job_type = f"{job_type} ({job_type_details} Months)"
+    jd_pdf_file = data['jd_pdf']
+    # if jd_pdf_file and jd_pdf_file.filename != '':
+    #     jd_pdf_binary = jd_pdf_file.read()
+    # else:
+    #     jd_pdf_binary = job_post.jd_pdf if job_post.jd_pdf else b''
 
-                # Update the job post attributes
-                job_post.client = client
-                job_post.experience_min = experience_min
-                job_post.experience_max = experience_max
-                job_post.budget_min = budget_min
-                job_post.budget_max = budget_max
-                job_post.location = location
-                job_post.shift_timings = shift_timings
-                job_post.notice_period = notice_period
-                job_post.role = role
-                job_post.detailed_jd = detailed_jd
-                job_post.mode = mode
-                job_post.job_status = job_status
-                job_post.job_type = job_type
-                job_post.skills = skills
-                job_post.jd_pdf = jd_pdf_binary
+    if job_type == 'Contract':
+        job_type_details = data.get('job_type_details', '')
+        job_type = f"{job_type} ({job_type_details} Months)"
 
-                # Update associated notifications if needed
-                recruiter_names = request.form.getlist('recruiter[]')
-                joined_recruiters = ', '.join(recruiter_names)
-                job_post.recruiter = joined_recruiters
+    # Update the job post attributes
+    job_post.client = client
+    job_post.experience_min = experience_min
+    job_post.experience_max = experience_max
+    job_post.budget_min = budget_min
+    job_post.budget_max = budget_max
+    job_post.location = location
+    job_post.shift_timings = shift_timings
+    job_post.notice_period = notice_period
+    job_post.role = role
+    job_post.detailed_jd = detailed_jd
+    job_post.mode = mode
+    job_post.job_status = job_status
+    job_post.job_type = job_type
+    job_post.skills = skills
+    job_post.jd_pdf = jd_pdf
 
-                # Clear existing notifications and update with new ones
-                job_post.notifications = []
-                notifications = []
-                for recruiter_name in recruiter_names:
-                    notification_status = False
-                    notification = Notification(
-                        recruiter_name=recruiter_name.strip(),
-                        notification_status=notification_status
-                    )
-                    notifications.append(notification)
-                    db.session.add(notification)
-                job_post.notifications = notifications
+    # Update associated notifications if needed
+    recruiter_names = data.getlist('recruiter[]')
+    existing_recruiters = job_post.recruiter.split(', ') if job_post.recruiter else []
+    to_remove = set(existing_recruiters) - set(recruiter_names)
+    for recruiter_name in to_remove:
+        Notification.query.filter_by(job_post_id=job_id, recruiter_name=recruiter_name.strip()).delete()
+    for recruiter_name in recruiter_names:
+        if recruiter_name.strip() not in existing_recruiters:
+            notification = Notification(
+                job_post_id=job_id,
+                recruiter_name=recruiter_name.strip(),
+                notification_status=False
+            )
+            db.session.add(notification)
 
-                # Commit changes to the database
-                db.session.commit()
+    # Commit changes to the database
+    db.session.commit()
 
-                # Send email notifications to recruiters
-                recruiter_emails = [recruiter.email for recruiter in User.query.filter(User.name.in_(recruiter_names), User.user_type == 'recruiter',User.is_active == True, User.is_verified == True)]
-                for email in recruiter_emails:
-                    re_send_notification(email,job_id)
+    # Send email notifications to recruiters
+    for recruiter in User.query.filter(User.username.in_(recruiter_names), User.user_type == 'recruiter', User.is_active == True, User.is_verified == True):
+        re_send_notification(recruiter.email, job_id)
 
-                return redirect(url_for('view_all_jobs', job_id=job_post.id, page_no=page_no ,job_message='Job updated successfully'))
-
-            # Prepare data for rendering the edit_job_post.html template
-            recruiter_names = [recruiter.name for recruiter in User.query.filter_by(user_type='recruiter', is_active=True, is_verified=True)]
-            clients = db.session.query(JobPost.client).all()
-            client_names = list(set([client[0] for client in clients]))
-            return render_template('post_job_edit.html',
-                                   recruiter_names=recruiter_names,
-                                   user_name=user_name,
-                                   client_names=client_names,
-                                   job_post=job_post,
-                                   job_message=job_message)
-
-    return redirect(url_for('dashboard'))
+    return jsonify({'message': 'Job updated successfully'})
+    
     
 @app.route('/get_candidate_data')
 def get_candidate_data():
