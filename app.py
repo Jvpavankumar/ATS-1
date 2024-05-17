@@ -2147,10 +2147,11 @@ def recruiter_job_posts():
 
 
 
+from flask import Flask, send_file, abort
 import io
-
 import base64
- 
+from docx import Document
+
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 def view_resume(candidate_id):
     # Retrieve the resume data from the database using SQLAlchemy
@@ -2158,23 +2159,34 @@ def view_resume(candidate_id):
     if not candidate:
         return abort(404, 'Candidate not found')
 
-    # Check if the resume is in base64 format or PDF content format
+    # Check if the resume is in PDF or Microsoft Word format
     if candidate.resume.startswith('%PDF'):
-        # If it starts with '%PDF', it's already in PDF content format
+        # If it starts with '%PDF', it's a PDF file
         resume_content = candidate.resume.encode()
+        mimetype = 'application/pdf'
     else:
         # Decode the base64 encoded resume data
         try:
-            resume_content = base64.b64decode(candidate.resume)
+            decoded_data = base64.b64decode(candidate.resume)
+            # Check if it's a valid Word document
+            if decoded_data.startswith(b"\x50\x4b\x03\x04"):  # Check for PK signature indicating a zip file
+                docx_file = io.BytesIO(decoded_data)
+                document = Document(docx_file)
+                resume_content = io.BytesIO()
+                document.save(resume_content)
+                resume_content.seek(0)
+                mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            else:
+                return abort(400, 'Unsupported document format')
         except Exception as e:
             return abort(500, f'Error decoding resume data: {str(e)}')
 
     # Create a file-like object (BytesIO) from the resume content
-    resume_file = io.BytesIO(resume_content)
+    resume_file = io.BytesIO(resume_content.getvalue())
 
     # Determine the mimetype based on the file content
-    is_pdf = resume_content.startswith(b"%PDF")
-    mimetype = 'application/pdf' if is_pdf else 'application/msword'
+    is_pdf = resume_content.getvalue().startswith(b"%PDF")
+    mimetype = 'application/pdf' if is_pdf else 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
 
     # Send the file as a response
     response = send_file(
@@ -2186,7 +2198,6 @@ def view_resume(candidate_id):
         return abort(500, 'Error sending file')
     
     return response
-
 
 import base64
 import io
