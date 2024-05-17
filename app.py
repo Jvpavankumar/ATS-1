@@ -2523,16 +2523,23 @@ def deactivate_user():
                 recruiter_user.is_active = user_status
                 db.session.commit()
 
+                # Get all user records
+                all_users = User.query.all()
+                
+                # Construct response data
+                user_data = [{'id': user.id, 'username': user.username, 'is_active': user.is_active} for user in all_users]
+
                 if user_status:
-                    return jsonify({'message': f'Recruiter account {recruiter_username} has been successfully activated.'})
+                    return jsonify({'message': f'Recruiter account {recruiter_username} has been successfully activated.', 'users': user_data})
                 else:
-                    return jsonify({'message': f'Recruiter account {recruiter_username} has been successfully deactivated.'})
+                    return jsonify({'message': f'Recruiter account {recruiter_username} has been successfully deactivated.', 'users': user_data})
             else:
                 return jsonify({'message': 'Recruiter user not found or not a recruiter user'})
         else:
             return jsonify({'message': 'Management user not found or not a management user'})
     else:
         return jsonify({'message': 'Both management_user_id and recruiter_username are required'})
+
 
         
 # @app.route('/verify_checkbox', methods=['POST'])
