@@ -2152,52 +2152,43 @@ import io
 import base64
 from docx import Document
 
+import base64
+
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 def view_resume(candidate_id):
     # Retrieve the resume data from the database using SQLAlchemy
-    candidate = Candidate.query.get(candidate_id)
+    candidate = Candidate.query.filter_by(id=candidate_id).first()
     if not candidate:
-        return abort(404, 'Candidate not found')
-
-    # Check if the resume is in PDF or Microsoft Word format
-    if candidate.resume:
-        # If it starts with '%PDF', it's a PDF file
-        resume_content = base64.b64decode(candidate.resume)
+        return 'Candidate not found'
+    
+    # Decode the base64 encoded resume data
+    decoded_resume = base64.b64decode(candidate.resume)
+    
+    # Extract the file extension from the candidate's resume filename
+    filename = candidate.resume_filename
+    if not filename:
+        return 'Resume filename not provided'
+    
+    file_extension = filename.rsplit('.', 1)[-1].lower()
+    
+    # Determine the mimetype based on the file extension
+    if file_extension == 'pdf':
         mimetype = 'application/pdf'
+    elif file_extension in ['doc', 'docx']:
+        mimetype = 'application/msword'
     else:
-        # Decode the base64 encoded resume data
-        try:
-            decoded_data = base64.b64decode(candidate.resume)
-            # Check if it's a valid Word document
-            if decoded_data.startswith(b"\x50\x4b\x03\x04"):  # Check for PK signature indicating a zip file
-                docx_file = io.BytesIO(decoded_data)
-                document = Document(docx_file)
-                resume_content = io.BytesIO()
-                document.save(resume_content)
-                resume_content.seek(0)
-                mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-            else:
-                return abort(400, 'Unsupported document format')
-        except Exception as e:
-            return abort(500, f'Error decoding resume data: {str(e)}')
-
-    # Create a file-like object (BytesIO) from the resume content
-    resume_file = io.BytesIO(resume_content.getvalue())
-
-    # Determine the mimetype based on the file content
-    is_pdf = resume_content.getvalue().startswith(b"%PDF")
-    mimetype = 'application/pdf' if is_pdf else 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-
+        # Unsupported format
+        return 'Unsupported file format'
+    
+    # Create a file-like object (BytesIO) from the decoded resume data
+    resume_file = io.BytesIO(decoded_resume)
+ 
     # Send the file as a response
-    response = send_file(
+    return send_file(
         resume_file,
         mimetype=mimetype,
-        as_attachment=False
-    )
-    if not response:
-        return abort(500, 'Error sending file')
-    
-    return response
+        as_attachment=False)
+
 
 import base64
 import io
