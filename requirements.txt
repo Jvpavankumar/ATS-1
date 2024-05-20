@@ -67,4 +67,3 @@ docx
 
 Pillow
 
-PIL 
