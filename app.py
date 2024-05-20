@@ -2240,30 +2240,33 @@ def upload_user_image(user_id):
 #     return jsonify({'message': 'Image updated successfully'}), 200
 
 
-
 import base64
 import io
 
 @app.route('/user_image/<int:user_id>', methods=['GET'])
 def user_image(user_id):
-    # Retrieve the resume data from the database using SQLAlchemy
-    user_image = User.query.filter_by(id=user_id).first()
-    if not user_image:
-        return 'Image not found'
+    # Retrieve the user data from the database
+    user = User.query.filter_by(id=user_id).first()
+    if not user or not user.image:
+        return jsonify({'error': 'Image not found'}), 404
     
-    # Decode the base64 encoded resume data
-    decoded_image = base64.b64decode(user_image.resume)
+    # Decode the bytea image data
+    image_data = user.image
     
-    # Create a file-like object (BytesIO) from the decoded resume data
-    user_image_file = io.BytesIO(decoded_image)
+    # Create a file-like object (BytesIO) from the image data
+    image_file = io.BytesIO(image_data)
     
     # Determine the mimetype based on the file content
-    is_image = decoded_image.startswith(b"\x89PNG") or decoded_image.startswith(b"\xff\xd8\xff")
-    mimetype = 'image/png' if is_image else 'image/jpeg'
- 
+    if image_data.startswith(b"\x89PNG"):
+        mimetype = 'image/png'
+    elif image_data.startswith(b"\xff\xd8\xff"):
+        mimetype = 'image/jpeg'
+    else:
+        return jsonify({'error': 'Unsupported image format'}), 400
+    
     # Send the file as a response
     return send_file(
-        user_image_file,
+        image_file,
         mimetype=mimetype,
         as_attachment=False
     )
