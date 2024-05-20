@@ -2347,9 +2347,9 @@ def user_image(user_id):
     
     # Determine the mimetype based on the file content
     if image.format == 'PNG':
-        mimetype = 'image/png'
+        mimetype = 'image_file/png'
     elif image.format == 'JPEG':
-        mimetype = 'image/jpeg'
+        mimetype = 'image_file/jpg'
     else:
         return jsonify({'error': 'Unsupported image format'}), 400
     
