@@ -2284,8 +2284,8 @@ def delete_user_image(user_id):
     if not user:
         return jsonify({"error": "User not found"}), 400
     
-    if user.image_file != image_file:
-        return jsonify({"error": "Image file does not match the user's image"}), 400
+    # if user.image_file != image_file:
+    #     return jsonify({"error": "Image file does not match the user's image"}), 400
 
     user.image_file = None
     user.filename=None
