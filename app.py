@@ -2251,7 +2251,7 @@ def user_image(user_id):
         return jsonify({'error': 'Image not found'}), 404
     
     # Decode the bytea image data
-    image_data = user.image
+    image_data = user.image_file
     
     # Create a file-like object (BytesIO) from the image data
     image_file = io.BytesIO(image_data)
