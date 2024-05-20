@@ -2241,6 +2241,82 @@ def upload_user_image(user_id):
 
 #################################################################################################
 
+# import io
+# from PIL import Image
+# from flask import send_file, jsonify
+# from io import BytesIO
+
+# @app.route('/user_image/<int:user_id>', methods=['GET'])
+# def user_image(user_id):
+#     # Retrieve the user data from the database
+#     user = User.query.filter_by(id=user_id).first()
+#     if not user or not user.image_file:
+#         return jsonify({'error': 'Image not found'}), 404
+    
+#     # Decode the bytea image data
+#     image_data = user.image_file
+    
+#     # Create a BytesIO object from the image data
+#     image_stream = BytesIO(image_data)
+    
+#     # Attempt to open the image with PIL to verify format and integrity
+#     try:
+#         image = Image.open(image_stream)
+#         # If the image opened successfully, it's valid
+#     except Exception as e:
+#         return jsonify({'error': 'Invalid image data'}), 400
+    
+#     # Rewind the stream to the beginning
+#     image_stream.seek(0)
+    
+#     # Determine the mimetype based on the file content
+#     if image.format == 'PNG':
+#         mimetype = 'image/png'
+#     elif image.format == 'JPEG':
+#         mimetype = 'image/jpeg'
+#     else:
+#         return jsonify({'error': 'Unsupported image format'}), 400
+    
+#     # Send the file as a response
+#     return send_file(
+#         image_stream,
+#         mimetype=mimetype,
+#         as_attachment=False
+#     )
+
+##########################################################################################
+# import base64
+# import io
+
+# @app.route('/user_image/<int:user_id>', methods=['GET'])
+# def user_image(user_id):
+#     # Retrieve the user data from the database
+#     user = User.query.filter_by(id=user_id).first()
+#     if not user or not user.image_file:
+#         return jsonify({'error': 'Image not found'}), 404
+    
+#     # Decode the bytea image data
+#     image_data = user.image_file
+    
+#     # Create a file-like object (BytesIO) from the image data
+#     image_file = io.BytesIO(image_data)
+    
+#     # Determine the mimetype based on the file content
+#     if image_data.startswith(b"\x89PNG"):
+#         mimetype = 'image/png'
+#     elif image_data.startswith(b"\xff\xd8\xff"):
+#         mimetype = 'image/jpeg'
+#     else:
+#         return jsonify({'error': 'Unsupported image format'}), 400
+    
+#     # Send the file as a response
+#     return send_file(
+#         image_file,
+#         mimetype=mimetype,
+#         as_attachment=False
+#     )
+
+
 import io
 from PIL import Image
 from flask import send_file, jsonify
@@ -2281,40 +2357,9 @@ def user_image(user_id):
     return send_file(
         image_stream,
         mimetype=mimetype,
-        as_attachment=False
+        as_attachment=False,
+        attachment_filename=f"user_{user_id}_image.{image.format.lower()}"
     )
-
-##########################################################################################
-# import base64
-# import io
-
-# @app.route('/user_image/<int:user_id>', methods=['GET'])
-# def user_image(user_id):
-#     # Retrieve the user data from the database
-#     user = User.query.filter_by(id=user_id).first()
-#     if not user or not user.image_file:
-#         return jsonify({'error': 'Image not found'}), 404
-    
-#     # Decode the bytea image data
-#     image_data = user.image_file
-    
-#     # Create a file-like object (BytesIO) from the image data
-#     image_file = io.BytesIO(image_data)
-    
-#     # Determine the mimetype based on the file content
-#     if image_data.startswith(b"\x89PNG"):
-#         mimetype = 'image/png'
-#     elif image_data.startswith(b"\xff\xd8\xff"):
-#         mimetype = 'image/jpeg'
-#     else:
-#         return jsonify({'error': 'Unsupported image format'}), 400
-    
-#     # Send the file as a response
-#     return send_file(
-#         image_file,
-#         mimetype=mimetype,
-#         as_attachment=False
-#     )
 
 
 @app.route('/viewfull_jd/<int:id>')
