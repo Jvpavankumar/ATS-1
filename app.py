@@ -2237,8 +2237,21 @@ def view_resume(candidate_id):
         resume_binary = candidate.resume
 
     # Determine the mimetype based on the file content
-    mime = magic.Magic(mime=True)
-    mimetype = mime.from_buffer(resume_binary)
+    try:
+        mime = magic.Magic(mime=True)
+        mimetype = mime.from_buffer(resume_binary)
+    except Exception as e:
+        # Fallback mechanism if magic fails
+        print(f"Magic library error: {e}")
+        # Determine the mimetype based on the file signature (basic fallback)
+        if resume_binary.startswith(b"%PDF"):
+            mimetype = 'application/pdf'
+        elif resume_binary.startswith(b'\xD0\xCF\x11\xE0'):  # MS Word 97-2003 format
+            mimetype = 'application/msword'
+        elif resume_binary.startswith(b'\x50\x4B\x03\x04'):  # MS Word Open XML Format
+            mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        else:
+            mimetype = 'application/octet-stream'  # Default if unknown
 
     # Send the file as a response
     return send_file(
@@ -2246,6 +2259,33 @@ def view_resume(candidate_id):
         mimetype=mimetype,
         as_attachment=False
     )
+
+
+# @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
+# def view_resume(candidate_id):
+#     # Retrieve the resume data from the database using SQLAlchemy
+#     candidate = Candidate.query.filter_by(id=candidate_id).first()
+#     if not candidate:
+#         return 'Candidate not found', 404
+
+#     # Check if the resume is stored in base64 format
+#     try:
+#         # Try decoding it as base64
+#         resume_binary = base64.b64decode(candidate.resume, validate=True)
+#     except (base64.binascii.Error, ValueError):
+#         # If decoding fails, assume it's stored as binary
+#         resume_binary = candidate.resume
+
+#     # Determine the mimetype based on the file content
+#     mime = magic.Magic(mime=True)
+#     mimetype = mime.from_buffer(resume_binary)
+
+#     # Send the file as a response
+#     return send_file(
+#         io.BytesIO(resume_binary),
+#         mimetype=mimetype,
+#         as_attachment=False
+#     )
 
 
 
