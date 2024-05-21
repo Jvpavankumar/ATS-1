@@ -2251,10 +2251,10 @@ def view_resume(candidate_id):
             mimetype = 'application/pdf'
         elif resume_binary.startswith(b'\xD0\xCF\x11\xE0'):  # MS Word 97-2003 format
             mimetype = 'application/msword'
-        elif resume_binary.startswith(b'PK') or resume_binary.startswith(b'pk'):  # MS Word Open XML Format
-            mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        else:
-            mimetype = 'application/octet-stream'  # Default if unknown
+        # elif resume_binary.startswith(b'PK') or resume_binary.startswith(b'pk'):  # MS Word Open XML Format
+        #     mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        # else:
+        #     mimetype = 'application/octet-stream'  # Default if unknown
 
     # Send the file as a response
     return send_file(
