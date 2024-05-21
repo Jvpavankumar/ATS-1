@@ -2239,14 +2239,8 @@ def view_resume(candidate_id):
         resume_binary = candidate.resume.tobytes()  # Convert memoryview to bytes
 
     # Determine the mimetype based on the file content
-    if resume_binary.startswith(b"%PDF"):
-        mimetype = 'application/pdf'
-    elif resume_binary.startswith(b"PK\x03\x04"):  # Magic number for .docx files
-        mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    elif resume_binary.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"):  # Magic number for .doc files
-        mimetype = 'application/msword'
-    else:
-        mimetype = 'application/octet-stream'  # Default mimetype if type cannot be determined
+    is_pdf = resume_binary.startswith(b"%PDF")
+    mimetype = 'application/pdf' if is_pdf else 'application/msword'
 
     # Send the file as a response
     return send_file(
