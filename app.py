@@ -2232,7 +2232,7 @@ def view_resume(candidate_id):
         resume_binary = decoded_resume
     else:
         # Retrieve the resume binary data from the database
-        resume_binary = candidate.resume_binary
+        resume_binary = candidate.resume
  
     # Determine the mimetype based on the file content
     is_pdf = resume_binary.startswith(b"%PDF")
