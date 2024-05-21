@@ -2228,12 +2228,15 @@ def view_resume(candidate_id):
     if not candidate:
         return 'Candidate not found', 404
 
-    # Check if the resume is stored in base64 format
-    try:
-        # Try decoding it as base64
-        resume_binary = base64.b64decode(candidate.resume, validate=True)
-    except (base64.binascii.Error, ValueError):
-        # If decoding fails, assume it's stored as binary
+    # Check if the resume needs to be decoded from base64
+    if request.args.get('decode') == 'base64':
+        try:
+            # Decode the base64 encoded resume data
+            resume_binary = base64.b64decode(candidate.resume, validate=True)
+        except (base64.binascii.Error, ValueError):
+            return 'Invalid base64 data', 400
+    else:
+        # Assume the resume is stored as binary
         resume_binary = candidate.resume
 
     # Determine the mimetype based on the file content
@@ -2244,14 +2247,14 @@ def view_resume(candidate_id):
         # Fallback mechanism if magic fails
         print(f"Magic library error: {e}")
         # Determine the mimetype based on the file signature (basic fallback)
-        if resume_binary.startswith(b"%PDF"):
+        if resume_binary.startswith(b"%PDF") or resume_binary.startswith(b"JVBERI"):
             mimetype = 'application/pdf'
         elif resume_binary.startswith(b'\xD0\xCF\x11\xE0'):  # MS Word 97-2003 format
             mimetype = 'application/msword'
-        # elif resume_binary.startswith(b'\x50\x4B\x03\x04'):  # MS Word Open XML Format
-        #     mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        # else:
-        #     mimetype = 'application/octet-stream'  # Default if unknown
+        elif resume_binary.startswith(b'PK') or resume_binary.startswith(b'pk'):  # MS Word Open XML Format
+            mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        else:
+            mimetype = 'application/octet-stream'  # Default if unknown
 
     # Send the file as a response
     return send_file(
