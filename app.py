@@ -2249,7 +2249,6 @@ def view_resume(candidate_id):
 
 
 
-
 # @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 # def view_resume(candidate_id):
 #     # Retrieve the resume data from the database using SQLAlchemy
