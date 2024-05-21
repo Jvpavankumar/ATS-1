@@ -2218,7 +2218,6 @@ def recruiter_job_posts():
 
 
 import io
-
 import base64
 import magic
 
@@ -2229,37 +2228,24 @@ def view_resume(candidate_id):
     if not candidate:
         return 'Candidate not found', 404
 
-    # Check if the request specifies to retrieve the resume data directly from the database
-    if request.args.get('decode') == 'base64':
-        # Decode the base64 encoded resume data
-        decoded_resume = base64.b64decode(candidate.resume)
-        resume_binary = decoded_resume
+    # Check if the resume is stored in base64 format
+    try:
+        # Try decoding it as base64
+        resume_binary = base64.b64decode(candidate.resume, validate=True)
+    except (base64.binascii.Error, ValueError):
+        # If decoding fails, assume it's stored as binary
+        resume_binary = candidate.resume
 
-        # Determine the mimetype based on the file content
-        is_pdf = resume_binary.startswith(b"%PDF")
-        mimetype = 'application/pdf' if is_pdf else 'application/msword'
+    # Determine the mimetype based on the file content
+    mime = magic.Magic(mime=True)
+    mimetype = mime.from_buffer(resume_binary)
 
-        # Send the file as a response
-        return send_file(
-            io.BytesIO(resume_binary),
-            mimetype=mimetype,
-            as_attachment=False
-        )
-    else:
-        # Decode the base64 encoded resume data
-        decoded_resume = base64.b64decode(candidate.resume)
-        # Create a file-like object (BytesIO) from the decoded resume data
-        resume_file = io.BytesIO(decoded_resume)
-        # Determine the mimetype based on the file content
-        is_pdf = decoded_resume.startswith(b"%PDF")
-        mimetype = 'application/pdf' if is_pdf else 'application/msword'
- 
-        # Send the file as a response
-        return send_file(
-            resume_file,
-            mimetype=mimetype,
-            as_attachment=False
-        )
+    # Send the file as a response
+    return send_file(
+        io.BytesIO(resume_binary),
+        mimetype=mimetype,
+        as_attachment=False
+    )
 
 
 
