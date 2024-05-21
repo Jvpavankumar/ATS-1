@@ -2223,35 +2223,28 @@ def view_resume(candidate_id):
     # Retrieve the resume data from the database using SQLAlchemy
     candidate = Candidate.query.filter_by(id=candidate_id).first()
     if not candidate:
-        return 'Candidate not found', 404
-
-    # Decode the base64 encoded resume data
-    decoded_resume = base64.b64decode(candidate.resume)
-    
-    # Create a file-like object (BytesIO) from the decoded resume data
-    resume_file = io.BytesIO(decoded_resume)
-    
-    # Determine the mimetype based on the file content
-    if decoded_resume.startswith(b"%PDF"):
-        mimetype = 'application/pdf'
-        return send_file(
-            resume_file,
-            mimetype=mimetype,
-            as_attachment=False
-        )
+        return 'Candidate not found'
+ 
+    # Check if the request specifies to retrieve the resume data directly from the database
+    if request.args.get('decode') == 'base64':
+        # Decode the base64 encoded resume data
+        decoded_resume = base64.b64decode(candidate.resume)
+        resume_binary = decoded_resume
     else:
-        # Assuming the resume is a text document
-        try:
-            resume_text = decoded_resume.decode('utf-8')
-        except UnicodeDecodeError:
-            return 'Unable to decode resume text', 400
-        
-        # If you want to send the text as a plain text file response
-        return send_file(
-            io.BytesIO(resume_text.encode('utf-8')),
-            mimetype='text/plain',
-            as_attachment=False
-        )
+        # Retrieve the resume binary data from the database
+        resume_binary = candidate.resume_binary
+ 
+    # Determine the mimetype based on the file content
+    is_pdf = resume_binary.startswith(b"%PDF")
+    mimetype = 'application/pdf' if is_pdf else 'application/msword'
+ 
+    # Send the file as a response
+    return send_file(
+        io.BytesIO(resume_binary),
+        mimetype=mimetype,
+        as_attachment=False
+    )
+
 
  
 # @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
