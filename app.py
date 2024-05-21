@@ -2169,7 +2169,8 @@ def view_resume(candidate_id):
         resume_binary = bytes(candidate.resume)  # Convert memoryview to bytes object
 
     # Determine the mimetype based on the file content
-    is_pdf = resume_binary.startswith(b"%PDF") or (decode_base64 and resume_binary.startswith(b"JVBERi0xLj"))
+    is_pdf = resume_binary.startswith(b"%PDF") or (decode_base64 and decoded_resume.startswith(b"JVBERi0xLj"))
+    # is_pdf = resume_binary.startswith(b"%PDF") or (decoded_resume.startswith(b"JVBERi0xLj"))
     if is_pdf:
         mimetype = 'application/pdf'
     else:
