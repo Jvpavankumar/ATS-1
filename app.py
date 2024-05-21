@@ -2247,11 +2247,11 @@ def view_resume(candidate_id):
         # Fallback mechanism if magic fails
         print(f"Magic library error: {e}")
         # Determine the mimetype based on the file signature (basic fallback)
-        if resume_binary.startswith(b"%PDF") or resume_binary.startswith(b"JVBERI"):
+        if resume_binary.startswith(b"%PDF"):
             mimetype = 'application/pdf'
         elif resume_binary.startswith(b'\xD0\xCF\x11\xE0'):  # MS Word 97-2003 format
             mimetype = 'application/msword'
-        # elif resume_binary.startswith(b'PK') or resume_binary.startswith(b'pk'):  # MS Word Open XML Format
+        # elif resume_binary.startswith(b'\x50\x4B\x03\x04'):  # MS Word Open XML Format
         #     mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         # else:
         #     mimetype = 'application/octet-stream'  # Default if unknown
