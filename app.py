@@ -2161,16 +2161,15 @@ def view_resume(candidate_id):
         # Decode the base64 encoded resume data
         try:
             decoded_resume = base64.b64decode(candidate.resume)
-            resume_binary = decoded_resume
+            resume_binary = bytes(decoded_resume)
         except (TypeError, ValueError):
             return jsonify({'error': 'Invalid base64 encoded resume'}), 400
     else:
         # Retrieve the resume binary data from the database
-        resume_binary = candidate.resume  # Assuming this is already binary data
+        resume_binary = bytes(candidate.resume)  # Convert memoryview to bytes object
 
     # Determine the mimetype based on the file content
     is_pdf = resume_binary.startswith(b"%PDF") or (decode_base64 and resume_binary.startswith(b"JVBERi0xLj"))
-
     if is_pdf:
         mimetype = 'application/pdf'
     else:
@@ -2182,6 +2181,7 @@ def view_resume(candidate_id):
         mimetype=mimetype,
         as_attachment=False
     )
+
 #############################################################
 from io import BytesIO
 import base64
