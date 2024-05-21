@@ -2149,8 +2149,8 @@ def recruiter_job_posts():
 
     
 #############################################################
-# from io import BytesIO
-# import base64
+from io import BytesIO
+import base64
 
 # @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 # def view_resume(candidate_id):
