@@ -2248,8 +2248,8 @@ def view_resume(candidate_id):
             mimetype = 'application/pdf'
         elif resume_binary.startswith(b'\xD0\xCF\x11\xE0'):  # MS Word 97-2003 format
             mimetype = 'application/msword'
-        elif resume_binary.startswith(b'\x50\x4B\x03\x04'):  # MS Word Open XML Format
-            mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        # elif resume_binary.startswith(b'\x50\x4B\x03\x04'):  # MS Word Open XML Format
+        #     mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
         else:
             mimetype = 'application/octet-stream'  # Default if unknown
 
