@@ -2253,8 +2253,6 @@ def view_resume(candidate_id):
         mimetype=mimetype,
         as_attachment=False
     )
-    )
-
 
 
 
