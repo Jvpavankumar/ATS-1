@@ -2218,13 +2218,41 @@ import io
 
 import base64
 
+# @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
+# def view_resume(candidate_id):
+#     # Retrieve the resume data from the database using SQLAlchemy
+#     candidate = Candidate.query.filter_by(id=candidate_id).first()
+#     if not candidate:
+#         return 'Candidate not found'
+ 
+#     # Check if the request specifies to retrieve the resume data directly from the database
+#     if request.args.get('decode') == 'base64':
+#         # Decode the base64 encoded resume data
+#         decoded_resume = base64.b64decode(candidate.resume)
+#         resume_binary = decoded_resume
+#     else:
+#         # Retrieve the resume binary data from the database
+#         resume_binary = candidate.resume
+ 
+#     # Determine the mimetype based on the file content
+#     is_pdf = resume_binary.startswith(b"%PDF")
+#     mimetype = 'application/pdf' if is_pdf else 'application/msword'
+ 
+#     # Send the file as a response
+#     return send_file(
+#         io.BytesIO(resume_binary),
+#         mimetype=mimetype,
+#         as_attachment=False
+#     )
+
+
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 def view_resume(candidate_id):
     # Retrieve the resume data from the database using SQLAlchemy
     candidate = Candidate.query.filter_by(id=candidate_id).first()
     if not candidate:
-        return 'Candidate not found'
- 
+        return 'Candidate not found', 404
+
     # Check if the request specifies to retrieve the resume data directly from the database
     if request.args.get('decode') == 'base64':
         # Decode the base64 encoded resume data
@@ -2232,12 +2260,12 @@ def view_resume(candidate_id):
         resume_binary = decoded_resume
     else:
         # Retrieve the resume binary data from the database
-        resume_binary = candidate.resume
- 
+        resume_binary = candidate.resume.tobytes()  # Convert memoryview to bytes
+
     # Determine the mimetype based on the file content
     is_pdf = resume_binary.startswith(b"%PDF")
     mimetype = 'application/pdf' if is_pdf else 'application/msword'
- 
+
     # Send the file as a response
     return send_file(
         io.BytesIO(resume_binary),
