@@ -2249,11 +2249,13 @@ def determine_mimetype(data):
     """
     Determines the mimetype of the given data.
     """
-    if data.startswith(b"%PDF"):
+    data_bytes = bytes(data)
+    
+    if data_bytes.startswith(b"%PDF"):
         return 'application/pdf'
-    elif data.startswith(b"PK\x03\x04"):  # Magic number for .docx files
+    elif data_bytes.startswith(b"PK\x03\x04"):  # Magic number for .docx files
         return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    elif data.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"):  # Magic number for .doc files
+    elif data_bytes.startswith(b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1"):  # Magic number for .doc files
         return 'application/msword'
     else:
         return 'application/octet-stream'  # Default mimetype if type cannot be determined
