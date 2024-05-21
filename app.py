@@ -2278,8 +2278,10 @@ def user_image(user_id):
 def delete_user_image(user_id):
     data = request.json
     image_file = data.get('image_file')
+    if not image_file:
+        return jsonify({"error": "Image file must be specified"}), 400
 
-    user = User.query.filter_by(id=user_id).first()
+    user = User.query.filter_by(id=user_id,).first()
     
     if not user:
         return jsonify({"error": "User not found"}), 400
