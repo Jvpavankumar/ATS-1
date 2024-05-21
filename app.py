@@ -2235,7 +2235,7 @@ def view_resume(candidate_id):
         resume_binary = decoded_resume
     else:
         # Retrieve the resume binary data from the database
-        resume_binary = candidate.resume_binary
+        resume_binary = candidate.resume
     # Determine the mimetype based on the file content
     mimetype = determine_mimetype(resume_binary)
     # Send the file as a response
