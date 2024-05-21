@@ -2149,39 +2149,8 @@ def recruiter_job_posts():
 
     
 #############################################################
-from io import BytesIO
-import base64
-
-@app.route('/view_resume/<int:candidate_id>', methods=['GET'])
-def view_resume(candidate_id):
-    # Retrieve the resume data from the database using SQLAlchemy
-    candidate = Candidate.query.filter_by(id=candidate_id).first()
-    if not candidate:
-        return jsonify({"error": "Candidate not found"}), 404
-
-    # Check if the resume is base64 encoded
-    try:
-        decoded_resume = base64.b64decode(candidate.resume)
-        resume_file = BytesIO(decoded_resume)
-    except Exception:
-        # If decoding fails, assume it's already binary
-        resume_file = BytesIO(candidate.resume)
-
-    # Determine the mimetype based on the file content
-    if decoded_resume.startswith(b"%PDF"):
-        mimetype = 'application/pdf'
-    elif decoded_resume.startswith(b"PK"):
-        mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    else:
-        mimetype = 'application/msword'  # Fallback to older Word format if needed
-
-    # Send the file as a response
-    return send_file(
-        resume_file,
-        mimetype=mimetype,
-        as_attachment=True,
-        download_name=f"resume_{candidate_id}"
-    )
+# from io import BytesIO
+# import base64
 
 # @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 # def view_resume(candidate_id):
@@ -2190,15 +2159,14 @@ def view_resume(candidate_id):
 #     if not candidate:
 #         return jsonify({"error": "Candidate not found"}), 404
 
-#     # Decode the base64 encoded resume data
+#     # Check if the resume is base64 encoded
 #     try:
 #         decoded_resume = base64.b64decode(candidate.resume)
-#     except Exception as e:
-#         return jsonify({"error": "Failed to decode resume data", "details": str(e)}), 400
+#         resume_file = BytesIO(decoded_resume)
+#     except Exception:
+#         # If decoding fails, assume it's already binary
+#         resume_file = BytesIO(candidate.resume)
 
-#     # Create a file-like object (BytesIO) from the decoded resume data
-#     resume_file = BytesIO(decoded_resume)
-    
 #     # Determine the mimetype based on the file content
 #     if decoded_resume.startswith(b"%PDF"):
 #         mimetype = 'application/pdf'
@@ -2211,8 +2179,40 @@ def view_resume(candidate_id):
 #     return send_file(
 #         resume_file,
 #         mimetype=mimetype,
-#         as_attachment=False
+#         as_attachment=True,
+#         download_name=f"resume_{candidate_id}"
 #     )
+
+@app.route('/view_resume/<int:candidate_id>', methods=['GET'])
+def view_resume(candidate_id):
+    # Retrieve the resume data from the database using SQLAlchemy
+    candidate = Candidate.query.filter_by(id=candidate_id).first()
+    if not candidate:
+        return jsonify({"error": "Candidate not found"}), 404
+
+    # Decode the base64 encoded resume data
+    try:
+        decoded_resume = base64.b64decode(candidate.resume)
+    except Exception as e:
+        return jsonify({"error": "Failed to decode resume data", "details": str(e)}), 400
+
+    # Create a file-like object (BytesIO) from the decoded resume data
+    resume_file = BytesIO(decoded_resume)
+    
+    # Determine the mimetype based on the file content
+    if decoded_resume.startswith(b"%PDF"):
+        mimetype = 'application/pdf'
+    elif decoded_resume.startswith(b"PK"):
+        mimetype = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    else:
+        mimetype = 'application/msword'  # Fallback to older Word format if needed
+
+    # Send the file as a response
+    return send_file(
+        resume_file,
+        mimetype=mimetype,
+        as_attachment=False
+    )
 ################################################################
 
 
