@@ -2159,7 +2159,7 @@ def view_resume(candidate_id):
         return 'Candidate not found'
     # Decode the base64 encoded resume data
     if "==" in candidate.resume:
-        print(type(candidate.resume))
+        print("if",type(candidate.resume))
         if request.args.get('decode') == 'base64':
             # Decode the base64 encoded resume data
             decoded_resume = base64.b64decode(candidate.resume)
@@ -2179,7 +2179,7 @@ def view_resume(candidate_id):
             as_attachment=False
         )
     else:
-        print(type(candidate.resume))
+        print("else",type(candidate.resume))
         decoded_resume = base64.b64decode(candidate.resume)
         # Create a file-like object (BytesIO) from the decoded resume data
         resume_file = io.BytesIO(decoded_resume)
