@@ -14,7 +14,8 @@ from datetime import date, datetime
 import ast
 import datetime
 import os
-import jsonimport magic
+import json
+import magic
 from flask_cors import CORS
 import re
 # import spacy
