@@ -2265,42 +2265,13 @@ def view_resume(candidate_id):
 
 #     return jsonify({'message': 'Image updated successfully'}), 200
 #######################################################################################
-# @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
-# def upload_user_image(user_id):
-#     data = request.form
-
-#     # Extract file name and image content
-#     filename = data.get('file_name')
-#     image_content = request.files['image_file'].read()  # Retrieve binary data of the image
-
-#     # Find the user by user_id
-#     user = User.query.get(user_id)
-#     if not user:
-#         return jsonify({'error': 'User not found'}), 404
-
-#     # Update user's filename and image content
-#     user.filename = filename
-#     user.image_file = image_content
-
-#     # Commit changes to the database
-#     db.session.commit()
-
-#     return jsonify({'message': 'Image updated successfully'}), 200
-
-
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
     data = request.form
 
     # Extract file name and image content
     filename = data.get('file_name')
-    image_file = request.files['image_file']  # Retrieve file object
-    image_content = image_file.read()  # Retrieve binary data of the image
-
-    # # Check the size of the uploaded file
-    # file_size_kb = len(image_content) / 1024  # Convert bytes to kilobytes
-    # if file_size_kb < 50 or file_size_kb > 100:
-    #     return jsonify({'error': 'File size must be between 50kb and 100kb'}), 400
+    image_content = request.files['image_file'].read()  # Retrieve binary data of the image
 
     # Find the user by user_id
     user = User.query.get(user_id)
@@ -2315,6 +2286,35 @@ def upload_user_image(user_id):
     db.session.commit()
 
     return jsonify({'message': 'Image updated successfully'}), 200
+
+
+# @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
+# def upload_user_image(user_id):
+#     data = request.form
+
+#     # Extract file name and image content
+#     filename = data.get('file_name')
+#     image_file = request.files['image_file']  # Retrieve file object
+#     image_content = image_file.read()  # Retrieve binary data of the image
+
+#     # # Check the size of the uploaded file
+#     # file_size_kb = len(image_content) / 1024  # Convert bytes to kilobytes
+#     # if file_size_kb < 50 or file_size_kb > 100:
+#     #     return jsonify({'error': 'File size must be between 50kb and 100kb'}), 400
+
+#     # Find the user by user_id
+#     user = User.query.get(user_id)
+#     if not user:
+#         return jsonify({'error': 'User not found'}), 404
+
+#     # Update user's filename and image content
+#     user.filename = filename
+#     user.image_file = image_content
+
+#     # Commit changes to the database
+#     db.session.commit()
+
+#     return jsonify({'message': 'Image updated successfully'}), 200
 #################################################################################################
 
 import base64
