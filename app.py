@@ -2156,8 +2156,8 @@ def view_resume(candidate_id):
     if not candidate:
         return 'Candidate not found', 404
 
-    # Retrieve the resume binary data from the database
-    resume_binary = candidate.resume
+    # Retrieve the resume binary data from the database and convert memoryview to bytes
+    resume_binary = candidate.resume.tobytes()
 
     # Check if the request specifies to decode the resume data from base64
     if request.args.get('decode') == 'base64':
@@ -2188,7 +2188,7 @@ def view_resume(candidate_id):
         mimetype=mimetype,
         as_attachment=False
     )
-
+    
 # @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 # def view_resume(candidate_id):
 #     # Retrieve the resume data from the database using SQLAlchemy
