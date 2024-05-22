@@ -2519,27 +2519,47 @@ def user_image(user_id):
         mimetype=mimetype,
         as_attachment=False
     )
+    
 
 @app.route('/delete_user_image/<int:user_id>', methods=['POST'])
 def delete_user_image(user_id):
     data = request.json
-    image_file = data.get('image_file')
-    if not image_file:
-        return jsonify({"error": "Image file must be specified"}), 400
+    profile_image = data.get('profileImage')
+    if not profile_image:
+        return jsonify({"error": "Profile image must be specified"}), 400
 
-    user = User.query.filter_by(id=user_id,).first()
+    user = User.query.filter_by(id=user_id).first()
     
     if not user:
-        return jsonify({"error": "User not found"}), 400
-    
-    # if user.image_file != image_file:
-    #     return jsonify({"error": "Image file does not match the user's image"}), 400
+        return jsonify({"error": "User not found"}), 404
 
     user.image_file = None
-    user.filename=None
+    user.filename = None
     db.session.commit()
 
     return jsonify({"message": "Image file deleted successfully"}), 200
+
+
+# @app.route('/delete_user_image/<int:user_id>', methods=['POST'])
+# def delete_user_image(user_id):
+#     data = request.json
+#     image_file = data.get('image_file')
+#     if not image_file:
+#         return jsonify({"error": "Image file must be specified"}), 400
+
+#     user = User.query.filter_by(id=user_id,).first()
+    
+#     if not user:
+#         return jsonify({"error": "User not found"}), 400
+    
+#     # if user.image_file != image_file:
+#     #     return jsonify({"error": "Image file does not match the user's image"}), 400
+
+#     user.image_file = None
+#     user.filename=None
+#     db.session.commit()
+
+#     return jsonify({"message": "Image file deleted successfully"}), 200
     
 
 @app.route('/viewfull_jd/<int:id>')
