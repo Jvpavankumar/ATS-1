@@ -2151,34 +2151,34 @@ import base64
 import io
 import magic
  
-@app.route('/view_resume/<int:candidate_id>', methods=['GET'])
-def view_resume(candidate_id):
-    # Retrieve the resume data from the database using SQLAlchemy
-    candidate = Candidate.query.filter_by(id=candidate_id).first()
-    if not candidate:
-        return 'Candidate not found', 404
+# @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
+# def view_resume(candidate_id):
+#     # Retrieve the resume data from the database using SQLAlchemy
+#     candidate = Candidate.query.filter_by(id=candidate_id).first()
+#     if not candidate:
+#         return 'Candidate not found', 404
 
-    # Check if the resume is in Base64 format
-    try:
-        base64_resume = base64.b64decode(candidate.resume)
-        is_base64 = True
-    except (binascii.Error, TypeError):
-        # Resume is not in Base64 format, assume it's binary
-        binary_resume = candidate.resume
-        is_base64 = False
+#     # Check if the resume is in Base64 format
+#     try:
+#         base64_resume = base64.b64decode(candidate.resume)
+#         is_base64 = True
+#     except (binascii.Error, TypeError):
+#         # Resume is not in Base64 format, assume it's binary
+#         binary_resume = candidate.resume
+#         is_base64 = False
 
-    # Determine the appropriate resume data
-    resume_data = base64_resume if is_base64 else binary_resume
+#     # Determine the appropriate resume data
+#     resume_data = base64_resume if is_base64 else binary_resume
 
-    # Determine the mimetype based on the file content
-    mimetype = magic.Magic(mime=True).from_buffer(resume_data)
+#     # Determine the mimetype based on the file content
+#     mimetype = magic.Magic(mime=True).from_buffer(resume_data)
 
-    # Send the file as a response
-    return send_file(
-        io.BytesIO(resume_data),
-        mimetype=mimetype,
-        as_attachment=False
-    )
+#     # Send the file as a response
+#     return send_file(
+#         io.BytesIO(resume_data),
+#         mimetype=mimetype,
+#         as_attachment=False
+#     )
 
 
 # @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
@@ -2400,32 +2400,32 @@ import magic
 
 
 
-# @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
-# def view_resume(candidate_id):
-#     # Retrieve the resume data from the database using SQLAlchemy
-#     candidate = Candidate.query.filter_by(id=candidate_id).first()
-#     if not candidate:
-#         return 'Candidate not found', 404
+@app.route('/view_resume/<int:candidate_id>', methods=['GET'])
+def view_resume(candidate_id):
+    # Retrieve the resume data from the database using SQLAlchemy
+    candidate = Candidate.query.filter_by(id=candidate_id).first()
+    if not candidate:
+        return 'Candidate not found', 404
 
-#     # Check if the request specifies to retrieve the resume data directly from the database
-#     if request.args.get('decode') == 'base64':
-#         # Decode the base64 encoded resume data
-#         decoded_resume = base64.b64decode(candidate.resume)
-#         resume_binary = decoded_resume
-#     else:
-#         # Retrieve the resume binary data from the database
-#         resume_binary = candidate.resume.tobytes()  # Convert memoryview to bytes
+    # Check if the request specifies to retrieve the resume data directly from the database
+    if request.args.get('decode') == 'base64':
+        # Decode the base64 encoded resume data
+        decoded_resume = base64.b64decode(candidate.resume)
+        resume_binary = decoded_resume
+    else:
+        # Retrieve the resume binary data from the database
+        resume_binary = candidate.resume.tobytes()  # Convert memoryview to bytes
 
-#     # Determine the mimetype based on the file content
-#     is_pdf = resume_binary.startswith(b"%PDF")
-#     mimetype = 'application/pdf' if is_pdf else 'application/msword'
+    # Determine the mimetype based on the file content
+    is_pdf = resume_binary.startswith(b"%PDF")
+    mimetype = 'application/pdf' if is_pdf else 'application/msword'
 
-#     # Send the file as a response
-#     return send_file(
-#         io.BytesIO(resume_binary),
-#         mimetype=mimetype,
-#         as_attachment=False
-#     )
+    # Send the file as a response
+    return send_file(
+        io.BytesIO(resume_binary),
+        mimetype=mimetype,
+        as_attachment=False
+    )
 
 
  
