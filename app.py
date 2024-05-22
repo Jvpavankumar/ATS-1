@@ -2179,18 +2179,18 @@ def view_resume(candidate_id):
         )
     else:
         decoded_resume = base64.b64decode(candidate.resume)
-    # Create a file-like object (BytesIO) from the decoded resume data
-    resume_file = io.BytesIO(decoded_resume)
-    # Determine the mimetype based on the file content
-    is_pdf = decoded_resume.startswith(b"%PDF")
-    mimetype = 'application/pdf' if is_pdf else 'application/msword'
- 
-    # Send the file as a response
-    return send_file(
-        resume_file,
-        mimetype=mimetype,
-        as_attachment=False
-    )
+        # Create a file-like object (BytesIO) from the decoded resume data
+        resume_file = io.BytesIO(decoded_resume)
+        # Determine the mimetype based on the file content
+        is_pdf = decoded_resume.startswith(b"%PDF")
+        mimetype = 'application/pdf' if is_pdf else 'application/msword'
+
+        # Send the file as a response
+        return send_file(
+            resume_file,
+            mimetype=mimetype,
+            as_attachment=False
+        )
 
 
 # @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
