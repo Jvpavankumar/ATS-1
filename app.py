@@ -14,7 +14,7 @@ from datetime import date, datetime
 import ast
 import datetime
 import os
-import json
+import jsonimport magic
 from flask_cors import CORS
 import re
 # import spacy
@@ -2157,21 +2157,24 @@ def view_resume(candidate_id):
     if not candidate:
         return 'Candidate not found', 404
 
-    # Check if the request specifies to retrieve the resume data directly from the database
-    if request.args.get('decode') == 'base64':
-        # Decode the base64 encoded resume data
-        decoded_resume = base64.b64decode(candidate.resume)
-        resume_binary = decoded_resume
-    else:
-        # Retrieve the resume binary data from the database
-        resume_binary = candidate.resume.tobytes() if isinstance(candidate.resume, memoryview) else candidate.resume
+    # Check if the resume is in Base64 format
+    try:
+        base64_resume = base64.b64decode(candidate.resume)
+        is_base64 = True
+    except (binascii.Error, TypeError):
+        # Resume is not in Base64 format, assume it's binary
+        binary_resume = candidate.resume
+        is_base64 = False
+
+    # Determine the appropriate resume data
+    resume_data = base64_resume if is_base64 else binary_resume
 
     # Determine the mimetype based on the file content
-    mimetype = magic.Magic(mime=True).from_buffer(resume_binary)
+    mimetype = magic.Magic(mime=True).from_buffer(resume_data)
 
     # Send the file as a response
     return send_file(
-        io.BytesIO(resume_binary),
+        io.BytesIO(resume_data),
         mimetype=mimetype,
         as_attachment=False
     )
