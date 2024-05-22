@@ -2179,7 +2179,7 @@ def view_resume(candidate_id):
 
     # Determine the mimetype based on the file content
 
-    is_pdf = resume_binary.startswith(b"%PDF")
+    is_pdf = decoded_resume.startswith(b"%PDF")
 
     mimetype = 'application/pdf' if is_pdf else 'application/msword'
 
