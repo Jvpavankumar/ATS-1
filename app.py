@@ -9,7 +9,7 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature
 from sqlalchemy import or_
 from sqlalchemy import and_ 
 # from flask import Flask, render_template, request, redirect_url
-import psycopg2v
+import psycopg2
 from datetime import date, datetime
 import ast
 import datetime
