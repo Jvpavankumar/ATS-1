@@ -2148,16 +2148,6 @@ def recruiter_job_posts():
 
 import base64
 import io
-
-
-[13:19] maheshreddy.gs
-import io
-
-import base64
-
-from flask import request, send_file
-
-from models import Candidate  # Import your Candidate model from SQLAlchemy
  
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 
