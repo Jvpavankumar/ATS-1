@@ -2193,38 +2193,38 @@ def view_resume(candidate_id):
     )
 
 
-@app.route('/view_resume/<int:candidate_id>', methods=['GET'])
-def view_resume(candidate_id):
-    # Retrieve the resume data from the database using SQLAlchemy
-    candidate = Candidate.query.filter_by(id=candidate_id).first()
-    if not candidate:
-        return jsonify({'error': 'Candidate not found'}), 404
+# @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
+# def view_resume(candidate_id):
+#     # Retrieve the resume data from the database using SQLAlchemy
+#     candidate = Candidate.query.filter_by(id=candidate_id).first()
+#     if not candidate:
+#         return jsonify({'error': 'Candidate not found'}), 404
 
-    # Check if the request specifies to retrieve the resume data directly from the database
-    if request.args.get('decode') == 'base64':
-        # Decode the base64 encoded resume data
-        try:
-            decoded_resume = base64.b64decode(candidate.resume)
-            resume_binary = decoded_resume
-        except (TypeError, ValueError):
-            return jsonify({'error': 'Invalid base64 encoded resume'}), 400
-    else:
-        # Retrieve the resume binary data from the database
-        resume_binary = candidate.resume  # Assuming this is already binary data
+#     # Check if the request specifies to retrieve the resume data directly from the database
+#     if request.args.get('decode') == 'base64':
+#         # Decode the base64 encoded resume data
+#         try:
+#             decoded_resume = base64.b64decode(candidate.resume)
+#             resume_binary = decoded_resume
+#         except (TypeError, ValueError):
+#             return jsonify({'error': 'Invalid base64 encoded resume'}), 400
+#     else:
+#         # Retrieve the resume binary data from the database
+#         resume_binary = candidate.resume  # Assuming this is already binary data
 
-    # Determine the mimetype based on the file content
-    is_pdf = resume_binary.startswith(b"%PDF")
-    if is_pdf:
-        mimetype = 'application/pdf'
-    else:
-        mimetype = 'application/msword'  # or you could use 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' for .docx
+#     # Determine the mimetype based on the file content
+#     is_pdf = resume_binary.startswith(b"%PDF")
+#     if is_pdf:
+#         mimetype = 'application/pdf'
+#     else:
+#         mimetype = 'application/msword'  # or you could use 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' for .docx
 
-    # Send the file as a response
-    return send_file(
-        io.BytesIO(resume_binary),
-        mimetype=mimetype,
-        as_attachment=False
-    )
+#     # Send the file as a response
+#     return send_file(
+#         io.BytesIO(resume_binary),
+#         mimetype=mimetype,
+#         as_attachment=False
+#     )
 
  
 # @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
