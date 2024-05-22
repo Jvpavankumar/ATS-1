@@ -9,7 +9,7 @@ from itsdangerous import URLSafeTimedSerializer, BadSignature
 from sqlalchemy import or_
 from sqlalchemy import and_ 
 # from flask import Flask, render_template, request, redirect_url
-import psycopg2
+import psycopg2v
 from datetime import date, datetime
 import ast
 import datetime
@@ -2159,7 +2159,7 @@ def view_resume(candidate_id):
         return 'Candidate not found'
     # Decode the base64 encoded resume data
     print("candidate.resume",candidate.resume.tobytes())
-    if "==" in candidate.resume:
+    if "==" not in candidate.resume.tobytes():
         if request.args.get('decode') == 'base64':
             # Decode the base64 encoded resume data
             decoded_resume = base64.b64decode(candidate.resume)
