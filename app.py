@@ -2178,6 +2178,7 @@ def view_resume(candidate_id):
             as_attachment=False
         )
     else:
+        print("else:")
         decoded_resume = base64.b64decode(candidate.resume)
         # Create a file-like object (BytesIO) from the decoded resume data
         resume_file = io.BytesIO(decoded_resume)
