@@ -2265,13 +2265,42 @@ def view_resume(candidate_id):
 
 #     return jsonify({'message': 'Image updated successfully'}), 200
 #######################################################################################
+# @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
+# def upload_user_image(user_id):
+#     data = request.form
+
+#     # Extract file name and image content
+#     filename = data.get('file_name')
+#     image_content = request.files['image_file'].read()  # Retrieve binary data of the image
+
+#     # Find the user by user_id
+#     user = User.query.get(user_id)
+#     if not user:
+#         return jsonify({'error': 'User not found'}), 404
+
+#     # Update user's filename and image content
+#     user.filename = filename
+#     user.image_file = image_content
+
+#     # Commit changes to the database
+#     db.session.commit()
+
+#     return jsonify({'message': 'Image updated successfully'}), 200
+
+
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
     data = request.form
 
     # Extract file name and image content
     filename = data.get('file_name')
-    image_content = request.files['image_file'].read()  # Retrieve binary data of the image
+    image_file = request.files['image_file']  # Retrieve file object
+    image_content = image_file.read()  # Retrieve binary data of the image
+
+    # Check the size of the uploaded file
+    file_size_kb = len(image_content) / 1024  # Convert bytes to kilobytes
+    if file_size_kb < 50 or file_size_kb > 100:
+        return jsonify({'error': 'File size must be between 50kb and 100kb'}), 400
 
     # Find the user by user_id
     user = User.query.get(user_id)
@@ -2286,33 +2315,6 @@ def upload_user_image(user_id):
     db.session.commit()
 
     return jsonify({'message': 'Image updated successfully'}), 200
-
-# from flask import request
-
-# @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
-# def upload_user_image(user_id):
-#     if 'file' not in request.files:
-#         return jsonify({'error': 'No file part'}), 400
-
-#     file = request.files['file']
-#     if file.filename == '':
-#         return jsonify({'error': 'No selected file'}), 400
-
-#     user = User.query.filter_by(id=user_id).first()
-#     if not user:
-#         return jsonify({'error': 'User not found'}), 404
-
-#     # Save the file content to a temporary location or process it as needed
-#     # Assuming you have a 'save_image' function for saving binary data
-#     image_content = file.read()
-#     save_image(user_id, file.filename, image_content)
-
-#     # Update the user's filename in the database
-#     user.filename = file.filename
-#     db.session.commit()
-
-#     return jsonify({'message': 'Image updated successfully'}), 200
-
 #################################################################################################
 
 import base64
