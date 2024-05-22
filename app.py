@@ -2158,7 +2158,7 @@ def view_resume(candidate_id):
     if not candidate:
         return 'Candidate not found'
     # Decode the base64 encoded resume data
-    print("candidate.resume",candidate.resume)
+    print("candidate.resume",candidate.resume.tobytes())
     if "==" in candidate.resume:
         if request.args.get('decode') == 'base64':
             # Decode the base64 encoded resume data
