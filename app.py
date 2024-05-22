@@ -2150,45 +2150,101 @@ import base64
 import io
 
 
+[13:19] maheshreddy.gs
+import io
+
+import base64
+
+from flask import request, send_file
+
+from models import Candidate  # Import your Candidate model from SQLAlchemy
+ 
 @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
+
 def view_resume(candidate_id):
+
     # Retrieve the resume data from the database using SQLAlchemy
+
     candidate = Candidate.query.filter_by(id=candidate_id).first()
+
     if not candidate:
+
         return 'Candidate not found', 404
 
-    # Retrieve the resume binary data from the database and convert memoryview to bytes
-    resume_binary = candidate.resume.tobytes()
+    # Check if the request specifies to retrieve the resume data directly from the database
 
-    # Check if the request specifies to decode the resume data from base64
     if request.args.get('decode') == 'base64':
+
         # Decode the base64 encoded resume data
-        resume_binary = base64.b64decode(resume_binary)
 
-    # Define a dictionary to map file signatures to mimetypes
-    file_signatures = {
-        b'%PDF': 'application/pdf',
-        b'\xD0\xCF\x11\xE0': 'application/msword',  # DOC
-        b'\x50\x4B\x03\x04': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'  # DOCX
-    }
+        decoded_resume = base64.b64decode(candidate.resume)
 
-    # Determine the mimetype based on the file signature
-    mimetype = None
-    for signature, mime in file_signatures.items():
-        if resume_binary.startswith(signature):
-            mimetype = mime
-            break
+        resume_binary = decoded_resume
 
-    # If mimetype is not determined, return an error
-    if not mimetype:
-        return 'Unsupported file format', 415
+    else:
+
+        # Retrieve the resume binary data from the database
+
+        resume_binary = candidate.resume.tobytes()  # Convert memoryview to bytes
+
+    # Determine the mimetype based on the file content
+
+    is_pdf = resume_binary.startswith(b"%PDF")
+
+    mimetype = 'application/pdf' if is_pdf else 'application/msword'
 
     # Send the file as a response
+
     return send_file(
+
         io.BytesIO(resume_binary),
+
         mimetype=mimetype,
+
         as_attachment=False
+
     )
+
+
+# @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
+# def view_resume(candidate_id):
+#     # Retrieve the resume data from the database using SQLAlchemy
+#     candidate = Candidate.query.filter_by(id=candidate_id).first()
+#     if not candidate:
+#         return 'Candidate not found', 404
+
+#     # Retrieve the resume binary data from the database and convert memoryview to bytes
+#     resume_binary = candidate.resume.tobytes()
+
+#     # Check if the request specifies to decode the resume data from base64
+#     if request.args.get('decode') == 'base64':
+#         # Decode the base64 encoded resume data
+#         resume_binary = base64.b64decode(resume_binary)
+
+#     # Define a dictionary to map file signatures to mimetypes
+#     file_signatures = {
+#         b'%PDF': 'application/pdf',
+#         b'\xD0\xCF\x11\xE0': 'application/msword',  # DOC
+#         b'\x50\x4B\x03\x04': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'  # DOCX
+#     }
+
+#     # Determine the mimetype based on the file signature
+#     mimetype = None
+#     for signature, mime in file_signatures.items():
+#         if resume_binary.startswith(signature):
+#             mimetype = mime
+#             break
+
+#     # If mimetype is not determined, return an error
+#     if not mimetype:
+#         return 'Unsupported file format', 415
+
+#     # Send the file as a response
+#     return send_file(
+#         io.BytesIO(resume_binary),
+#         mimetype=mimetype,
+#         as_attachment=False
+#     )
     
 # @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
 # def view_resume(candidate_id):
