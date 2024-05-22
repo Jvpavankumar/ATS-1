@@ -2297,10 +2297,10 @@ def upload_user_image(user_id):
     image_file = request.files['image_file']  # Retrieve file object
     image_content = image_file.read()  # Retrieve binary data of the image
 
-    # Check the size of the uploaded file
-    file_size_kb = len(image_content) / 1024  # Convert bytes to kilobytes
-    if file_size_kb < 50 or file_size_kb > 100:
-        return jsonify({'error': 'File size must be between 50kb and 100kb'}), 400
+    # # Check the size of the uploaded file
+    # file_size_kb = len(image_content) / 1024  # Convert bytes to kilobytes
+    # if file_size_kb < 50 or file_size_kb > 100:
+    #     return jsonify({'error': 'File size must be between 50kb and 100kb'}), 400
 
     # Find the user by user_id
     user = User.query.get(user_id)
