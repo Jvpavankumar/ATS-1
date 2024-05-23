@@ -2337,7 +2337,7 @@ def user_image(user_id):
     # Send the file as a response
     return send_file(
         image_file,
-        mimetype=mimetype,
+        mimetype="image/jpeg",
         as_attachment=False
     )
     
