@@ -2278,7 +2278,7 @@ def upload_user_image(user_id):
         return jsonify({'error': 'User not found'}), 404
 
     # Update user's filename and image content
-    user.filename = filename
+    user.filename = file_name
     user.image_file = image_content
 
     # Commit changes to the database
