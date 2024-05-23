@@ -2271,7 +2271,7 @@ def upload_user_image(user_id):
     # Extract file name and image content
     filename = data.get('file_name')
     image_content = request.files['image_file'].read()  # Retrieve binary data of the image
-
+    print("Image Content :",image_content)
     # Find the user by user_id
     user = User.query.get(user_id)
     if not user:
