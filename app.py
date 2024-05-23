@@ -2331,7 +2331,7 @@ def user_image(user_id):
     
     # Decode the bytea image data
     image_data = user.image_file
-
+    print("Image Data :",image_data)
     input_bytes = image_data.encode('utf-8')
 
     image_file = base64.b64encode(input_bytes)
