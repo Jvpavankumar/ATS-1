@@ -3474,7 +3474,14 @@ def send_career_email(to, subject, message):
     msg.body = message
     mail.send(msg)
 
+####################################################################################################################################
 
+import base64
+import io
+import re
+from flask import Flask, request, jsonify
+import fitz  # PyMuPDF
+from docx import Document
 
 ALLOWED_EXTENSIONS = {'pdf', 'docx'}
 
@@ -3482,39 +3489,95 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def extract_text(file_path):
-    # Implement your text extraction logic here
-    pass
+    """
+    Extract text from PDF or DOCX files.
+    
+    Parameters:
+        file_path (str): Path to the file.
+    
+    Returns:
+        str: Extracted text.
+    """
+    if file_path.endswith('.pdf'):
+        return extract_text_from_pdf(file_path)
+    elif file_path.endswith('.docx'):
+        return extract_text_from_docx(file_path)
+    else:
+        return ""  # Unsupported file format
+
+def extract_text_from_pdf(pdf_path):
+    """
+    Extract text from a PDF file.
+    
+    Parameters:
+        pdf_path (str): Path to the PDF file.
+    
+    Returns:
+        str: Extracted text.
+    """
+    text = ""
+    try:
+        with fitz.open(pdf_path) as doc:
+            for page in doc:
+                text += page.get_text()
+    except Exception as e:
+        print(f"Error extracting text from PDF: {e}")
+    return text
+
+def extract_text_from_docx(docx_path):
+    """
+    Extract text from a DOCX file.
+    
+    Parameters:
+        docx_path (str): Path to the DOCX file.
+    
+    Returns:
+        str: Extracted text.
+    """
+    text = ""
+    try:
+        doc = Document(docx_path)
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + '\n'
+    except Exception as e:
+        print(f"Error extracting text from DOCX: {e}")
+    return text
 
 def extract_skills_from_resume(text, skills_list):
-    # Implement your skill extraction logic here
-    pass
+    # This function will search for skills in the text based on the given skills list
+    found_skills = [skill for skill in skills_list if skill.lower() in text.lower()]
+    return found_skills
 
 def extract_email(text):
-    # Implement your email extraction logic here
-    pass
+    # Regex to find email in text
+    email_regex = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    email_matches = re.findall(email_regex, text)
+    return email_matches[0] if email_matches else "No email found"
 
 def extract_phone_number(text):
-    # Implement your phone number extraction logic here
-    pass
+    # Regex to find phone number in text
+    phone_regex = r'\+?\d[\d -]{8,12}\d'
+    phone_matches = re.findall(phone_regex, text)
+    return phone_matches[0] if phone_matches else "No phone number found"
 
 @app.route('/parse_resume', methods=['POST'])
 def parse_resume():
     if 'resume' not in request.json:
-        return jsonify({"error": "No resume data provided"})
-    data=request.json
+        return jsonify({"error": "No resume data provided"}), 400
+    
+    data = request.json
     resume_data = data['resume']
 
-    decoded_resume = base64.b64decode(resume_data)
-    # Create a file-like object (BytesIO) from the decoded resume data
+    try:
+        decoded_resume = base64.b64decode(resume_data)
+    except Exception as e:
+        return jsonify({"error": "Invalid resume data"}), 400
+    
     resume_file = io.BytesIO(decoded_resume)
-
-    if resume_file == '':
-        return jsonify({"error": "Empty resume data"})
-
-    resume_text = resume_file.get('text', '')
-
+    resume_text = extract_text(resume_file)
+    
     if not resume_text:
-        return jsonify({"error": "No text found in the resume data"})
+        return jsonify({"error": "No text found in the resume data"}), 400
 
     it_skills = [ 'Data Analysis', 'Machine Learning', 'Communication', 'Project Management',
                     'Deep Learning', 'SQL', 'Tableau', 'C++', 'C', 'Front End Development', 'JAVA', 'Java Full Stack', 'React JS', 'Node JS','Programming (Python, Java, C++)',
@@ -3591,65 +3654,29 @@ def parse_resume():
     words = first_line.split()
     first_3_words = ' '.join(words[:3])
 
+    name_text = "No name found"
     if "RESUME" in first_line or "Resume" in first_line or "BIODATA" in first_line or "BioData" in first_line or "biodata" in first_line:
-        # Extract name from text
-        l = list()
-        s = ""
-        for x in resume_text:
-            if x != '\n':
-                s += x
-            elif s != "":
-                l.append(s)
-                s = ""
-        second_line = l[1]
+        second_line = resume_text.split('\n')[1] if len(resume_text.split('\n')) > 1 else ""
         words1 = second_line.split()
-        first_2_words_in_2 = ''.join(words1[:2])
-        first_3_words_in_2 = ' '.join(words1[:3])
-        first_4_words_in_2 = ''.join(words1[:4])
-        first_5_words_in_2 = ''.join(words1[:5])
-        if ("+91" in first_2_words_in_2 or "91" in first_2_words_in_2) or ("@" in first_2_words_in_2):
-            name_text = ' '.join(words1[:1]).lstrip().title()
-        elif ("+91" in first_3_words_in_2 or "91" in first_3_words_in_2) or ("@" in first_3_words_in_2):
-            name_text = ' '.join(words1[:2]).lstrip().title()
-        elif ("+91" in first_4_words_in_2 or "91" in first_4_words_in_2) or ("@" in first_4_words_in_2):
-            name_text = ' '.join(words1[:3]).lstrip().title()
-        elif ("+91" in first_5_words_in_2 or "91" in first_5_words_in_2) or ("@" in first_5_words_in_2):
-            name_text = ' '.join(words1[:4]).lstrip().title()
+        first_5_words_in_2 = ' '.join(words1[:5])
+        if any(keyword in first_5_words_in_2 for keyword in ["+91", "91", "@"]):
+            name_text = ' '.join(words1[:4]).title()
         else:
-            name_text = words1.lstrip().title()
-
-        return jsonify({
-            "name": name_text,
-            "mail": mail_text,
-            "phone": phone_text,
-            "skill1": skills_it,
-            "skill2": skills_non_it
-        })
+            name_text = ' '.join(words1).title()
     else:
-        first_line = resume_text.split('\n')[0]  # Extract the first line
-        words = first_line.split()
-        first_2_words_in_1 = ''.join(words[:2])
-        first_3_words_in_1 = ' '.join(words[:3])
-        first_4_words_in_1 = ''.join(words[:4])
-        first_5_words_in_1 = ''.join(words[:5])
-        if ("+91" in first_2_words_in_1 or "91" in first_2_words_in_1) or ("@" in first_2_words_in_1):
-            name_text = ' '.join(words[:1]).lstrip().title()
-        elif ("+91" in first_3_words_in_1 or "91" in first_3_words_in_1) or ("@" in first_3_words_in_1):
-            name_text = ' '.join(words[:2]).lstrip().title()
-        elif ("+91" in first_4_words_in_1 or "91" in first_4_words_in_1) or ("@" in first_4_words_in_1):
-            name_text = ' '.join(words[:3]).lstrip().title()
-        elif ("+91" in first_5_words_in_1 or "91" in first_5_words_in_1) or ("@" in first_5_words_in_1):
-            name_text = ' '.join(words[:4]).lstrip().title()
+        first_5_words_in_1 = ' '.join(words[:5])
+        if any(keyword in first_5_words_in_1 for keyword in ["+91", "91", "@"]):
+            name_text = ' '.join(words[:4]).title()
         else:
-            name_text = ' '.join(words).lstrip().title()
+            name_text = ' '.join(words).title()
 
-        return jsonify({
-            "name": name_text,
-            "mail": mail_text,
-            "phone": phone_text,
-            "skill1": skills_it,
-            "skill2": skills_non_it
-        })
+    return jsonify({
+        "name": name_text,
+        "mail": mail_text,
+        "phone": phone_text,
+        "skill1": skills_it,
+        "skill2": skills_non_it
+    })
 
 
 if __name__ == '__main__':
