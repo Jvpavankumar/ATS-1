@@ -2270,7 +2270,7 @@ def upload_user_image(user_id):
     data = request.json
     print("\n\n\n\n\n")
     print("Data :",data)
-    image_content = data['image]
+    image_content = data['image']
     file_name = data['file_name']
     # Find the user by user_id
     user = User.query.get(user_id)
