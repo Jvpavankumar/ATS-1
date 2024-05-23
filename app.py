@@ -2336,7 +2336,7 @@ def user_image(user_id):
     
     # Send the file as a response
     return send_file(
-        io.BytesIO(image_data),
+        io.BytesIO(image_file),
          mimetype = 'image/jpeg',
         as_attachment=False
     )
