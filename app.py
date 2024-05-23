@@ -2332,19 +2332,6 @@ def user_image(user_id):
     # Decode the bytea image data
     image_data = user.image_file
     
-    # Create a file-like object (BytesIO) from the image data
-    image_file = io.BytesIO(image_data)
-    
-    # Determine the mimetype based on the file content
-    if image_data.startswith(b"\x89PNG"):
-        mimetype = 'image/png'
-    elif image_data.startswith(b"\xff\xd8\xff"):
-        mimetype = 'image/jpeg'
-    elif image_data.startswith(b"\xff\xd8\xff\xe0") and image_data[6:10] in (b"JFIF", b"Exif"):
-        mimetype = 'image/jpeg'
-    else:
-        return jsonify({'error': 'Unsupported image format'}), 400
-    
     # Send the file as a response
     return send_file(
         image_file,
