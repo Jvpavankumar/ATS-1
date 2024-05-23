@@ -2333,14 +2333,55 @@ def user_image(user_id):
     image_data = user.image_file
     
     image_file = base64.b64decode(image_data)
+    # Determine the mimetype based on the file content
+    if image_data.startswith(b"\x89PNG"):
+        mimetype = 'image/png'
+    elif image_data.startswith(b"\xff\xd8\xff"):
+        mimetype = 'image/jpeg'
+    elif image_data.startswith(b"\xff\xd8\xff\xe0") and image_data[6:10] in (b"JFIF", b"Exif"):
+        mimetype = 'image/jpeg'
+    else:
+        return jsonify({'error': 'Unsupported image format'}), 400
     
     # Send the file as a response
     return send_file(
         image_file,
-        mimetype="image/jpeg",
+        mimetype=mimetype,
         as_attachment=False
     )
+
+
+# import base64
+# import io
+# @app.route('/user_image/<int:user_id>', methods=['GET'])
+# def user_image(user_id):
+#     # Retrieve the user data from the database
+#     user = User.query.filter_by(id=user_id).first()
+#     if not user or not user.image_file:
+#         return jsonify({'error': 'Image not found'}), 404
     
+#     # Decode the bytea image data
+#     image_data = user.image_file
+
+#     # Create a file-like object (BytesIO) from the image data
+#     image_file = io.BytesIO(image_data)
+
+#     # Determine the mimetype based on the file content
+#     if image_data.startswith(b"\x89PNG"):
+#         mimetype = 'image/png'
+#     elif image_data.startswith(b"\xff\xd8\xff"):
+#         mimetype = 'image/jpeg'
+#     elif image_data.startswith(b"\xff\xd8\xff\xe0") and image_data[6:10] in (b"JFIF", b"Exif"):
+#         mimetype = 'image/jpeg'
+#     else:
+#         return jsonify({'error': 'Unsupported image format'}), 400
+
+#     # Send the file as a response
+#     return send_file(
+#         image_file,
+#         mimetype=mimetype,
+#         as_attachment=False
+#     )
 
 @app.route('/delete_user_image/<int:user_id>', methods=['POST'])
 def delete_user_image(user_id):
@@ -3441,6 +3482,183 @@ def send_career_email(to, subject, message):
     msg = Message(subject, sender='saiganeshkanuparthi@gmail.com', recipients=[to])
     msg.body = message
     mail.send(msg)
+
+
+
+ALLOWED_EXTENSIONS = {'pdf', 'docx'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def extract_text(file_path):
+    # Implement your text extraction logic here
+    pass
+
+def extract_skills_from_resume(text, skills_list):
+    # Implement your skill extraction logic here
+    pass
+
+def extract_email(text):
+    # Implement your email extraction logic here
+    pass
+
+def extract_phone_number(text):
+    # Implement your phone number extraction logic here
+    pass
+
+@app.route('/parse_resume', methods=['POST'])
+def parse_resume():
+    if 'resume' not in request.json:
+        return jsonify({"error": "No resume data provided"})
+    data=request.json
+    resume_data = data['resume']
+
+    decoded_resume = base64.b64decode(resume_data)
+    # Create a file-like object (BytesIO) from the decoded resume data
+    resume_file = io.BytesIO(decoded_resume)
+
+    if resume_file == '':
+        return jsonify({"error": "Empty resume data"})
+
+    resume_text = resume_file.get('text', '')
+
+    if not resume_text:
+        return jsonify({"error": "No text found in the resume data"})
+
+    it_skills = [ 'Data Analysis', 'Machine Learning', 'Communication', 'Project Management',
+                    'Deep Learning', 'SQL', 'Tableau', 'C++', 'C', 'Front End Development', 'JAVA', 'Java Full Stack', 'React JS', 'Node JS','Programming (Python, Java, C++)',
+        'Data Analysis and Visualization','Artificial Intelligence','Programming'
+        'Database Management (SQL)',
+        'Web Development (HTML, CSS, JavaScript)',
+        'Machine Learning and Artificial Intelligence',
+        'Network Administration',
+        'Software Development and Testing',
+        'Embedded Systems',
+        'CAD and 3D Modeling',
+        'HTML5', 'CSS3'  ,'Jquery' ,'Bootstrap' ,'XML' ,'JSON' ,'ABAP'
+        ,'SAPUI5',
+        'Agile Methodology' ,'Frontend Development' ,'Jira' ,'Odata' ,'BTP' ,'Fiori Launchpad', 
+        'Python', 'JavaScript', 'HTML', 'CSS',
+        'React', 'Node.js', 'Django', 'Git', 'AWS', 'Linux','DevOps',
+        'Linear Regression',
+        'Logistic Regression',
+        'Decision Tree',
+        'SVM (Support Vector Machine)',
+        'Ensembles',
+        'Random Forest',
+        'Clustering',
+        'PCA (Principal Component Analysis)',
+        'K-means',
+        'Recommendation System',
+        'Market Basket Analysis',
+        'CNN',
+        'RNN',
+        'LSTM',
+        'Natural Language Processing',
+        'NLTK',
+        'LGBM',
+        'XGBoost',
+        'Transformers',
+        'Siamese network',
+        'BTYD (Buy Till You Die)',
+        'ML Ops Tools: Azure Synapse',
+        'Azure ML',
+        'Azure Databricks',
+        'ML flow',
+        'Airflow',
+        'Kubernetes',
+        'Dockers',
+        'Data Streaming – Kafka',
+        'Flask','LT Spice',
+        'Wireshark',
+        'Ansys Lumerical',
+        'Zemax OpticStudio',
+        'Xilinx Vivado',
+        'Google Collab',
+        'MATLAB'
+        ]
+    non_it_skills = ['Communication Skills', 'Teamwork', 'Problem Solving', 'Time Management', 'Leadership', 'Creativity', 'Adaptability', 'Critical Thinking', 'Analytical Skills', 'Attention to Detail', 'Customer Service', 'Interpersonal Skills', 'Negotiation Skills', 'Project Management', 'Presentation Skills', 'Research Skills', 'Organizational Skills', 'Multitasking', 'Decision Making', 'Emotional Intelligence', 'Conflict Resolution', 'Networking', 'Strategic Planning', 'Public Speaking', 'Writing Skills', 'Sales Skills', 'Marketing', 'Finance', 'Human Resources', 'Training and Development', 'Event Planning', 'Language Proficiency', 'Problem-Solving', 'Sales', 'Marketing', 'Financial Analysis', 'Customer Relationship Management (CRM)', 'Quality Management', 'Supply Chain Management', 'Logistics', 'Health and Safety', 'Public Relations', 'Social Media Management', 'Content Creation',
+                        'Graphic Design', 'Video Editing', 'Photography', 'Data Entry', 'Administrative Support', 'Customer Support', 'Teaching', 'Mentoring', 'Coaching', 'Retail Management', 'Hospitality Management', 'Event Management', 'Creative Writing', 'Content Marketing', 'Copywriting', 'Publications', 'Translation', 'Counseling', 'Fitness Instruction', 'Nutrition', 'Wellness', 'Fashion Design', 'Interior Design', 'Artistic Skills', 'Music', 'Sports', 'Culinary Arts', 'Photography', 'Videography', 'Project Coordination', 'Community Outreach', 'Volunteer Management', 'Fundraising', 'Political Campaigning', 'Government Relations', 'Policy Analysis', 'Nonprofit Management', 'Grant Writing', 'Fundraising', 'Event Planning', 'Real Estate', 'Property Management', 'Construction Management', 'Facilities Management', 'Environmental Sustainability', 'Energy Management', 'Public Health', 'Healthcare Administration', 
+                        'Nursing', 'Dental Hygiene', 'Pharmacy', 'Physical Therapy', 'Occupational Therapy', 'Social Work', 'Child Care', 'Elderly Care', 'Counseling', 'Psychology', 'Sociology', 'Anthropology', 'Archaeology', 'Geography', 'History', 'Political Science', 'Economics', 'Philosophy', 'Theology', 'Linguistics', 'Literature', 'Creative Writing', 'Journalism', 'Broadcasting', 'Public Relations', 'Marketing', 'Advertising', 'Market Research', 'Retail Sales', 'Wholesale Sales', 'Account Management', 'Client Relations', 'Customer Service', 'Conflict Resolution', 'Presentation Skills', 'Public Speaking', 'Writing', 'Editing', 'Proofreading', 'Content Creation', 'Graphic Design', 'Visual Merchandising', 'Retail Operations', 'Inventory Management', 'Supply Chain', 'Logistics', 'Quality Assurance', 'Process Improvement', 'Project Management', 'Financial Planning', 'Budgeting', 'Financial Analysis',
+                        'Bookkeeping', 'Data Entry', 'Administrative Support', 'Executive Assistance', 'Time Management', 'Organizational Skills', 'Event Planning', 'Event Coordination', 'Event Marketing', 'Catering', 'Venue Management', 'Wedding Planning', 'Trade Show Coordination', 'Customer Service', 'Conflict Resolution', 'Problem-Solving', 'Decision Making', 'Team Collaboration', 'Leadership', 'Supervision', 'Employee Training', 'Performance Management', 'Recruitment', 'Human Resources', 'Payroll Administration', 'Employee Relations', 'Safety Compliance', 'Labor Relations', 'Legal Compliance', 'Contract Negotiation', 'Risk Management', 'Policy Development', 'Quality Management', 'Process Improvement', 'Supply Chain Management', 'Logistics', 'Inventory Control', 'Procurement', 'Distribution', 'Quality Assurance', 'Process Improvement', 'Product Development', 'Marketing Strategy', 'Brand Management', 'Market Research', 
+                        'Public Relations', 'Social Media Management', 'Content Creation', 'Copywriting', 'Email Marketing', 'Sales Strategy', 'Client Relationship Management', 'Sales Forecasting', 'Lead Generation', 'Account Management', 'Customer Retention', 'Sales Presentations', 'Networking', 'Public Speaking', 'Team Collaboration', 'Project Management', 'Client Communications', 'Technical Support', 'Troubleshooting', 'Network Administration',   'Quality Assurance', 'Project Management', 'Technical Writing', 'Documentation',
+                        'Research and Development', 'Innovation', 'Problem-Solving', 'Critical Thinking', 'Attention to Detail', 'Collaboration', 'Time Management', 'Adaptability', 'Leadership', 'Creativity', 'Analytical Skills', 'Data Analysis', 'Statistical Analysis', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 'Geology', 'Environmental Science', 'Meteorology', 'Agricultural Science', 'Animal Science', 'Food Science', 'Nutrition', 'Dietetics', 'Physical Therapy', 'Occupational Therapy', 'Speech-Language Pathology', 'Nursing', 'Pharmacy', 'Dentistry', 'Veterinary Medicine', 'Medical Research', 'Medical Writing', 'Clinical Trials', 'Epidemiology', 'Public Health', 'Healthcare Administration', 'Health Informatics', 'Fitness Instruction', 'Nutrition Counseling', 'Wellness Coaching', 'Yoga Instruction', 'Personal Training', 'Physical Education', 'Sports Coaching', 'Athletic Training', 'Recreation', 'Dance Instruction', 'Music Instruction',
+                        'Art Instruction', 'Photography', 'Video Editing', 'Graphic Design', 'Interior Design', 'Fashion Design', 'Culinary Arts', 'Baking', 'Cooking', 'Restaurant Management', 'Hotel Management', 'Tourism', 'Event Planning', 'Museum Management', 'Library Science', 'Archiving', 'Curatorial Work', 'Conservation', 'Environmental Science', 'Sustainability', 'Renewable Energy', 'Climate Change', 'Environmental Policy', 'Wildlife Conservation', 'Forestry', 'Natural Resource Management', 'Ecology', 'Geography', 'Urban Planning', 'Civil Engineering', 'Structural Engineering', 'Transportation Engineering', 'Geotechnical Engineering', 'Environmental Engineering', 'Water Resources Engineering', 'Surveying', 'Architecture', 'Landscape Architecture', 'Interior Design', 'Urban Design', 'Real Estate Development', 'Property Management', 'Construction Management', 'Building Inspection', 'Facilities Management', 'Space Planning', 'Urban Planning', 
+                        'Public Administration', 'Policy Analysis', 'Government Relations', 'Political Campaigning', 'Public Policy', 'Economics', 'Finance', 'Accounting', 'Actuarial Science' ,'MS Office','Powerpoint','ms word','ms excel' ]
+
+    extracted_skills = extract_skills_from_resume(resume_text, it_skills)
+    extracted_nonit_skills = extract_skills_from_resume(resume_text, non_it_skills)
+    non_it_skills = list(set(extracted_nonit_skills) - set(extracted_skills))
+
+    skills_it = ", ".join(extracted_skills) if extracted_skills else "No skills found"
+    skills_non_it = ", ".join(non_it_skills) if non_it_skills else "No skills found"
+
+    mail_text = extract_email(resume_text)
+    phone_text = extract_phone_number(resume_text)
+
+    first_line = resume_text.split('\n')[0]  # Extract the first line
+    words = first_line.split()
+    first_3_words = ' '.join(words[:3])
+
+    if "RESUME" in first_line or "Resume" in first_line or "BIODATA" in first_line or "BioData" in first_line or "biodata" in first_line:
+        # Extract name from text
+        l = list()
+        s = ""
+        for x in resume_text:
+            if x != '\n':
+                s += x
+            elif s != "":
+                l.append(s)
+                s = ""
+        second_line = l[1]
+        words1 = second_line.split()
+        first_2_words_in_2 = ''.join(words1[:2])
+        first_3_words_in_2 = ' '.join(words1[:3])
+        first_4_words_in_2 = ''.join(words1[:4])
+        first_5_words_in_2 = ''.join(words1[:5])
+        if ("+91" in first_2_words_in_2 or "91" in first_2_words_in_2) or ("@" in first_2_words_in_2):
+            name_text = ' '.join(words1[:1]).lstrip().title()
+        elif ("+91" in first_3_words_in_2 or "91" in first_3_words_in_2) or ("@" in first_3_words_in_2):
+            name_text = ' '.join(words1[:2]).lstrip().title()
+        elif ("+91" in first_4_words_in_2 or "91" in first_4_words_in_2) or ("@" in first_4_words_in_2):
+            name_text = ' '.join(words1[:3]).lstrip().title()
+        elif ("+91" in first_5_words_in_2 or "91" in first_5_words_in_2) or ("@" in first_5_words_in_2):
+            name_text = ' '.join(words1[:4]).lstrip().title()
+        else:
+            name_text = words1.lstrip().title()
+
+        return jsonify({
+            "name": name_text,
+            "mail": mail_text,
+            "phone": phone_text,
+            "skill1": skills_it,
+            "skill2": skills_non_it
+        })
+    else:
+        first_line = resume_text.split('\n')[0]  # Extract the first line
+        words = first_line.split()
+        first_2_words_in_1 = ''.join(words[:2])
+        first_3_words_in_1 = ' '.join(words[:3])
+        first_4_words_in_1 = ''.join(words[:4])
+        first_5_words_in_1 = ''.join(words[:5])
+        if ("+91" in first_2_words_in_1 or "91" in first_2_words_in_1) or ("@" in first_2_words_in_1):
+            name_text = ' '.join(words[:1]).lstrip().title()
+        elif ("+91" in first_3_words_in_1 or "91" in first_3_words_in_1) or ("@" in first_3_words_in_1):
+            name_text = ' '.join(words[:2]).lstrip().title()
+        elif ("+91" in first_4_words_in_1 or "91" in first_4_words_in_1) or ("@" in first_4_words_in_1):
+            name_text = ' '.join(words[:3]).lstrip().title()
+        elif ("+91" in first_5_words_in_1 or "91" in first_5_words_in_1) or ("@" in first_5_words_in_1):
+            name_text = ' '.join(words[:4]).lstrip().title()
+        else:
+            name_text = ' '.join(words).lstrip().title()
+
+        return jsonify({
+            "name": name_text,
+            "mail": mail_text,
+            "phone": phone_text,
+            "skill1": skills_it,
+            "skill2": skills_non_it
+        })
 
 
 if __name__ == '__main__':
