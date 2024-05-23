@@ -2268,7 +2268,8 @@ def view_resume(candidate_id):
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
     data = request.form
-
+    print("\n\n\n\n")
+    print("Data",data)
     # Extract file name and image content
     filename = data.get('file_name')
     image_content = request.files['image_file'].read()  # Retrieve binary data of the image
