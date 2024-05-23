@@ -2377,7 +2377,7 @@ def user_image(user_id):
 @app.route('/delete_user_image/<int:user_id>', methods=['POST'])
 def delete_user_image(user_id):
     data = request.json
-    profile_image = data.get('profileImage')
+    profile_image = data['profileImage']
     if not profile_image:
         return jsonify({"error": "Profile image must be specified"}), 400
 
