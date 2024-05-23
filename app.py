@@ -2282,7 +2282,10 @@ def upload_user_image(user_id):
     user.image_file = image_content
 
     # Commit changes to the database
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        print("Failed to Upload !!")
 
     return jsonify({'message': 'Image updated successfully'}), 200
 
