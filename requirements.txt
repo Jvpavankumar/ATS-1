@@ -67,3 +67,4 @@ docx
 
 Pillow
 
+PyMuPDF
