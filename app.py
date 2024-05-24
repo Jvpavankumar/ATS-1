@@ -2321,7 +2321,7 @@ def view_resume(candidate_id):
 #     return jsonify({'message': 'Image updated successfully'}), 200
 
 
- @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
+@app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
     data = request.form
 
