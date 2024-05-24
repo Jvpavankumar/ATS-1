@@ -15,7 +15,7 @@ import ast
 import datetime
 import os
 import json
-import magic
+import magicuser
 from flask_cors import CORS
 import re
 # import spacy
@@ -2384,7 +2384,7 @@ def user_image(user_id):
     # Retrieve the user data from the database
     user = User.query.filter_by(id=user_id).first()
     if not user or not user.image_file:
-        return jsonify({'error': 'Image not found'}), 404
+        return jsonify({'message': 'Image not found'})
     
     # Decode the bytea image data
     image_data = user.image_file
