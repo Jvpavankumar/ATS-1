@@ -3765,25 +3765,38 @@ def extract_phone_number(text):
     return phone_matches[0] if phone_matches else "No phone number found"
 
 def extract_name(text):
-    """
-    Extract the name from the first few lines of the resume text.
-    
-    Parameters:
-        text (str): Resume text.
-    
-    Returns:
-        str: Extracted name.
-    """
-    lines = text.split('\n')
-    for line in lines:
-        # Remove common salutations and titles
-        cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE)
-        # Extract names with at least two words
-        words = cleaned_line.split()
-        if len(words) >= 2:
-            # Capitalize the first letter of each word in the name
-            return ' '.join(word.capitalize() for word in words)
-    return "No name found"
+  """
+  Extract the name from the first few lines of the resume text, handling common salutations,
+  titles, single-word names, and punctuation at the end.
+
+  Args:
+      text (str): Resume text.
+
+  Returns:
+      str: Extracted name (or "No name found" if no suitable name is found).
+  """
+
+  lines = text.split('\n')
+  for line in lines[:3]:  # Check only the first 3 lines
+    cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE)
+    words = cleaned_line.strip().split()
+
+    # Handle single-word names (e.g., initials)
+    if len(words) == 1:
+      # If it's all uppercase, consider it a name
+      if words[0].isupper():
+        return words[0]
+      else:
+        continue  # Skip single-word names that are not all uppercase
+
+    # Extract and capitalize name with two or more words
+    if len(words) >= 2:
+      # Remove trailing punctuation (., !) from the last word
+      last_word = words[-1].rstrip('.,!')
+      name = ' '.join(word.capitalize() for word in words[:-1]) + ' ' + last_word
+      return name
+
+  return "No name found"
     
 @app.route('/parse_resume', methods=['POST'])
 def parse_resume():
