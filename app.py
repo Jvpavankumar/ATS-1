@@ -2268,14 +2268,15 @@ def view_resume(candidate_id):
 #     return jsonify({'message': 'Image updated successfully'}), 200
 #######################################################################################
 
+
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
     data = request.json
     if not data:
         return jsonify({'error': 'Invalid JSON data provided'}), 400
 
-    image_content = data['image']
-    file_name = data['filename']
+    image_content = data.get('image')
+    file_name = data.get('filename')
 
     if not image_content or not file_name:
         return jsonify({'error': 'Image content or filename missing in the request'}), 400
@@ -2291,7 +2292,7 @@ def upload_user_image(user_id):
 
     # Commit changes to the database
     db.session.commit()
-    
+
     return jsonify({'message': 'Image updated successfully'}), 200
 
 # @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
