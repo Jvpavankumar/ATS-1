@@ -3700,16 +3700,37 @@ def extract_name(text):
         str: Extracted name.
     """
     lines = text.split('\n')
-    last_name = ""
-    for line in lines:
+    for line in lines[:5]:  # Look at the first five lines where the name is likely to appear
         # Remove common salutations and titles
-        cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE)
+        cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE).strip()
         # Extract names with at least two words
         words = cleaned_line.split()
         if len(words) >= 2:
             # Capitalize the first letter of each word in the name
-            last_name = ' '.join(word.capitalize() for word in words).rstrip('.,')
-    return last_name if last_name else "No name found"
+            return ' '.join(word.capitalize() for word in words).rstrip('.,')
+    return "No name found"
+
+# def extract_name(text):
+#     """
+#     Extract the name from the first few lines of the resume text.
+    
+#     Parameters:
+#         text (str): Resume text.
+    
+#     Returns:
+#         str: Extracted name.
+#     """
+#     lines = text.split('\n')
+#     last_name = ""
+#     for line in lines:
+#         # Remove common salutations and titles
+#         cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE)
+#         # Extract names with at least two words
+#         words = cleaned_line.split()
+#         if len(words) >= 2:
+#             # Capitalize the first letter of each word in the name
+#             last_name = ' '.join(word.capitalize() for word in words).rstrip('.,')
+#     return last_name if last_name else "No name found"
 
 @app.route('/parse_resume', methods=['POST'])
 def parse_resume():
