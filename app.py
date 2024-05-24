@@ -3613,6 +3613,178 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+def extract_text(file):
+    """
+    Extract text from PDF or DOCX files.
+    
+    Parameters:
+        file (BytesIO): File-like object.
+    
+    Returns:
+        str: Extracted text.
+    """
+    try:
+        file.seek(0)
+        header = file.read(4)
+        file.seek(0)
+        if header.startswith(b'%PDF'):
+            return extract_text_from_pdf(file)
+        elif header.startswith(b'PK\x03\x04'):
+            return extract_text_from_docx(file)
+        else:
+            return ""  # Unsupported file format
+    except Exception as e:
+        print(f"Error determining file type: {e}")
+        return ""
+
+def extract_text_from_pdf(file):
+    """
+    Extract text from a PDF file.
+    
+    Parameters:
+        file (BytesIO): PDF file-like object.
+    
+    Returns:
+        str: Extracted text.
+    """
+    text = ""
+    try:
+        with fitz.open(stream=file, filetype="pdf") as doc:
+            for page in doc:
+                text += page.get_text()
+    except Exception as e:
+        print(f"Error extracting text from PDF: {e}")
+    return text
+
+def extract_text_from_docx(file):
+    """
+    Extract text from a DOCX file.
+    
+    Parameters:
+        file (BytesIO): DOCX file-like object.
+    
+    Returns:
+        str: Extracted text.
+    """
+    text = ""
+    try:
+        doc = Document(file)
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + '\n'
+    except Exception as e:
+        print(f"Error extracting text from DOCX: {e}")
+    return text
+
+def extract_skills_from_resume(text, skills_list):
+    found_skills = [skill for skill in skills_list if skill.lower() in text.lower()]
+    return found_skills
+
+def extract_email(text):
+    email_regex = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+    email_matches = re.findall(email_regex, text)
+    return email_matches[-1].rstrip('.,') if email_matches else "No email found"
+
+def extract_phone_number(text):
+    phone_regex = r'\+?\d[\d -]{8,12}\d'
+    phone_matches = re.findall(phone_regex, text)
+    return phone_matches[-1] if phone_matches else "No phone number found"
+
+def extract_name(text):
+    """
+    Extract the name from the first few lines of the resume text.
+    
+    Parameters:
+        text (str): Resume text.
+    
+    Returns:
+        str: Extracted name.
+    """
+    lines = text.split('\n')
+    last_name = ""
+    for line in lines:
+        # Remove common salutations and titles
+        cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE)
+        # Extract names with at least two words
+        words = cleaned_line.split()
+        if len(words) >= 2:
+            # Capitalize the first letter of each word in the name
+            last_name = ' '.join(word.capitalize() for word in words).rstrip('.,')
+    return last_name if last_name else "No name found"
+
+@app.route('/parse_resume', methods=['POST'])
+def parse_resume():
+    if 'resume' not in request.json:
+        return jsonify({"error": "No resume data provided"}), 400
+    
+    data = request.json
+    resume_data = data['resume']
+    
+    try:
+        decoded_resume = base64.b64decode(resume_data)
+    except Exception as e:
+        return jsonify({"error": "Invalid resume data"}), 400
+    
+    resume_file = io.BytesIO(decoded_resume)
+    resume_text = extract_text(resume_file)
+    
+    if not resume_text:
+        return jsonify({"error": "No text found in the resume data"}), 400
+
+    it_skills = [ 
+        'Data Analysis', 'Machine Learning', 'Communication', 'Project Management',
+        'Deep Learning', 'SQL', 'Tableau', 'C++', 'C', 'Front End Development', 'JAVA', 
+        'Java Full Stack', 'React JS', 'Node JS','Programming (Python, Java, C++)',
+        'Data Analysis and Visualization','Artificial Intelligence','Programming',
+        'Database Management (SQL)','Web Development (HTML, CSS, JavaScript)',
+        'Machine Learning and Artificial Intelligence','Network Administration',
+        'Software Development and Testing','Embedded Systems','CAD and 3D Modeling',
+        'HTML5', 'CSS3', 'Jquery', 'Bootstrap', 'XML', 'JSON', 'ABAP', 'SAPUI5',
+        'Agile Methodology', 'Frontend Development', 'Jira', 'Odata', 'BTP', 'Fiori Launchpad', 
+        'Python', 'JavaScript', 'HTML', 'CSS','React', 'Node.js', 'Django', 'Git', 'AWS',
+        'Linux','DevOps','Linear Regression','Logistic Regression','Decision Tree',
+        'SVM (Support Vector Machine)','Ensembles','Random Forest','Clustering',
+        'PCA (Principal Component Analysis)','K-means','Recommendation System',
+        'Market Basket Analysis','CNN','RNN','LSTM','Natural Language Processing',
+        'NLTK','LGBM','XGBoost','Transformers','Siamese network','BTYD (Buy Till You Die)',
+        'ML Ops Tools: Azure Synapse','Azure ML','Azure Databricks','ML flow','Airflow',
+        'Kubernetes','Dockers','Data Streaming – Kafka','Flask','LT Spice','Wireshark',
+        'Ansys Lumerical','Zemax OpticStudio','Xilinx Vivado','Google Collab','MATLAB'
+    ]
+    
+    non_it_skills = [
+        'Communication Skills', 'Teamwork', 'Problem Solving', 'Time Management', 'Leadership',
+        'Creativity', 'Adaptability', 'Critical Thinking', 'Analytical Skills', 'Attention to Detail',
+        'Customer Service', 'Interpersonal Skills', 'Negotiation Skills', 'Project Management', 
+        'Presentation Skills', 'Research Skills', 'Organizational Skills', 'Multitasking',
+        'Decision Making', 'Emotional Intelligence', 'Conflict Resolution', 'Networking', 
+        'Strategic Planning', 'Public Speaking', 'Writing Skills', 'Sales Skills', 'Marketing', 
+        'Finance', 'Human Resources', 'Training and Development', 'Event Planning', 'Language Proficiency',
+        'Problem-Solving', 'Sales', 'Marketing', 'Financial Analysis', 'Customer Relationship Management (CRM)', 
+        'Quality Management', 'Supply Chain Management', 'Logistics', 'Health and Safety', 'Public Relations', 
+        'Social Media Management', 'Content Creation', 'Graphic Design', 'Video Editing', 'Photography', 
+        'Data Entry', 'Administrative Support', 'Customer Support'
+    ]
+
+    extracted_it_skills = extract_skills_from_resume(resume_text, it_skills)
+    extracted_nonit_skills = extract_skills_from_resume(resume_text, non_it_skills)
+    non_it_skills_final = list(set(extracted_nonit_skills) - set(extracted_it_skills))
+
+    skills_it = ", ".join(extracted_it_skills) if extracted_it_skills else "No skills found"
+    skills_non_it = ", ".join(non_it_skills_final) if non_it_skills_final else "No skills found"
+
+    email_text = extract_email(resume_text)
+    phone_text = extract_phone_number(resume_text)
+    name_text = extract_name(resume_text)
+
+    return jsonify({
+        "name": name_text,
+        "mail": email_text,
+        "phone": phone_text,
+        "skill1": skills_it,
+        "skill2": skills_non_it
+    })
+
+
 # def extract_text(file):
 #     """
 #     Extract text from PDF or DOCX files.
@@ -3688,253 +3860,178 @@ def allowed_file(filename):
 #     phone_regex = r'\+?\d[\d -]{8,12}\d'
 #     phone_matches = re.findall(phone_regex, text)
 #     return phone_matches[0] if phone_matches else "No phone number found"
-def extract_text(file):
-    """
-    Extract text from PDF or DOCX files.
+
+# def extract_name(text):
+#   """
+#   Extract the name from the first few lines of the resume text, handling common salutations,
+#   titles, single-word names, and punctuation at the end.
+
+#   Args:
+#       text (str): Resume text.
+
+#   Returns:
+#       str: Extracted name (or "No name found" if no suitable name is found).
+#   """
+
+#   lines = text.split('\n')
+#   for line in lines[:3]:  # Check only the first 3 lines
+#     cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE)
+#     words = cleaned_line.strip().split()
+
+#     # Handle single-word names (e.g., initials)
+#     if len(words) == 1:
+#       # If it's all uppercase, consider it a name
+#       if words[0].isupper():
+#         return words[0]
+#       else:
+#         continue  # Skip single-word names that are not all uppercase
+
+#     # Extract and capitalize name with two or more words
+#     if len(words) >= 2:
+#       # Remove trailing punctuation (., !) from the last word
+#       last_word = words[-1].rstrip('.,!')
+#       name = ' '.join(word.capitalize() for word in words[:-1]) + ' ' + last_word
+#       return name
+
+#   return "No name found"
     
-    Parameters:
-        file (BytesIO): File-like object.
+# @app.route('/parse_resume', methods=['POST'])
+# def parse_resume():
+#     if 'resume' not in request.json:
+#         return jsonify({"error": "No resume data provided"}), 400
     
-    Returns:
-        str: Extracted text.
-    """
-    try:
-        file.seek(0)
-        header = file.read(4)
-        file.seek(0)
-        if header.startswith(b'%PDF'):
-            return extract_text_from_pdf(file)
-        elif header.startswith(b'PK\x03\x04'):
-            return extract_text_from_docx(file)
-        else:
-            return ""  # Unsupported file format
-    except Exception as e:
-        print(f"Error determining file type: {e}")
-        return ""
-
-def extract_text_from_pdf(file):
-    """
-    Extract text from a PDF file.
+#     data = request.json
+#     resume_data = data['resume']
     
-    Parameters:
-        file (BytesIO): PDF file-like object.
+#     try:
+#         decoded_resume = base64.b64decode(resume_data)
+#     except Exception as e:
+#         return jsonify({"error": "Invalid resume data"}), 400
     
-    Returns:
-        str: Extracted text.
-    """
-    text = ""
-    try:
-        with fitz.open(stream=file, filetype="pdf") as doc:
-            for page in doc:
-                text += page.get_text()
-    except Exception as e:
-        print(f"Error extracting text from PDF: {e}")
-    return text
-
-def extract_text_from_docx(file):
-    """
-    Extract text from a DOCX file.
+#     resume_file = io.BytesIO(decoded_resume)
+#     resume_text = extract_text(resume_file)
     
-    Parameters:
-        file (BytesIO): DOCX file-like object.
+#     if not resume_text:
+#         return jsonify({"error": "No text found in the resume data"}), 400
+
+#     it_skills = [ 
+#         'Data Analysis', 'Machine Learning', 'Communication', 'Project Management',
+#         'Deep Learning', 'SQL', 'Tableau', 'C++', 'C', 'Front End Development', 'JAVA', 
+#         'Java Full Stack', 'React JS', 'Node JS','Programming (Python, Java, C++)',
+#         'Data Analysis and Visualization','Artificial Intelligence','Programming',
+#         'Database Management (SQL)','Web Development (HTML, CSS, JavaScript)',
+#         'Machine Learning and Artificial Intelligence','Network Administration',
+#         'Software Development and Testing','Embedded Systems','CAD and 3D Modeling',
+#         'HTML5', 'CSS3', 'Jquery', 'Bootstrap', 'XML', 'JSON', 'ABAP', 'SAPUI5',
+#         'Agile Methodology', 'Frontend Development', 'Jira', 'Odata', 'BTP', 'Fiori Launchpad', 
+#         'Python', 'JavaScript', 'HTML', 'CSS','React', 'Node.js', 'Django', 'Git', 'AWS',
+#         'Linux','DevOps','Linear Regression','Logistic Regression','Decision Tree',
+#         'SVM (Support Vector Machine)','Ensembles','Random Forest','Clustering',
+#         'PCA (Principal Component Analysis)','K-means','Recommendation System',
+#         'Market Basket Analysis','CNN','RNN','LSTM','Natural Language Processing',
+#         'NLTK','LGBM','XGBoost','Transformers','Siamese network','BTYD (Buy Till You Die)',
+#         'ML Ops Tools: Azure Synapse','Azure ML','Azure Databricks','ML flow','Airflow',
+#         'Kubernetes','Dockers','Data Streaming – Kafka','Flask','LT Spice','Wireshark',
+#         'Ansys Lumerical','Zemax OpticStudio','Xilinx Vivado','Google Collab','MATLAB'
+#     ]
     
-    Returns:
-        str: Extracted text.
-    """
-    text = ""
-    try:
-        doc = Document(file)
-        for paragraph in doc.paragraphs:
-            text += paragraph.text + '\n'
-    except Exception as e:
-        print(f"Error extracting text from DOCX: {e}")
-    return text
+#     non_it_skills = [
+#         'Communication Skills', 'Teamwork', 'Problem Solving', 'Time Management', 'Leadership',
+#         'Creativity', 'Adaptability', 'Critical Thinking', 'Analytical Skills', 'Attention to Detail',
+#         'Customer Service', 'Interpersonal Skills', 'Negotiation Skills', 'Project Management', 
+#         'Presentation Skills', 'Research Skills', 'Organizational Skills', 'Multitasking',
+#         'Decision Making', 'Emotional Intelligence', 'Conflict Resolution', 'Networking', 
+#         'Strategic Planning', 'Public Speaking', 'Writing Skills', 'Sales Skills', 'Marketing', 
+#         'Finance', 'Human Resources', 'Training and Development', 'Event Planning', 'Language Proficiency',
+#         'Problem-Solving', 'Sales', 'Marketing', 'Financial Analysis', 'Customer Relationship Management (CRM)', 
+#         'Quality Management', 'Supply Chain Management', 'Logistics', 'Health and Safety', 'Public Relations', 
+#         'Social Media Management', 'Content Creation', 'Graphic Design', 'Video Editing', 'Photography', 
+#         'Data Entry', 'Administrative Support', 'Customer Support', 'Teaching', 'Mentoring', 'Coaching', 
+#         'Retail Management', 'Hospitality Management', 'Event Management', 'Creative Writing', 'Content Marketing', 
+#         'Copywriting', 'Publications', 'Translation', 'Counseling', 'Fitness Instruction', 'Nutrition', 'Wellness', 
+#         'Fashion Design', 'Interior Design', 'Artistic Skills', 'Music', 'Sports', 'Culinary Arts', 'Photography', 
+#         'Videography', 'Project Coordination', 'Community Outreach', 'Volunteer Management', 'Fundraising', 
+#         'Political Campaigning', 'Government Relations', 'Policy Analysis', 'Nonprofit Management', 'Grant Writing', 
+#         'Fundraising', 'Event Planning', 'Real Estate', 'Property Management', 'Construction Management', 
+#         'Facilities Management', 'Environmental Sustainability', 'Energy Management', 'Public Health', 
+#         'Healthcare Administration', 'Nursing', 'Dental Hygiene', 'Pharmacy', 'Physical Therapy', 'Occupational Therapy', 
+#         'Social Work', 'Child Care', 'Elderly Care', 'Counseling', 'Psychology', 'Sociology', 'Anthropology', 'Archaeology', 
+#         'Geography', 'History', 'Political Science', 'Economics', 'Philosophy', 'Theology', 'Linguistics', 'Literature', 
+#         'Creative Writing', 'Journalism', 'Broadcasting', 'Public Relations', 'Marketing', 'Advertising', 'Market Research', 
+#         'Retail Sales', 'Wholesale Sales', 'Account Management', 'Client Relations', 'Customer Service', 'Conflict Resolution', 
+#         'Presentation Skills', 'Public Speaking', 'Writing', 'Editing', 'Proofreading', 'Content Creation', 'Graphic Design', 
+#         'Visual Merchandising', 'Retail Operations', 'Inventory Management', 'Supply Chain', 'Logistics', 'Quality Assurance', 
+#         'Process Improvement', 'Project Management', 'Financial Planning', 'Budgeting', 'Financial Analysis', 'Bookkeeping', 
+#         'Data Entry', 'Administrative Support', 'Executive Assistance', 'Time Management', 'Organizational Skills', 'Event Planning', 
+#         'Event Coordination', 'Event Marketing', 'Catering', 'Venue Management', 'Wedding Planning', 'Trade Show Coordination', 
+#         'Customer Service', 'Conflict Resolution', 'Problem-Solving', 'Decision Making', 'Team Collaboration', 'Leadership', 
+#         'Supervision', 'Employee Training', 'Performance Management', 'Recruitment', 'Human Resources', 'Payroll Administration', 
+#         'Employee Relations', 'Safety Compliance', 'Labor Relations', 'Legal Compliance', 'Contract Negotiation', 'Risk Management', 
+#         'Policy Development', 'Quality Management', 'Process Improvement', 'Supply Chain Management', 'Logistics', 'Inventory Control', 
+#         'Procurement', 'Distribution', 'Quality Assurance', 'Process Improvement', 'Product Development', 'Marketing Strategy', 
+#         'Brand Management', 'Market Research', 'Public Relations', 'Social Media Management', 'Content Creation', 'Copywriting', 
+#         'Email Marketing', 'Sales Strategy', 'Client Relationship Management', 'Sales Forecasting', 'Lead Generation', 
+#         'Account Management', 'Customer Retention', 'Sales Presentations', 'Networking', 'Public Speaking', 'Team Collaboration', 
+#         'Project Management', 'Client Communications', 'Technical Support', 'Troubleshooting', 'Network Administration', 
+#         'Quality Assurance', 'Project Management', 'Technical Writing', 'Documentation', 'Research and Development', 'Innovation', 
+#         'Problem-Solving', 'Critical Thinking', 'Attention to Detail', 'Collaboration', 'Time Management', 'Adaptability', 'Leadership', 
+#         'Creativity', 'Analytical Skills', 'Data Analysis', 'Statistical Analysis', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 
+#         'Geology', 'Environmental Science', 'Meteorology', 'Agricultural Science', 'Animal Science', 'Food Science', 'Nutrition', 
+#         'Dietetics', 'Physical Therapy', 'Occupational Therapy', 'Speech-Language Pathology', 'Nursing', 'Pharmacy', 'Dentistry', 
+#         'Veterinary Medicine', 'Medical Research', 'Medical Writing', 'Clinical Trials', 'Epidemiology', 'Public Health', 
+#         'Healthcare Administration', 'Health Informatics', 'Fitness Instruction', 'Nutrition Counseling', 'Wellness Coaching', 
+#         'Yoga Instruction', 'Personal Training', 'Physical Education', 'Sports Coaching', 'Athletic Training', 'Recreation', 
+#         'Dance Instruction', 'Music Instruction', 'Art Instruction', 'Photography', 'Video Editing', 'Graphic Design', 'Interior Design', 
+#         'Fashion Design', 'Culinary Arts', 'Baking', 'Cooking', 'Restaurant Management', 'Hotel Management', 'Tourism', 'Event Planning', 
+#         'Museum Management', 'Library Science', 'Archiving', 'Curatorial Work', 'Conservation', 'Environmental Science', 
+#         'Sustainability', 'Renewable Energy', 'Climate Change', 'Environmental Policy', 'Wildlife Conservation', 'Forestry', 
+#         'Natural Resource Management', 'Ecology', 'Geography', 'Urban Planning', 'Civil Engineering', 'Structural Engineering', 
+#         'Transportation Engineering', 'Geotechnical Engineering', 'Environmental Engineering', 'Water Resources Engineering', 
+#         'Surveying', 'Architecture', 'Landscape Architecture', 'Interior Design', 'Urban Design', 'Real Estate Development', 
+#         'Property Management', 'Construction Management', 'Building Inspection', 'Facilities Management', 'Space Planning', 
+#         'Urban Planning', 'Public Administration', 'Policy Analysis', 'Government Relations', 'Political Campaigning', 'Public Policy', 
+#         'Economics', 'Finance', 'Accounting', 'Actuarial Science', 'MS Office','Powerpoint','ms word','ms excel' 
+#     ]
 
-def extract_skills_from_resume(text, skills_list):
-    found_skills = [skill for skill in skills_list if skill.lower() in text.lower()]
-    return found_skills
+#     extracted_skills = extract_skills_from_resume(resume_text, it_skills)
+#     extracted_nonit_skills = extract_skills_from_resume(resume_text, non_it_skills)
+#     non_it_skills = list(set(extracted_nonit_skills) - set(extracted_skills))
 
-def extract_email(text):
-    email_regex = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
-    email_matches = re.findall(email_regex, text)
-    return email_matches[0].rstrip('.,') if email_matches else "No email found"
+#     skills_it = ", ".join(extracted_skills) if extracted_skills else "No skills found"
+#     skills_non_it = ", ".join(non_it_skills) if non_it_skills else "No skills found"
 
-def extract_phone_number(text):
-    phone_regex = r'\+?\d[\d -]{8,12}\d'
-    phone_matches = re.findall(phone_regex, text)
-    return phone_matches[0] if phone_matches else "No phone number found"
+#     mail_text = extract_email(resume_text)
+#     phone_text = extract_phone_number(resume_text)
 
-def extract_name(text):
-  """
-  Extract the name from the first few lines of the resume text, handling common salutations,
-  titles, single-word names, and punctuation at the end.
+#     first_line = resume_text.split('\n')[0]
+#     words = first_line.split()
+#     first_3_words = ' '.join(words[:3])
 
-  Args:
-      text (str): Resume text.
+#     name_text = "No name found"
+#     if "RESUME" in first_line or "Resume" in first_line or "BIODATA" in first_line or "BioData" in first_line or "biodata" in first_line:
+#         second_line = resume_text.split('\n')[1] if len(resume_text.split('\n')) > 1 else ""
+#         words1 = second_line.split()
+#         first_5_words_in_2 = ' '.join(words1[:5])
+#         if any(keyword in first_5_words_in_2 for keyword in ["+91", "91", "@"]):
+#             name_text = ' '.join(words1[:4]).title().rstrip('.,')
+#         else:
+#             name_text = ' '.join(words1).title().rstrip('.,')
+#     else:
+#         first_5_words_in_1 = ' '.join(words[:5])
+#         if any(keyword in first_5_words_in_1 for keyword in ["+91", "91", "@"]):
+#             name_text = ' '.join(words[:4]).title().rstrip('.,')
+#         else:
+#             name_text = ' '.join(words).title().rstrip('.,')
 
-  Returns:
-      str: Extracted name (or "No name found" if no suitable name is found).
-  """
+#     return jsonify({
+#         "name": name_text,
+#         "mail": mail_text,
+#         "phone": phone_text,
+#         "skill1": skills_it,
+#         "skill2": skills_non_it
+#     })
 
-  lines = text.split('\n')
-  for line in lines[:3]:  # Check only the first 3 lines
-    cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE)
-    words = cleaned_line.strip().split()
-
-    # Handle single-word names (e.g., initials)
-    if len(words) == 1:
-      # If it's all uppercase, consider it a name
-      if words[0].isupper():
-        return words[0]
-      else:
-        continue  # Skip single-word names that are not all uppercase
-
-    # Extract and capitalize name with two or more words
-    if len(words) >= 2:
-      # Remove trailing punctuation (., !) from the last word
-      last_word = words[-1].rstrip('.,!')
-      name = ' '.join(word.capitalize() for word in words[:-1]) + ' ' + last_word
-      return name
-
-  return "No name found"
-    
-@app.route('/parse_resume', methods=['POST'])
-def parse_resume():
-    if 'resume' not in request.json:
-        return jsonify({"error": "No resume data provided"}), 400
-    
-    data = request.json
-    resume_data = data['resume']
-    
-    try:
-        decoded_resume = base64.b64decode(resume_data)
-    except Exception as e:
-        return jsonify({"error": "Invalid resume data"}), 400
-    
-    resume_file = io.BytesIO(decoded_resume)
-    resume_text = extract_text(resume_file)
-    
-    if not resume_text:
-        return jsonify({"error": "No text found in the resume data"}), 400
-
-    it_skills = [ 
-        'Data Analysis', 'Machine Learning', 'Communication', 'Project Management',
-        'Deep Learning', 'SQL', 'Tableau', 'C++', 'C', 'Front End Development', 'JAVA', 
-        'Java Full Stack', 'React JS', 'Node JS','Programming (Python, Java, C++)',
-        'Data Analysis and Visualization','Artificial Intelligence','Programming',
-        'Database Management (SQL)','Web Development (HTML, CSS, JavaScript)',
-        'Machine Learning and Artificial Intelligence','Network Administration',
-        'Software Development and Testing','Embedded Systems','CAD and 3D Modeling',
-        'HTML5', 'CSS3', 'Jquery', 'Bootstrap', 'XML', 'JSON', 'ABAP', 'SAPUI5',
-        'Agile Methodology', 'Frontend Development', 'Jira', 'Odata', 'BTP', 'Fiori Launchpad', 
-        'Python', 'JavaScript', 'HTML', 'CSS','React', 'Node.js', 'Django', 'Git', 'AWS',
-        'Linux','DevOps','Linear Regression','Logistic Regression','Decision Tree',
-        'SVM (Support Vector Machine)','Ensembles','Random Forest','Clustering',
-        'PCA (Principal Component Analysis)','K-means','Recommendation System',
-        'Market Basket Analysis','CNN','RNN','LSTM','Natural Language Processing',
-        'NLTK','LGBM','XGBoost','Transformers','Siamese network','BTYD (Buy Till You Die)',
-        'ML Ops Tools: Azure Synapse','Azure ML','Azure Databricks','ML flow','Airflow',
-        'Kubernetes','Dockers','Data Streaming – Kafka','Flask','LT Spice','Wireshark',
-        'Ansys Lumerical','Zemax OpticStudio','Xilinx Vivado','Google Collab','MATLAB'
-    ]
-    
-    non_it_skills = [
-        'Communication Skills', 'Teamwork', 'Problem Solving', 'Time Management', 'Leadership',
-        'Creativity', 'Adaptability', 'Critical Thinking', 'Analytical Skills', 'Attention to Detail',
-        'Customer Service', 'Interpersonal Skills', 'Negotiation Skills', 'Project Management', 
-        'Presentation Skills', 'Research Skills', 'Organizational Skills', 'Multitasking',
-        'Decision Making', 'Emotional Intelligence', 'Conflict Resolution', 'Networking', 
-        'Strategic Planning', 'Public Speaking', 'Writing Skills', 'Sales Skills', 'Marketing', 
-        'Finance', 'Human Resources', 'Training and Development', 'Event Planning', 'Language Proficiency',
-        'Problem-Solving', 'Sales', 'Marketing', 'Financial Analysis', 'Customer Relationship Management (CRM)', 
-        'Quality Management', 'Supply Chain Management', 'Logistics', 'Health and Safety', 'Public Relations', 
-        'Social Media Management', 'Content Creation', 'Graphic Design', 'Video Editing', 'Photography', 
-        'Data Entry', 'Administrative Support', 'Customer Support', 'Teaching', 'Mentoring', 'Coaching', 
-        'Retail Management', 'Hospitality Management', 'Event Management', 'Creative Writing', 'Content Marketing', 
-        'Copywriting', 'Publications', 'Translation', 'Counseling', 'Fitness Instruction', 'Nutrition', 'Wellness', 
-        'Fashion Design', 'Interior Design', 'Artistic Skills', 'Music', 'Sports', 'Culinary Arts', 'Photography', 
-        'Videography', 'Project Coordination', 'Community Outreach', 'Volunteer Management', 'Fundraising', 
-        'Political Campaigning', 'Government Relations', 'Policy Analysis', 'Nonprofit Management', 'Grant Writing', 
-        'Fundraising', 'Event Planning', 'Real Estate', 'Property Management', 'Construction Management', 
-        'Facilities Management', 'Environmental Sustainability', 'Energy Management', 'Public Health', 
-        'Healthcare Administration', 'Nursing', 'Dental Hygiene', 'Pharmacy', 'Physical Therapy', 'Occupational Therapy', 
-        'Social Work', 'Child Care', 'Elderly Care', 'Counseling', 'Psychology', 'Sociology', 'Anthropology', 'Archaeology', 
-        'Geography', 'History', 'Political Science', 'Economics', 'Philosophy', 'Theology', 'Linguistics', 'Literature', 
-        'Creative Writing', 'Journalism', 'Broadcasting', 'Public Relations', 'Marketing', 'Advertising', 'Market Research', 
-        'Retail Sales', 'Wholesale Sales', 'Account Management', 'Client Relations', 'Customer Service', 'Conflict Resolution', 
-        'Presentation Skills', 'Public Speaking', 'Writing', 'Editing', 'Proofreading', 'Content Creation', 'Graphic Design', 
-        'Visual Merchandising', 'Retail Operations', 'Inventory Management', 'Supply Chain', 'Logistics', 'Quality Assurance', 
-        'Process Improvement', 'Project Management', 'Financial Planning', 'Budgeting', 'Financial Analysis', 'Bookkeeping', 
-        'Data Entry', 'Administrative Support', 'Executive Assistance', 'Time Management', 'Organizational Skills', 'Event Planning', 
-        'Event Coordination', 'Event Marketing', 'Catering', 'Venue Management', 'Wedding Planning', 'Trade Show Coordination', 
-        'Customer Service', 'Conflict Resolution', 'Problem-Solving', 'Decision Making', 'Team Collaboration', 'Leadership', 
-        'Supervision', 'Employee Training', 'Performance Management', 'Recruitment', 'Human Resources', 'Payroll Administration', 
-        'Employee Relations', 'Safety Compliance', 'Labor Relations', 'Legal Compliance', 'Contract Negotiation', 'Risk Management', 
-        'Policy Development', 'Quality Management', 'Process Improvement', 'Supply Chain Management', 'Logistics', 'Inventory Control', 
-        'Procurement', 'Distribution', 'Quality Assurance', 'Process Improvement', 'Product Development', 'Marketing Strategy', 
-        'Brand Management', 'Market Research', 'Public Relations', 'Social Media Management', 'Content Creation', 'Copywriting', 
-        'Email Marketing', 'Sales Strategy', 'Client Relationship Management', 'Sales Forecasting', 'Lead Generation', 
-        'Account Management', 'Customer Retention', 'Sales Presentations', 'Networking', 'Public Speaking', 'Team Collaboration', 
-        'Project Management', 'Client Communications', 'Technical Support', 'Troubleshooting', 'Network Administration', 
-        'Quality Assurance', 'Project Management', 'Technical Writing', 'Documentation', 'Research and Development', 'Innovation', 
-        'Problem-Solving', 'Critical Thinking', 'Attention to Detail', 'Collaboration', 'Time Management', 'Adaptability', 'Leadership', 
-        'Creativity', 'Analytical Skills', 'Data Analysis', 'Statistical Analysis', 'Mathematics', 'Physics', 'Chemistry', 'Biology', 
-        'Geology', 'Environmental Science', 'Meteorology', 'Agricultural Science', 'Animal Science', 'Food Science', 'Nutrition', 
-        'Dietetics', 'Physical Therapy', 'Occupational Therapy', 'Speech-Language Pathology', 'Nursing', 'Pharmacy', 'Dentistry', 
-        'Veterinary Medicine', 'Medical Research', 'Medical Writing', 'Clinical Trials', 'Epidemiology', 'Public Health', 
-        'Healthcare Administration', 'Health Informatics', 'Fitness Instruction', 'Nutrition Counseling', 'Wellness Coaching', 
-        'Yoga Instruction', 'Personal Training', 'Physical Education', 'Sports Coaching', 'Athletic Training', 'Recreation', 
-        'Dance Instruction', 'Music Instruction', 'Art Instruction', 'Photography', 'Video Editing', 'Graphic Design', 'Interior Design', 
-        'Fashion Design', 'Culinary Arts', 'Baking', 'Cooking', 'Restaurant Management', 'Hotel Management', 'Tourism', 'Event Planning', 
-        'Museum Management', 'Library Science', 'Archiving', 'Curatorial Work', 'Conservation', 'Environmental Science', 
-        'Sustainability', 'Renewable Energy', 'Climate Change', 'Environmental Policy', 'Wildlife Conservation', 'Forestry', 
-        'Natural Resource Management', 'Ecology', 'Geography', 'Urban Planning', 'Civil Engineering', 'Structural Engineering', 
-        'Transportation Engineering', 'Geotechnical Engineering', 'Environmental Engineering', 'Water Resources Engineering', 
-        'Surveying', 'Architecture', 'Landscape Architecture', 'Interior Design', 'Urban Design', 'Real Estate Development', 
-        'Property Management', 'Construction Management', 'Building Inspection', 'Facilities Management', 'Space Planning', 
-        'Urban Planning', 'Public Administration', 'Policy Analysis', 'Government Relations', 'Political Campaigning', 'Public Policy', 
-        'Economics', 'Finance', 'Accounting', 'Actuarial Science', 'MS Office','Powerpoint','ms word','ms excel' 
-    ]
-
-    extracted_skills = extract_skills_from_resume(resume_text, it_skills)
-    extracted_nonit_skills = extract_skills_from_resume(resume_text, non_it_skills)
-    non_it_skills = list(set(extracted_nonit_skills) - set(extracted_skills))
-
-    skills_it = ", ".join(extracted_skills) if extracted_skills else "No skills found"
-    skills_non_it = ", ".join(non_it_skills) if non_it_skills else "No skills found"
-
-    mail_text = extract_email(resume_text)
-    phone_text = extract_phone_number(resume_text)
-
-    first_line = resume_text.split('\n')[0]
-    words = first_line.split()
-    first_3_words = ' '.join(words[:3])
-
-    name_text = "No name found"
-    if "RESUME" in first_line or "Resume" in first_line or "BIODATA" in first_line or "BioData" in first_line or "biodata" in first_line:
-        second_line = resume_text.split('\n')[1] if len(resume_text.split('\n')) > 1 else ""
-        words1 = second_line.split()
-        first_5_words_in_2 = ' '.join(words1[:5])
-        if any(keyword in first_5_words_in_2 for keyword in ["+91", "91", "@"]):
-            name_text = ' '.join(words1[:4]).title().rstrip('.,')
-        else:
-            name_text = ' '.join(words1).title().rstrip('.,')
-    else:
-        first_5_words_in_1 = ' '.join(words[:5])
-        if any(keyword in first_5_words_in_1 for keyword in ["+91", "91", "@"]):
-            name_text = ' '.join(words[:4]).title().rstrip('.,')
-        else:
-            name_text = ' '.join(words).title().rstrip('.,')
-
-    return jsonify({
-        "name": name_text,
-        "mail": mail_text,
-        "phone": phone_text,
-        "skill1": skills_it,
-        "skill2": skills_non_it
-    })
-
-
+###########################################################################################################
 
 
 # def extract_text(file):
