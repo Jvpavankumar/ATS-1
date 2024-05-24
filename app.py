@@ -2447,7 +2447,7 @@ def delete_user_image(user_id):
 
     user.image_file = None
     user.filename = None
-    user.image_deleted = True
+    user.image_deleted = image_delete_status
     db.session.commit()
 
     return jsonify({"message": "Image file deleted successfully"}), 200
