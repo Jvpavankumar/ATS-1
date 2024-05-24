@@ -3685,8 +3685,13 @@ def extract_email(text):
     email_matches = re.findall(email_regex, text)
     return email_matches[-1].rstrip('.,') if email_matches else "No email found"
 
+# def extract_phone_number(text):
+#     phone_regex = r'\+?\d[\d -]{8,12}\d'
+#     phone_matches = re.findall(phone_regex, text)
+#     return phone_matches[-1] if phone_matches else "No phone number found"
+
 def extract_phone_number(text):
-    phone_regex = r'\+?\d[\d -]{8,12}\d'
+    phone_regex = r'\b\d{10}\b'
     phone_matches = re.findall(phone_regex, text)
     return phone_matches[-1] if phone_matches else "No phone number found"
 
