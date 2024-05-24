@@ -2321,27 +2321,51 @@ def view_resume(candidate_id):
 #     return jsonify({'message': 'Image updated successfully'}), 200
 
 
+# @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
+# def upload_user_image(user_id):
+#     data = request.form
+
+#     # Extract file name and image content
+#     image_content = data['image']
+#     filename = data['filename']  # Retrieve file object
+     
+#     # Find the user by user_id
+#     user = User.query.get(user_id)
+#     if not user:
+#         return jsonify({'error': 'User not found'}), 404
+
+#     # Update user's filename and image content
+#     user.filename = filename
+#     user.image_file = image_content
+
+#     # Commit changes to the database
+#     db.session.commit()
+
+#     return jsonify({'message': 'Image updated successfully'}), 200
+
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
-    data = request.form
+    try:
+        # Extract file from request
+        image_file = request.files['image']
+        filename = request.form['filename']
+        
+        # Find the user by user_id
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
 
-    # Extract file name and image content
-    image_content = data['image']
-    filename = data['filename']  # Retrieve file object
-     
-    # Find the user by user_id
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
+        # Update user's filename and image content
+        user.filename = filename
+        user.image_file = image_file.read()  # Store image content as binary data
 
-    # Update user's filename and image content
-    user.filename = filename
-    user.image_file = image_content
+        # Commit changes to the database
+        db.session.commit()
 
-    # Commit changes to the database
-    db.session.commit()
+        return jsonify({'message': 'Image updated successfully'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
-    return jsonify({'message': 'Image updated successfully'}), 200
 #################################################################################################
 
 import base64
