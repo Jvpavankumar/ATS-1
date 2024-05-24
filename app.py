@@ -93,6 +93,7 @@ class User(db.Model):
     registration_completed = db.Column(db.String(50))
     filename = db.Column(db.String(100))
     image_file = db.Column(db.String(1000))
+    image_deleted=db.Column(db.Boolean, default=False)
     def serialize(self):
         return {
             'id': self.id,
