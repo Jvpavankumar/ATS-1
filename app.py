@@ -2336,12 +2336,16 @@ def user_image(user_id):
     
     image_file = base64.b64decode(image_data)
     
-    # Send the file as a response
-    return send_file(
+    response = make_response(send_file(
         io.BytesIO(image_file),
-         mimetype = 'image/jpeg',
+        mimetype='image/jpeg',
         as_attachment=False
-    )
+    ))
+    
+    # Add a custom header with your message
+    response.headers['image_status'] = user.image_file
+    
+    return response
 
 
 # import base64
