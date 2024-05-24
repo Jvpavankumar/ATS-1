@@ -3711,7 +3711,7 @@ def extract_name(text):
         cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE).strip()
         # Extract names with at least two words
         words = cleaned_line.split()
-        if len(words) >= 2:
+        if len(words) >= 1:
             # Capitalize the first letter of each word in the name
             return ' '.join(word.capitalize() for word in words).rstrip('.,')
     return "No name found"
