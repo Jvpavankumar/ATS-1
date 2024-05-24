@@ -2323,6 +2323,13 @@ def upload_user_image(user_id):
 
 import base64
 import io
+@app.route('/image_status/<int:user_id>', methods=['GET'])
+def image_status(user_id):
+    user = User.query.filter_by(id=user_id).first()
+    if not user or not user.image_file:
+        return jsonify({'error': 'Image not found'}), 404
+
+    return jsonify({'message': user.image_deleted}), 200
 
 @app.route('/user_image/<int:user_id>', methods=['GET'])
 def user_image(user_id):
@@ -2336,16 +2343,13 @@ def user_image(user_id):
     
     image_file = base64.b64decode(image_data)
     
-    response = make_response(send_file(
+    # Send the file as a response
+    return send_file(
         io.BytesIO(image_file),
-        mimetype='image/jpeg',
+         mimetype = 'image/jpeg',
         as_attachment=False
-    ))
-    
-    # Add a custom header with your message
-    response.headers['image_status'] = user.image_file
-    
-    return response
+    )
+
 
 
 # import base64
@@ -2394,6 +2398,7 @@ def delete_user_image(user_id):
 
     user.image_file = None
     user.filename = None
+    user.image_deleted = True
     db.session.commit()
 
     return jsonify({"message": "Image file deleted successfully"}), 200
@@ -3559,6 +3564,81 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
+# def extract_text(file):
+#     """
+#     Extract text from PDF or DOCX files.
+    
+#     Parameters:
+#         file (BytesIO): File-like object.
+    
+#     Returns:
+#         str: Extracted text.
+#     """
+#     try:
+#         file.seek(0)
+#         header = file.read(4)
+#         file.seek(0)
+#         if header.startswith(b'%PDF'):
+#             return extract_text_from_pdf(file)
+#         elif header.startswith(b'PK\x03\x04'):
+#             return extract_text_from_docx(file)
+#         else:
+#             return ""  # Unsupported file format
+#     except Exception as e:
+#         print(f"Error determining file type: {e}")
+#         return ""
+
+# def extract_text_from_pdf(file):
+#     """
+#     Extract text from a PDF file.
+    
+#     Parameters:
+#         file (BytesIO): PDF file-like object.
+    
+#     Returns:
+#         str: Extracted text.
+#     """
+#     text = ""
+#     try:
+#         with fitz.open(stream=file, filetype="pdf") as doc:
+#             for page in doc:
+#                 text += page.get_text()
+#     except Exception as e:
+#         print(f"Error extracting text from PDF: {e}")
+#     return text
+
+# def extract_text_from_docx(file):
+#     """
+#     Extract text from a DOCX file.
+    
+#     Parameters:
+#         file (BytesIO): DOCX file-like object.
+    
+#     Returns:
+#         str: Extracted text.
+#     """
+#     text = ""
+#     try:
+#         doc = Document(file)
+#         for paragraph in doc.paragraphs:
+#             text += paragraph.text + '\n'
+#     except Exception as e:
+#         print(f"Error extracting text from DOCX: {e}")
+#     return text
+
+# def extract_skills_from_resume(text, skills_list):
+#     found_skills = [skill for skill in skills_list if skill.lower() in text.lower()]
+#     return found_skills
+
+# def extract_email(text):
+#     email_regex = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
+#     email_matches = re.findall(email_regex, text)
+#     return email_matches[0].rstrip('.,') if email_matches else "No email found"
+
+# def extract_phone_number(text):
+#     phone_regex = r'\+?\d[\d -]{8,12}\d'
+#     phone_matches = re.findall(phone_regex, text)
+#     return phone_matches[0] if phone_matches else "No phone number found"
 def extract_text(file):
     """
     Extract text from PDF or DOCX files.
@@ -3635,6 +3715,27 @@ def extract_phone_number(text):
     phone_matches = re.findall(phone_regex, text)
     return phone_matches[0] if phone_matches else "No phone number found"
 
+def extract_name(text):
+    """
+    Extract the name from the first few lines of the resume text.
+    
+    Parameters:
+        text (str): Resume text.
+    
+    Returns:
+        str: Extracted name.
+    """
+    lines = text.split('\n')
+    for line in lines:
+        # Remove common salutations and titles
+        cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE)
+        # Extract names with at least two words
+        words = cleaned_line.split()
+        if len(words) >= 2:
+            # Capitalize the first letter of each word in the name
+            return ' '.join(word.capitalize() for word in words)
+    return "No name found"
+    
 @app.route('/parse_resume', methods=['POST'])
 def parse_resume():
     if 'resume' not in request.json:
