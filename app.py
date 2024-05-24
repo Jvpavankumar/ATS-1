@@ -2267,13 +2267,19 @@ def view_resume(candidate_id):
 
 #     return jsonify({'message': 'Image updated successfully'}), 200
 #######################################################################################
+
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
     data = request.json
-    print("\n\n\n\n\n")
-    print("Data :",data)
-    image_content = data['image']
-    file_name = data['filename']
+    if not data:
+        return jsonify({'error': 'Invalid JSON data provided'}), 400
+
+    image_content = data.get('image')
+    file_name = data.get('filename')
+
+    if not image_content or not file_name:
+        return jsonify({'error': 'Image content or filename missing in the request'}), 400
+
     # Find the user by user_id
     user = User.query.get(user_id)
     if not user:
@@ -2284,12 +2290,33 @@ def upload_user_image(user_id):
     user.image_file = image_content
 
     # Commit changes to the database
-    try:
-        db.session.commit()
-    except:
-        print("Failed to Upload !!")
-
+    db.session.commit()
+    
     return jsonify({'message': 'Image updated successfully'}), 200
+
+# @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
+# def upload_user_image(user_id):
+#     data = request.json
+#     print("\n\n\n\n\n")
+#     print("Data :",data)
+#     image_content = data['image']
+#     file_name = data['filename']
+#     # Find the user by user_id
+#     user = User.query.get(user_id)
+#     if not user:
+#         return jsonify({'error': 'User not found'}), 404
+
+#     # Update user's filename and image content
+#     user.filename = file_name
+#     user.image_file = image_content
+
+#     # Commit changes to the database
+#     try:
+#         db.session.commit()
+#     except:
+#         print("Failed to Upload !!")
+
+#     return jsonify({'message': 'Image updated successfully'}), 200
 
 
 # @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
@@ -2323,13 +2350,13 @@ def upload_user_image(user_id):
 
 import base64
 import io
-@app.route('/image_status/<int:user_id>', methods=['GET'])
-def image_status(user_id):
-    user = User.query.filter_by(id=user_id).first()
-    if not user or not user.image_file:
-        return jsonify({'error': 'Image not found'}), 404
+# @app.route('/image_status/<int:user_id>', methods=['GET'])
+# def image_status(user_id):
+#     user = User.query.filter_by(id=user_id).first()
+#     if not user or not user.image_file:
+#         return jsonify({'error': 'Image not found'}), 404
 
-    return jsonify({'message': user.image_file}), 200
+#     return jsonify({'message': user.image_file}), 200
 
 @app.route('/user_image/<int:user_id>', methods=['GET'])
 def user_image(user_id):
@@ -2388,6 +2415,7 @@ def user_image(user_id):
 def delete_user_image(user_id):
     data = request.json
     profile_image = data['profileImage']
+    image_delete_status=data['image_delete_status']
     if not profile_image:
         return jsonify({"error": "Profile image must be specified"}), 400
 
