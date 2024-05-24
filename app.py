@@ -2274,8 +2274,8 @@ def upload_user_image(user_id):
     if not data:
         return jsonify({'error': 'Invalid JSON data provided'}), 400
 
-    image_content = data.get('image')
-    file_name = data.get('filename')
+    image_content = data['image']
+    file_name = data['filename']
 
     if not image_content or not file_name:
         return jsonify({'error': 'Image content or filename missing in the request'}), 400
