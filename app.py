@@ -2347,8 +2347,9 @@ def view_resume(candidate_id):
 def upload_user_image(user_id):
     try:
         # Extract file from request
-        image_file = request.files['image']
-        filename = request.form['filename']
+        data=request.json
+        image_file = data['image']
+        filename = data['filename']
         
         # Find the user by user_id
         user = User.query.get(user_id)
@@ -2357,7 +2358,7 @@ def upload_user_image(user_id):
 
         # Update user's filename and image content
         user.filename = filename
-        user.image_file = image_file.read()  # Store image content as binary data
+        user.image_file = image_file  # Store image content as binary data
 
         # Commit changes to the database
         db.session.commit()
