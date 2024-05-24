@@ -3690,11 +3690,6 @@ def extract_email(text):
 #     phone_matches = re.findall(phone_regex, text)
 #     return phone_matches[-1] if phone_matches else "No phone number found"
 
-def extract_phone_number(text):
-    phone_regex = r'\b\d{10}\b'
-    phone_matches = re.findall(phone_regex, text)
-    return phone_matches[-1] if phone_matches else "No phone number found"
-    
 def extract_name(text):
     """
     Extract the name from the first few lines of the resume text.
@@ -3713,9 +3708,14 @@ def extract_name(text):
         # Extract names with up to three words
         words = cleaned_line.split()
         name_words.extend(words)  # Add words from the current line to the list
-        if len(name_words) >= 1 and len(name_words) <= 3:
-            # Capitalize the first letter of each word in the name
+        if len(name_words) <= 3:
+            continue  # Continue accumulating words if we have less than or equal to three words
+        else:
+            # Stop accumulating if we exceed three words and return the concatenated name
             return ' '.join(word.capitalize() for word in name_words).rstrip('.,')
+    # Return the concatenated name if found within the first five lines
+    if name_words:
+        return ' '.join(word.capitalize() for word in name_words).rstrip('.,')
     return "No name found"
 
 # def extract_name(text):
