@@ -3713,7 +3713,7 @@ def extract_name(text):
         # Extract names with up to three words
         words = cleaned_line.split()
         name_words.extend(words)  # Add words from the current line to the list
-        if len(name_words) <= 3:
+        if len(name_words) <= 2:
             continue  # Continue accumulating words if we have less than or equal to three words
         else:
             # Stop accumulating if we exceed three words and return the concatenated name
