@@ -2329,7 +2329,7 @@ def image_status(user_id):
     if not user or not user.image_file:
         return jsonify({'error': 'Image not found'}), 404
 
-    return jsonify({'message': user.image_deleted}), 200
+    return jsonify({'message': user.image_file}), 200
 
 @app.route('/user_image/<int:user_id>', methods=['GET'])
 def user_image(user_id):
