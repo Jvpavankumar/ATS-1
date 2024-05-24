@@ -3694,7 +3694,7 @@ def extract_phone_number(text):
     phone_regex = r'\b\d{10}\b'
     phone_matches = re.findall(phone_regex, text)
     return phone_matches[-1] if phone_matches else "No phone number found"
-
+    
 def extract_name(text):
     """
     Extract the name from the first few lines of the resume text.
@@ -3709,12 +3709,33 @@ def extract_name(text):
     for line in lines[:5]:  # Look at the first five lines where the name is likely to appear
         # Remove common salutations and titles
         cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE).strip()
-        # Extract names with at least two words
+        # Extract names with up to three words
         words = cleaned_line.split()
-        if len(words) >= 1:
+        if 1 <= len(words) <= 3:
             # Capitalize the first letter of each word in the name
             return ' '.join(word.capitalize() for word in words).rstrip('.,')
-    return "No name found"
+    return "No name found"   
+
+# def extract_name(text):
+#     """
+#     Extract the name from the first few lines of the resume text.
+    
+#     Parameters:
+#         text (str): Resume text.
+    
+#     Returns:
+#         str: Extracted name.
+#     """
+#     lines = text.split('\n')
+#     for line in lines[:5]:  # Look at the first five lines where the name is likely to appear
+#         # Remove common salutations and titles
+#         cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE).strip()
+#         # Extract names with at least two words
+#         words = cleaned_line.split()
+#         if len(words) >= 1:
+#             # Capitalize the first letter of each word in the name
+#             return ' '.join(word.capitalize() for word in words).rstrip('.,')
+#     return "No name found"
 
 # def extract_name(text):
 #     """
