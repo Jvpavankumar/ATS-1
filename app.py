@@ -3684,13 +3684,16 @@ def extract_email(text):
     email_regex = r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}'
     email_matches = re.findall(email_regex, text)
     return email_matches[-1].rstrip('.,') if email_matches else "No email found"
+    
+def extract_phone_number(text):
+    phone_regex = r'\b\d{10}\b'
+    phone_matches = re.findall(phone_regex, text)
+    return phone_matches[-1] if phone_matches else "No phone number found"
 
 # def extract_phone_number(text):
 #     phone_regex = r'\+?\d[\d -]{8,12}\d'
 #     phone_matches = re.findall(phone_regex, text)
 #     return phone_matches[-1] if phone_matches else "No phone number found"
-
-
 
 def extract_name(text):
     """
@@ -3703,15 +3706,43 @@ def extract_name(text):
         str: Extracted name.
     """
     lines = text.split('\n')
+    name_words = []  # List to store the words of the name
     for line in lines[:5]:  # Look at the first five lines where the name is likely to appear
         # Remove common salutations and titles
         cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE).strip()
-        # Extract names with at least two words
+        # Extract names with up to three words
         words = cleaned_line.split()
-        if len(words) >= 1:
-            # Capitalize the first letter of each word in the name
-            return ' '.join(word.capitalize() for word in words).rstrip('.,')
+        name_words.extend(words)  # Add words from the current line to the list
+        if len(name_words) <= 3:
+            continue  # Continue accumulating words if we have less than or equal to three words
+        else:
+            # Stop accumulating if we exceed three words and return the concatenated name
+            return ' '.join(word.capitalize() for word in name_words).rstrip('.,')
+    # Return the concatenated name if found within the first five lines
+    if name_words:
+        return ' '.join(word.capitalize() for word in name_words).rstrip('.,')
     return "No name found"
+
+# def extract_name(text):
+#     """
+#     Extract the name from the first few lines of the resume text.
+    
+#     Parameters:
+#         text (str): Resume text.
+    
+#     Returns:
+#         str: Extracted name.
+#     """
+#     lines = text.split('\n')
+#     for line in lines[:5]:  # Look at the first five lines where the name is likely to appear
+#         # Remove common salutations and titles
+#         cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE).strip()
+#         # Extract names with at least two words
+#         words = cleaned_line.split()
+#         if len(words) >= 1:
+#             # Capitalize the first letter of each word in the name
+#             return ' '.join(word.capitalize() for word in words).rstrip('.,')
+#     return "No name found"
 
 # def extract_name(text):
 #     """
