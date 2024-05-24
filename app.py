@@ -15,7 +15,7 @@ import ast
 import datetime
 import os
 import json
-import magicuser
+# import magicuser
 from flask_cors import CORS
 import re
 # import spacy
