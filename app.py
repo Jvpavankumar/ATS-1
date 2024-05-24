@@ -3706,15 +3706,17 @@ def extract_name(text):
         str: Extracted name.
     """
     lines = text.split('\n')
+    name_words = []  # List to store the words of the name
     for line in lines[:5]:  # Look at the first five lines where the name is likely to appear
         # Remove common salutations and titles
         cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE).strip()
         # Extract names with up to three words
         words = cleaned_line.split()
-        if 1 <= len(words) <= 3:
+        name_words.extend(words)  # Add words from the current line to the list
+        if len(name_words) >= 1 and len(name_words) <= 3:
             # Capitalize the first letter of each word in the name
-            return ' '.join(word.capitalize() for word in words).rstrip('.,')
-    return "No name found"   
+            return ' '.join(word.capitalize() for word in name_words).rstrip('.,')
+    return "No name found"
 
 # def extract_name(text):
 #     """
