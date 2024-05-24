@@ -2350,6 +2350,7 @@ def upload_user_image(user_id):
         data=request.json
         image_file = data['image']
         filename = data['filename']
+        image_delete_status=data['image_delete_status']
         
         # Find the user by user_id
         user = User.query.get(user_id)
@@ -2359,7 +2360,7 @@ def upload_user_image(user_id):
         # Update user's filename and image content
         user.filename = filename
         user.image_file = image_file  # Store image content as binary data
-
+        user.image_deleted=image_delete_status
         # Commit changes to the database
         db.session.commit()
 
