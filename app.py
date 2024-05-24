@@ -92,7 +92,8 @@ class User(db.Model):
     otp = db.Column(db.String(6), default=False)
     registration_completed = db.Column(db.String(50))
     filename = db.Column(db.String(100))
-    image_file = db.Column(db.String(1000))
+    # image_file = db.Column(db.String(1000))
+    image_file=db.Column(db.LargeBinary)
     image_deleted=db.Column(db.Boolean, default=False)
     def serialize(self):
         return {
