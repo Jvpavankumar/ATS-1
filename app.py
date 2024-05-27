@@ -38,11 +38,13 @@ from sqlalchemy.orm import sessionmaker
 
 app = Flask(__name__)
 cors = CORS(app)
-app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_SERVER'] = 'smtp.office365.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USERNAME'] = 'ganesh.s@makonissoft.com'
 app.config['MAIL_PASSWORD'] = 'Fol98135'
+app.config['MAIL_PASSWORD'] = 'tozvnmxbcejynxpe'
 mail = Mail(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
