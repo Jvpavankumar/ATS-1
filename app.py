@@ -2388,7 +2388,7 @@ def user_image(user_id):
     # Retrieve the user data from the database
     user = User.query.filter_by(id=user_id).first()
     if not user or not user.image_file:
-        return jsonify({'message': 'Image not found'}),500
+        return jsonify({'message': 'Image not found'}),400
     
     # Decode the bytea image data
     image_data = user.image_file
