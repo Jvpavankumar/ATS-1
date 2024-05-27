@@ -259,6 +259,8 @@ class JobPost(db.Model):
     job_type = db.Column(db.String(100))
     skills = db.Column(db.String(500))
     notification = db.Column(db.String(20))
+    data_updated_date = db.Column(db.Date)
+    data_updated_time = db.Column(db.Time)
 
     def __init__(self, client, experience_min, experience_max, budget_min, budget_max, location, shift_timings,
                  notice_period, role, detailed_jd,jd_pdf, mode, recruiter, management,job_status,job_type,skills):
@@ -3119,11 +3121,7 @@ def edit_post_job(job_id):
     job_type = data.get('job_type', '')
     skills = data['skills']
 
-    jd_pdf_file = data['jd_pdf']
-    # if jd_pdf_file and jd_pdf_file.filename != '':
-    #     jd_pdf_binary = jd_pdf_file.read()
-    # else:
-    #     jd_pdf_binary = job_post.jd_pdf if job_post.jd_pdf else b''
+    
 
     if job_type == 'Contract':
         job_type_details = data.get('job_type_details', '')
@@ -3145,6 +3143,11 @@ def edit_post_job(job_id):
     job_post.job_type = job_type
     job_post.skills = skills
     job_post.jd_pdf = jd_pdf
+
+    # Update the date and time fields
+    current_datetime = datetime.now()
+    job_post.data_updated_date = current_datetime.date()
+    job_post.data_updated_time = current_datetime.time()
 
     # Update associated notifications if needed
     recruiter_names = data.getlist('recruiter[]')
