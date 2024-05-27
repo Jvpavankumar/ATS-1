@@ -488,7 +488,7 @@ def signup():
         verification_link = url_for('verify', token=verification_token, _external=True)
 
         # Send the verification email
-        msg = Message('Account Verification', sender='saiganeshkanuparthi@gmail.com', recipients=[new_user.email])
+        msg = Message('Account Verification', sender='ganesh.s@makonissoft.com', recipients=[new_user.email])
         msg.body = f'Hello {new_user.name},\n\n We are pleased to inform you that your account has been successfully created for the ATS Makonis Talent Track Pro. Here are your login credentials:\n\nUsername: {new_user.username}\nPassword: {password}\n\n Please note that the verification link will expire after 24 hours. \n\n After successfully verifying your account, you can access the application using the following link : \n\n Application Link (Post Verification): https://ats-makonis.netlify.app/ \n\n To verify your account, please click on the following link: {verification_link} \n\n If you have any questions or need assistance, please feel free to reach out. \n\n Best regards, '
         mail.send(msg)
 
