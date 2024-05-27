@@ -1778,9 +1778,8 @@ def download_resume(candidate_id):
     return send_file(io.BytesIO(resume_bytes),
                      attachment_filename=resume_filename,
                      as_attachment=True)
+    
 
-
-# @app.route('/post_job', methods=['GET', 'POST'])
 @app.route('/post_job', methods=['POST'])
 def post_job():
     try:
@@ -1801,8 +1800,8 @@ def post_job():
                 budget_max = data.get('budget_max')
                 currency_type_min = data.get('currency_type_min')
                 currency_type_max = data.get('currency_type_max')
-                budget_min = currency_type_min + ' ' + budget_min
-                budget_max = currency_type_max + ' ' + budget_max
+                budget_min = currency_type_min + ' ' + budget_min if currency_type_min and budget_min else budget_min
+                budget_max = currency_type_max + ' ' + budget_max if currency_type_max and budget_max else budget_max
                 location = data.get('location')
                 shift_timings = data.get('shift_timings')
                 notice_period = data.get('notice_period')
@@ -1812,21 +1811,15 @@ def post_job():
                 job_status = data.get('job_status')
                 job_type = data.get('job_type')
                 skills = data.get('skills')
-                jd_pdf=data.get('jd_pdf')
-                # Job_Type_details=data.get('Job_Type_details')
+                jd_pdf = data.get('jd_pdf')
+
+                # Debug print statements
+                print(f"Received job_type: {job_type}")
+                print(f"Received data: {data}")
 
                 if job_type == 'Contract':
                     Job_Type_details = data.get('Job_Type_details')
-                    job_type = job_type + '(' + Job_Type_details + ' Months )'
-
-                # filename = None
-                # jd_binary = None
-                # if 'jd_pdf' in request.files:
-                #     jd_file = request.files['jd_pdf']
-                #     if jd_file and allowed_file(jd_file.filename):
-                #         # Convert the resume file to binary data
-                #         jd_binary = jd_file.read()
-                #         filename = secure_filename(jd_file.filename)
+                    job_type = f'{job_type} ({Job_Type_details} Months)' if Job_Type_details else job_type
 
                 recruiter_names = data.get('recruiter', [])
                 joined_recruiters = ', '.join(recruiter_names)
@@ -1885,9 +1878,9 @@ def post_job():
 
                 # Retrieve the email addresses of the recruiters
                 recruiter_emails = [recruiter.email for recruiter in User.query.filter(User.username.in_(recruiter_names),
-                                                                                         User.user_type == 'recruiter',
-                                                                                         User.is_active == True,
-                                                                                         User.is_verified == True)]
+                                                                                       User.user_type == 'recruiter',
+                                                                                       User.is_active == True,
+                                                                                       User.is_verified == True)]
                 for email in recruiter_emails:
                     send_notification(email)
 
@@ -1903,6 +1896,123 @@ def post_job():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+        
+
+# # @app.route('/post_job', methods=['GET', 'POST'])
+# @app.route('/post_job', methods=['POST'])
+# def post_job():
+#     try:
+#         # Accessing the JSON data from the request
+#         data = request.json
+#         user_id = data['user_id']
+#         user = User.query.filter_by(id=user_id).first()
+#         user_name = user.username
+#         # Check if the "user_name" field exists
+#         if user_name:
+#             user_type = user.user_type
+
+#             if user_type == 'management':
+#                 client = data.get('client')
+#                 experience_min = data.get('experience_min')
+#                 experience_max = data.get('experience_max')
+#                 budget_min = data.get('budget_min')
+#                 budget_max = data.get('budget_max')
+#                 currency_type_min = data.get('currency_type_min')
+#                 currency_type_max = data.get('currency_type_max')
+#                 budget_min = currency_type_min + ' ' + budget_min
+#                 budget_max = currency_type_max + ' ' + budget_max
+#                 location = data.get('location')
+#                 shift_timings = data.get('shift_timings')
+#                 notice_period = data.get('notice_period')
+#                 role = data.get('role')
+#                 detailed_jd = data.get('detailed_jd')
+#                 mode = data.get('mode')
+#                 job_status = data.get('job_status')
+#                 job_type = data.get('job_type')
+#                 skills = data.get('skills')
+#                 jd_pdf=data.get('jd_pdf')
+#                 # Job_Type_details=data.get('Job_Type_details')
+
+#                 if job_type == 'Contract':
+#                     Job_Type_details = data.get('Job_Type_details')
+#                     job_type = job_type + '(' + Job_Type_details + ' Months )'
+
+               
+#                 recruiter_names = data.get('recruiter', [])
+#                 joined_recruiters = ', '.join(recruiter_names)
+
+#                 new_job_post = JobPost(
+#                     client=client,
+#                     experience_min=experience_min,
+#                     experience_max=experience_max,
+#                     budget_min=budget_min,
+#                     budget_max=budget_max,
+#                     location=location,
+#                     shift_timings=shift_timings,
+#                     notice_period=notice_period,
+#                     role=role,
+#                     detailed_jd=detailed_jd,
+#                     mode=mode,
+#                     recruiter=joined_recruiters,
+#                     management=user.username,
+#                     job_status=job_status,
+#                     job_type=job_type,
+#                     skills=skills,
+#                     jd_pdf=jd_pdf
+#                 )
+
+#                 new_job_post.notification = 'no'
+#                 new_job_post.date_created = date.today()
+#                 new_job_post.time_created = datetime.now().time()
+
+#                 # Define an empty list to hold Notification instances
+#                 notifications = []
+
+#                 if ',' in joined_recruiters:
+#                     recruiter_names_lst = joined_recruiters.split(',')
+#                     for recruiter_name in recruiter_names_lst:
+#                         notification_status = False
+#                         notification = Notification(
+#                             recruiter_name=recruiter_name.strip(),
+#                             notification_status=notification_status
+#                         )
+#                         # Append each Notification instance to the notifications list
+#                         notifications.append(notification)
+#                 else:
+#                     recruiter_name = joined_recruiters
+#                     notification_status = False
+#                     notification = Notification(
+#                         recruiter_name=recruiter_name,
+#                         notification_status=notification_status
+#                     )
+#                     # Append each Notification instance to the notifications list
+#                     notifications.append(notification)
+
+#                 # Add the new_job_post and all associated notifications to the session
+#                 db.session.add(new_job_post)
+#                 db.session.add_all(notifications)
+#                 db.session.commit()
+
+#                 # Retrieve the email addresses of the recruiters
+#                 recruiter_emails = [recruiter.email for recruiter in User.query.filter(User.username.in_(recruiter_names),
+#                                                                                          User.user_type == 'recruiter',
+#                                                                                          User.is_active == True,
+#                                                                                          User.is_verified == True)]
+#                 for email in recruiter_emails:
+#                     send_notification(email)
+
+#                 # Return the job_id along with the success message
+#                 return jsonify({"message": "Job posted successfully", "job_id": new_job_post.id}), 200
+#             else:
+#                 return jsonify({"error": "Invalid user type"}), 400
+#         else:
+#             return jsonify({"error": "Missing 'user_name' field in the request"}), 400
+
+#     except KeyError as e:
+#         return jsonify({"error": f"KeyError: {e}"}), 400
+
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 
 from flask import jsonify
