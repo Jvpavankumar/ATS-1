@@ -2203,7 +2203,7 @@ def view_all_jobs():
     return jsonify(response_data)
 
 def send_notification(recruiter_email):
-    msg = Message('New Job Posted', sender='saiganeshkanuparthi@gmail.com', recipients=[recruiter_email])
+    msg = Message('New Job Posted', sender='ganesh.s@makonissoft.com', recipients=[recruiter_email])
     msg.body = 'A new job has been posted. Check your dashboard for more details.'
     mail.send(msg)
 
