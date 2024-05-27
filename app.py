@@ -3209,12 +3209,12 @@ def edit_post_job(job_id):
 
     user_id = data.get('user_id')
     user = User.query.filter_by(id=user_id).first()
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
+    # if not user:
+    #     return jsonify({'error': 'User not found'}), 404
 
     job_post = JobPost.query.get(job_id)
-    if not job_post:
-        return jsonify({'error': 'Job not found'}), 404
+    # if not job_post:
+    #     return jsonify({'error': 'Job not found'}), 404
 
     # Extract and process form data
     job_post.client = data.get('client')
