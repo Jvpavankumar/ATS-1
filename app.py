@@ -2927,7 +2927,7 @@ def change_password():
                         db.session.commit()
 
                         # Send the password change notification email
-                        msg = Message('Password Changed', sender='saiganeshkanuparthi@gmail.com', recipients=[user.email])
+                        msg = Message('Password Changed', sender='ganesh.s@makonissoft.com', recipients=[user.email])
                         msg.body = f'Hello {user.name},\n\nYour password has been successfully changed. Here are your updated credentials:\n\nUsername: {user.username}\nPassword: {new_password}'
                         mail.send(msg)
 
