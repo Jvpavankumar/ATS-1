@@ -3095,6 +3095,7 @@ def re_send_notification(recruiter_email, job_id):
 @app.route('/edit_post_job/<int:job_id>', methods=['POST'])
 def edit_post_job(job_id):
     data = request.form
+    print("EDIT_DATA :",data)
     user_id = data['user_id']
     user = User.query.filter_by(id=user_id).first()
     if not user:
