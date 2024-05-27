@@ -3198,7 +3198,7 @@ def generate_excel():
     })
 
 def re_send_notification(recruiter_email, job_id):
-    msg = Message('Job Update Notification', sender='saich5252@gmail.com', recipients=[recruiter_email])
+    msg = Message('Job Update Notification', sender='ganesh.s@makonissoft.com', recipients=[recruiter_email])
     msg.body = f'Hello,\n\nThe job post with ID {job_id} has been updated.\n\nPlease check your dashboard for more details.'
     mail.send(msg)
 
