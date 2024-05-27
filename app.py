@@ -3707,21 +3707,62 @@ def extract_name(text):
     """
     lines = text.split('\n')
     name_words = []  # List to store the words of the name
+    
+    # Regular expressions to identify lines that are likely contact details
+    phone_pattern = re.compile(r'\b(\+?\d[\d\-\.\s]+)?\d{10}\b')
+    email_pattern = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
+    
     for line in lines[:5]:  # Look at the first five lines where the name is likely to appear
+        # Skip lines that are likely to be contact details
+        if phone_pattern.search(line) or email_pattern.search(line):
+            continue
+        
         # Remove common salutations and titles
-        cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE).strip()
+        cleaned_line = re.sub(r'\b(Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam)\b', '', line, flags=re.IGNORECASE).strip()
+        
         # Extract names with up to three words
         words = cleaned_line.split()
         name_words.extend(words)  # Add words from the current line to the list
+        
         if len(name_words) <= 2:
             continue  # Continue accumulating words if we have less than or equal to three words
         else:
             # Stop accumulating if we exceed three words and return the concatenated name
-            return ' '.join(word.capitalize() for word in name_words).rstrip('.,')
+            return ' '.join(word.capitalize() for word in name_words[:3]).rstrip('.,')
+    
     # Return the concatenated name if found within the first five lines
     if name_words:
-        return ' '.join(word.capitalize() for word in name_words).rstrip('.,')
+        return ' '.join(word.capitalize() for word in name_words[:3]).rstrip('.,')
+    
     return "No name found"
+
+# def extract_name(text):
+#     """
+#     Extract the name from the first few lines of the resume text.
+    
+#     Parameters:
+#         text (str): Resume text.
+    
+#     Returns:
+#         str: Extracted name.
+#     """
+#     lines = text.split('\n')
+#     name_words = []  # List to store the words of the name
+#     for line in lines[:5]:  # Look at the first five lines where the name is likely to appear
+#         # Remove common salutations and titles
+#         cleaned_line = re.sub(r'Mr\.|Mrs\.|Ms\.|Miss|Dr\.|Sir|Madam', '', line, flags=re.IGNORECASE).strip()
+#         # Extract names with up to three words
+#         words = cleaned_line.split()
+#         name_words.extend(words)  # Add words from the current line to the list
+#         if len(name_words) <= 2:
+#             continue  # Continue accumulating words if we have less than or equal to three words
+#         else:
+#             # Stop accumulating if we exceed three words and return the concatenated name
+#             return ' '.join(word.capitalize() for word in name_words).rstrip('.,')
+#     # Return the concatenated name if found within the first five lines
+#     if name_words:
+#         return ' '.join(word.capitalize() for word in name_words).rstrip('.,')
+#     return "No name found"
 
 # def extract_name(text):
 #     """
