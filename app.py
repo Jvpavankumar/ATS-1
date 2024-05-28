@@ -3209,16 +3209,16 @@ def edit_post_job(job_id):
     data = request.form
     print("EDIT_DATA :", data)
     user_id = data.get('user_id')
-    if user_id is None:
-        return jsonify({'error': 'User ID not provided'}), 400
+    # if user_id is None:
+    #     return jsonify({'error': 'User ID not provided'}), 400
         
     user = User.query.get(user_id)
-    if user is None:
-        return jsonify({'error': 'User not found'}), 404
+    # if user is None:
+    #     return jsonify({'error': 'User not found'}), 404
 
     job_post = JobPost.query.get(job_id)
-    if job_post is None:
-        return jsonify({'error': 'Job not found'}), 404
+    # if job_post is None:
+    #     return jsonify({'error': 'Job not found'}), 404
 
     # Extract and process form data
     client = data['client']
