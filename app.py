@@ -1827,7 +1827,7 @@ def post_job():
                 job_status = data.get('job_status')
                 job_type = data.get('job_type')
                 skills = data.get('skills')
-                jd_pdf = data.get('jd_pdf')
+                # jd_pdf = data.get('jd_pdf')
                 # Job_Type_details=data.get('Job_Type_details')
 
                 if job_type == 'Contract':
@@ -1854,7 +1854,7 @@ def post_job():
                     job_status=job_status,
                     job_type=job_type,
                     skills=skills,
-                    jd_pdf=jd_pdf
+                    # jd_pdf=jd_pdf
                 )
 
                 new_job_post.notification = 'no'
