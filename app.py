@@ -2015,9 +2015,10 @@ def post_job():
 
 #     return jsonify(response_data)
 
-@app.route('/recruiter_job_posts/<int:user_id>', methods=['GET'])
-def recruiter_job_posts(user_id):
-    
+@app.route('/recruiter_job_posts', methods=['POST'])
+def recruiter_job_posts():
+    data=request.json
+    user_id=data['user_id']
     # Validate user existence
     recruiter = User.query.get(user_id)
     if not recruiter:
