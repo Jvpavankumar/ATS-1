@@ -1910,7 +1910,7 @@ def recruiter_job_posts(user_id):
 
     # Filter unread notifications efficiently
     unread_notifications = Notification.query.filter(
-        Notification.recruiter == recruiter,
+        Notification.recruiter_name == recruiter,
         Notification.notification_status == False
     ).all()
 
