@@ -3452,12 +3452,12 @@ def edit_post_job(job_id):
 
     user_id = data.get('user_id')
     user = User.query.filter_by(id=user_id).first()
-    # if not user:
-    #     return jsonify({'error': 'User not found'}), 404
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
 
     job_post = JobPost.query.get(job_id)
-    # if not job_post:
-    #     return jsonify({'error': 'Job not found'}), 404
+    if not job_post:
+        return jsonify({'error': 'Job not found'}), 404
 
     # Extract and process form data
     job_post.client = data.get('client')
@@ -3491,7 +3491,9 @@ def edit_post_job(job_id):
     existing_recruiters = job_post.recruiter.split(', ') if job_post.recruiter else []
     to_remove = set(existing_recruiters) - set(recruiter_names)
     for recruiter_name in to_remove:
-        Notification.query.filter_by(job_post_id=job_id, recruiter_name=recruiter_name.strip()).delete()
+        notification = Notification.query.filter_by(job_post_id=job_id, recruiter_name=recruiter_name.strip()).first()
+        if notification:
+            db.session.delete(notification)
     for recruiter_name in recruiter_names:
         if recruiter_name.strip() not in existing_recruiters:
             notification = Notification(
