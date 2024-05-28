@@ -2037,12 +2037,12 @@ def recruiter_job_posts():
 
     # Filter active and on-hold job posts
     active_job_posts = JobPost.query.filter(
-        JobPost.recruiter == recruiter,
+        JobPost.recruiter_id == recruiter.id,
         JobPost.job_status == 'Active'
     ).order_by(JobPost.id).all()
 
     on_hold_job_posts = JobPost.query.filter(
-        JobPost.recruiter == recruiter,
+        JobPost.recruiter_id == recruiter.id,
         JobPost.job_status == 'Hold'
     ).order_by(JobPost.id).all()
 
@@ -2051,12 +2051,12 @@ def recruiter_job_posts():
         notification.notification_status = True
     db.session.commit()
 
-    # Construct JSON response with serialized job post data
+    # Construct JSON response
     response_data = {
         "count_notification_no": len(unread_notifications),
-        "job_posts": [job_post.serialize() for job_post in active_job_posts],
+        "job_posts": [job_post.to_dict() for job_post in active_job_posts],
         "user_name": recruiter_name,
-        "job_posts_hold": [job_post.serialize() for job_post in on_hold_job_posts],
+        "job_posts_hold": [job_post.to_dict() for job_post in on_hold_job_posts],
         "redirect_url": url_for('add_candidate'),  # Optional, include if needed
         "no_doc_message": request.args.get('no_doc_message'),  # Optional, include if needed
         "career_count_notification_no": 0  # Placeholder, implement career notification logic
