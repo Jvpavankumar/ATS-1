@@ -2017,19 +2017,22 @@ def post_job():
 
 @app.route('/recruiter_job_posts', methods=['POST'])
 def recruiter_job_posts():
-    data=request.json
-    user_id=data['user_id']
+    data = request.json
+    user_id = data.get('user_id')  # Using get() to avoid KeyError if 'user_id' is missing
+    if not user_id:
+        return jsonify({"error": "User ID is missing"}), 400
+
     # Validate user existence
     recruiter = User.query.get(user_id)
     if not recruiter:
-        return jsonify({"error": "Recruiter not found"})
+        return jsonify({"error": "Recruiter not found"}), 404
 
     recruiter_name = recruiter.name
 
-    # Filter unread notifications efficiently using the recruiter's ID
-    unread_notifications = Notification.query.filter(
-        Notification.id == recruiter.id,  # Use recruiter.id here
-        Notification.notification_status == False
+    # Filter unread notifications based on recruiter name
+    unread_notifications = Career_notification.query.filter(
+        Career_notification.recruiter_name == recruiter_name,
+        Career_notification.notification_status == False
     ).all()
 
     # Filter active and on-hold job posts
@@ -2060,7 +2063,6 @@ def recruiter_job_posts():
     }
 
     return jsonify(response_data)
-
 
 from flask import jsonify
 
