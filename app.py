@@ -3558,6 +3558,7 @@ def edit_post_job(job_id):
 
     user_id = data.get('user_id')
     user = User.query.filter_by(id=user_id).first()
+    print("user :",user)
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
