@@ -1827,8 +1827,13 @@ def post_job():
                 job_status = data.get('job_status')
                 job_type = data.get('job_type')
                 skills = data.get('skills')
-                # jd_pdf = data.get('jd_pdf')
+                jd_pdf = data.get('jd_pdf')
                 # Job_Type_details=data.get('Job_Type_details')
+                if jd_pdf:
+                    # Decode the base64 PDF
+                    jd_pdf = base64.b64decode(jd_pdf)
+                else:
+                    jd_pdf = None
 
                 if job_type == 'Contract':
                     Job_Type_details = data.get('Job_Type_details')
@@ -1854,7 +1859,7 @@ def post_job():
                     job_status=job_status,
                     job_type=job_type,
                     skills=skills,
-                    # jd_pdf=jd_pdf
+                    jd_pdf=jd_pdf
                 )
 
                 new_job_post.notification = 'no'
