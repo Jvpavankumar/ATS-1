@@ -2037,12 +2037,12 @@ def recruiter_job_posts():
 
     # Filter active and on-hold job posts
     active_job_posts = JobPost.query.filter(
-        JobPost.recruiter_id == recruiter.id,
+        JobPost.recruiter == recruiter_name,  # Filtering based on the recruiter's name
         JobPost.job_status == 'Active'
     ).order_by(JobPost.id).all()
 
     on_hold_job_posts = JobPost.query.filter(
-        JobPost.recruiter_id == recruiter.id,
+        JobPost.recruiter == recruiter_name,  # Filtering based on the recruiter's name
         JobPost.job_status == 'Hold'
     ).order_by(JobPost.id).all()
 
@@ -2063,6 +2063,7 @@ def recruiter_job_posts():
     }
 
     return jsonify(response_data)
+
 
 from flask import jsonify
 
