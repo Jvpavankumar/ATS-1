@@ -2153,43 +2153,43 @@ def other_job_posts():
     # Redirect or render an appropriate page if the conditions are not met
     return redirect(url_for('login'))
 
-@app.route('/recruiter_job_posts', methods=['GET'])
-def recruiter_job_posts():
-    no_doc_message = request.args.get('no_doc_message')
-    if 'user_id' in session and 'user_type' in session:
-        if session['user_type'] == 'recruiter':
-            # Retrieve the logged-in user's ID from the session
-            user_id = session['user_id']
-            user_name = session['user_name']
-            count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
-                                                              Notification.recruiter_name == user_name).count()
-            career_count_notification_no = Career_notification.query.filter(Career_notification.notification_status == 'false',
-                                                              Career_notification.recruiter_name == user_name).count()
-            recruiter_name = User.query.get(user_id).name
+# @app.route('/recruiter_job_posts', methods=['GET'])
+# def recruiter_job_posts():
+#     no_doc_message = request.args.get('no_doc_message')
+#     if 'user_id' in session and 'user_type' in session:
+#         if session['user_type'] == 'recruiter':
+#             # Retrieve the logged-in user's ID from the session
+#             user_id = session['user_id']
+#             user_name = session['user_name']
+#             count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
+#                                                               Notification.recruiter_name == user_name).count()
+#             career_count_notification_no = Career_notification.query.filter(Career_notification.notification_status == 'false',
+#                                                               Career_notification.recruiter_name == user_name).count()
+#             recruiter_name = User.query.get(user_id).name
 
-            job_posts = JobPost.query.filter(JobPost.recruiter.contains(recruiter_name),
-                                             JobPost.job_status == 'Active').order_by(JobPost.id).all()
-            job_posts_hold = JobPost.query.filter(JobPost.recruiter.contains(recruiter_name),
-                                                  JobPost.job_status == 'Hold').order_by(JobPost.id).all()
+#             job_posts = JobPost.query.filter(JobPost.recruiter.contains(recruiter_name),
+#                                              JobPost.job_status == 'Active').order_by(JobPost.id).all()
+#             job_posts_hold = JobPost.query.filter(JobPost.recruiter.contains(recruiter_name),
+#                                                   JobPost.job_status == 'Hold').order_by(JobPost.id).all()
 
-            notifications = Notification.query.filter(Notification.recruiter_name.contains(recruiter_name)).all()
+#             notifications = Notification.query.filter(Notification.recruiter_name.contains(recruiter_name)).all()
 
-            for notification in notifications:
-                if notification.notification_status == False:
-                    notification.notification_status = True
-                    db.session.commit()
+#             for notification in notifications:
+#                 if notification.notification_status == False:
+#                     notification.notification_status = True
+#                     db.session.commit()
 
-            # for job_post in job_posts:
-            #     if job_post.notification == 'no':
-            #         job_post.notification = 'yes'
-            #         db.session.commit()
+#             # for job_post in job_posts:
+#             #     if job_post.notification == 'no':
+#             #         job_post.notification = 'yes'
+#             #         db.session.commit()
 
-            return render_template('recruiter_job_posts.html', count_notification_no=count_notification_no,
-                                   job_posts=job_posts, user_name=user_name, job_posts_hold=job_posts_hold,
-                                   redirect_url=url_for('add_candidate'), recruiter_job_posts=recruiter_job_posts,
-                                   no_doc_message=no_doc_message, career_count_notification_no=career_count_notification_no)
+#             return render_template('recruiter_job_posts.html', count_notification_no=count_notification_no,
+#                                    job_posts=job_posts, user_name=user_name, job_posts_hold=job_posts_hold,
+#                                    redirect_url=url_for('add_candidate'), recruiter_job_posts=recruiter_job_posts,
+#                                    no_doc_message=no_doc_message, career_count_notification_no=career_count_notification_no)
 
-    return redirect(url_for('login'))
+#     return redirect(url_for('login'))
     
 
 import base64
