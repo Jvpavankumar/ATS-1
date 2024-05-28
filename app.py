@@ -1898,73 +1898,73 @@ def post_job():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route('/recruiter_job_posts/<int:user_id>', methods=['GET'])
-def recruiter_job_posts(user_id):
+# @app.route('/recruiter_job_posts/<int:user_id>', methods=['GET'])
+# def recruiter_job_posts(user_id):
     
-    if not user_id:
-        return jsonify({"error": "Missing user_id parameter"})
+#     if not user_id:
+#         return jsonify({"error": "Missing user_id parameter"})
 
-    # Validate user existence
-    recruiter = User.query.get(user_id)
-    if not recruiter:
-        return jsonify({"error": "Recruiter not found"})
+#     # Validate user existence
+#     recruiter = User.query.get(user_id)
+#     if not recruiter:
+#         return jsonify({"error": "Recruiter not found"})
 
-    recruiter_name = recruiter.name
+#     recruiter_name = recruiter.name
 
-    # Filter unread notifications efficiently using the recruiter's ID
-    unread_notifications = Notification.query.filter(
-        Notification.id == recruiter.id,
-        Notification.notification_status == False
-    ).all()
+#     # Filter unread notifications efficiently using the recruiter's ID
+#     unread_notifications = Notification.query.filter(
+#         Notification.id == recruiter.id,
+#         Notification.notification_status == False
+#     ).all()
 
-    # Filter active and on-hold job posts
-    active_job_posts = JobPost.query.filter(
-        JobPost.recruiter == recruiter,
-        JobPost.job_status == 'Active'
-    ).order_by(JobPost.id).all()
+#     # Filter active and on-hold job posts
+#     active_job_posts = JobPost.query.filter(
+#         JobPost.recruiter == recruiter,
+#         JobPost.job_status == 'Active'
+#     ).order_by(JobPost.id).all()
 
-    on_hold_job_posts = JobPost.query.filter(
-        JobPost.recruiter == recruiter,
-        JobPost.job_status == 'Hold'
-    ).order_by(JobPost.id).all()
+#     on_hold_job_posts = JobPost.query.filter(
+#         JobPost.recruiter == recruiter,
+#         JobPost.job_status == 'Hold'
+#     ).order_by(JobPost.id).all()
 
-    # Update notification statuses after retrieving them
-    for notification in unread_notifications:
-        notification.notification_status = True
-    db.session.commit()
+#     # Update notification statuses after retrieving them
+#     for notification in unread_notifications:
+#         notification.notification_status = True
+#     db.session.commit()
 
-    # Construct JSON response with relevant data
-    response_data = {
-        "count_notification_no": len(unread_notifications),
-        "user_name": recruiter_name,
-        "job_posts": [
-            {  # Include only necessary job post fields
-                "id": job_post.id,
-                "title": job_post.title,
-                "description": job_post.description,
-                "created_at": job_post.created_at.isoformat()  # Example for date formatting
-            }
-            for job_post in active_job_posts
-        ],
-        "job_posts_hold": [
-            {  # Include only necessary job post fields (optional)
-                "id": job_post.id,
-                "title": job_post.title,
-                "description": job_post.description,
-                "created_at": job_post.created_at.isoformat()  # Example for date formatting
-            }
-            for job_post in on_hold_job_posts
-        ],
-        "career_count_notification_no": 0  # Placeholder, implement career notification logic
-    }
+#     # Construct JSON response with relevant data
+#     response_data = {
+#         "count_notification_no": len(unread_notifications),
+#         "user_name": recruiter_name,
+#         "job_posts": [
+#             {  # Include only necessary job post fields
+#                 "id": job_post.id,
+#                 "title": job_post.title,
+#                 "description": job_post.description,
+#                 "created_at": job_post.created_at.isoformat()  # Example for date formatting
+#             }
+#             for job_post in active_job_posts
+#         ],
+#         "job_posts_hold": [
+#             {  # Include only necessary job post fields (optional)
+#                 "id": job_post.id,
+#                 "title": job_post.title,
+#                 "description": job_post.description,
+#                 "created_at": job_post.created_at.isoformat()  # Example for date formatting
+#             }
+#             for job_post in on_hold_job_posts
+#         ],
+#         "career_count_notification_no": 0  # Placeholder, implement career notification logic
+#     }
 
-    # # Include optional parameters conditionally
-    # if url_for('add_candidate'):
-    #     response_data["redirect_url"] = url_for('add_candidate')
-    # if request.args.get('no_doc_message'):
-    #     response_data["no_doc_message"] = request.args.get('no_doc_message')
+#     # # Include optional parameters conditionally
+#     # if url_for('add_candidate'):
+#     #     response_data["redirect_url"] = url_for('add_candidate')
+#     # if request.args.get('no_doc_message'):
+#     #     response_data["no_doc_message"] = request.args.get('no_doc_message')
 
-    return jsonify(response_data)
+#     return jsonify(response_data)
 
 
 # @app.route('/recruiter_job_posts/<int:user_id>', methods=['GET'])
@@ -2015,50 +2015,50 @@ def recruiter_job_posts(user_id):
 
 #     return jsonify(response_data)
 
-# @app.route('/recruiter_job_posts/<int:user_id>', methods=['GET'])
-# def recruiter_job_posts(user_id):
+@app.route('/recruiter_job_posts/<int:user_id>', methods=['GET'])
+def recruiter_job_posts(user_id):
     
-#     # Validate user existence
-#     recruiter = User.query.get(user_id)
-#     if not recruiter:
-#         return jsonify({"error": "Recruiter not found"})
+    # Validate user existence
+    recruiter = User.query.get(user_id)
+    if not recruiter:
+        return jsonify({"error": "Recruiter not found"})
 
-#     recruiter_name = recruiter.name
+    recruiter_name = recruiter.name
 
-#     # Filter unread notifications efficiently using the recruiter's ID
-#     unread_notifications = Notification.query.filter(
-#         Notification.recruiter_id == recruiter.id,  # Use recruiter.id here
-#         Notification.notification_status == False
-#     ).all()
+    # Filter unread notifications efficiently using the recruiter's ID
+    unread_notifications = Notification.query.filter(
+        Notification.recruiter_id == recruiter.id,  # Use recruiter.id here
+        Notification.notification_status == False
+    ).all()
 
-#     # Filter active and on-hold job posts
-#     active_job_posts = JobPost.query.filter(
-#         JobPost.recruiter == recruiter,
-#         JobPost.job_status == 'Active'
-#     ).order_by(JobPost.id).all()
+    # Filter active and on-hold job posts
+    active_job_posts = JobPost.query.filter(
+        JobPost.recruiter == recruiter,
+        JobPost.job_status == 'Active'
+    ).order_by(JobPost.id).all()
 
-#     on_hold_job_posts = JobPost.query.filter(
-#         JobPost.recruiter == recruiter,
-#         JobPost.job_status == 'Hold'
-#     ).order_by(JobPost.id).all()
+    on_hold_job_posts = JobPost.query.filter(
+        JobPost.recruiter == recruiter,
+        JobPost.job_status == 'Hold'
+    ).order_by(JobPost.id).all()
 
-#     # Update notification statuses after retrieving them
-#     for notification in unread_notifications:
-#         notification.notification_status = True
-#     db.session.commit()
+    # Update notification statuses after retrieving them
+    for notification in unread_notifications:
+        notification.notification_status = True
+    db.session.commit()
 
-#     # Construct JSON response with serialized job post data
-#     response_data = {
-#         "count_notification_no": len(unread_notifications),
-#         "job_posts": [job_post.serialize() for job_post in active_job_posts],
-#         "user_name": recruiter_name,
-#         "job_posts_hold": [job_post.serialize() for job_post in on_hold_job_posts],
-#         "redirect_url": url_for('add_candidate'),  # Optional, include if needed
-#         "no_doc_message": request.args.get('no_doc_message'),  # Optional, include if needed
-#         "career_count_notification_no": 0  # Placeholder, implement career notification logic
-#     }
+    # Construct JSON response with serialized job post data
+    response_data = {
+        "count_notification_no": len(unread_notifications),
+        "job_posts": [job_post.serialize() for job_post in active_job_posts],
+        "user_name": recruiter_name,
+        "job_posts_hold": [job_post.serialize() for job_post in on_hold_job_posts],
+        "redirect_url": url_for('add_candidate'),  # Optional, include if needed
+        "no_doc_message": request.args.get('no_doc_message'),  # Optional, include if needed
+        "career_count_notification_no": 0  # Placeholder, implement career notification logic
+    }
 
-#     return jsonify(response_data)
+    return jsonify(response_data)
 
 
 from flask import jsonify
