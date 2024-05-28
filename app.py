@@ -2143,32 +2143,7 @@ def job_post_to_dict(job_post):
         "data_updated_time": data_updated_time_str
     }
 
-# Helper function to convert JobPost object to dictionary
-def job_post_to_dict(job_post):
-    return {
-        "id": job_post.id,
-        "client": job_post.client,
-        "experience_min": job_post.experience_min,
-        "experience_max": job_post.experience_max,
-        "budget_min": job_post.budget_min,
-        "budget_max": job_post.budget_max,
-        "location": job_post.location,
-        "shift_timings": job_post.shift_timings,
-        "notice_period": job_post.notice_period,
-        "role": job_post.role,
-        "detailed_jd": job_post.detailed_jd,
-        "mode": job_post.mode,
-        "recruiter": job_post.recruiter,
-        "management": job_post.management,
-        "date_created": job_post.date_created.strftime('%Y-%m-%d'),
-        "time_created": job_post.time_created.strftime('%H:%M:%S'),
-        "job_status": job_post.job_status,
-        "job_type": job_post.job_type,
-        "skills": job_post.skills,
-        "notification": job_post.notification,
-        "data_updated_date": job_post.data_updated_date.strftime('%Y-%m-%d'),
-        "data_updated_time": job_post.data_updated_time.strftime('%H:%M:%S')
-    }
+
 from flask import jsonify
 
 @app.route('/update_job_status/<int:job_id>', methods=['POST'])
