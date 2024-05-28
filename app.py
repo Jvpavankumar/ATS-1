@@ -307,6 +307,7 @@ class Deletedcandidate(db.Model):
 class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     job_post_id = db.Column(db.Integer, db.ForeignKey('job_posts.id'), nullable=False)
+    job_post_id = db.Column(db.Integer, db.ForeignKey('job_posts.id'))
     recruiter_name = db.Column(db.String(100), nullable=False)
     notification_status = db.Column(db.Boolean, default=False)
     num_notification = db.Column(db.Integer, default=0)  # New column added
