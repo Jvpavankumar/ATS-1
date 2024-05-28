@@ -2015,6 +2015,55 @@ def post_job():
 
 #     return jsonify(response_data)
 
+# @app.route('/recruiter_job_posts', methods=['POST'])
+# def recruiter_job_posts():
+#     data = request.json
+#     user_id = data.get('user_id')  # Using get() to avoid KeyError if 'user_id' is missing
+#     if not user_id:
+#         return jsonify({"error": "User ID is missing"}), 400
+
+#     # Validate user existence
+#     recruiter = User.query.get(user_id)
+#     if not recruiter:
+#         return jsonify({"error": "Recruiter not found"}), 404
+
+#     recruiter_name = recruiter.name
+
+#     # Filter unread notifications based on recruiter name
+#     unread_notifications = Career_notification.query.filter(
+#         Career_notification.recruiter_name == recruiter_name,
+#         Career_notification.notification_status == False
+#     ).all()
+
+#     # Filter active and on-hold job posts
+#     active_job_posts = JobPost.query.filter(
+#         JobPost.recruiter == recruiter_name,  # Filtering based on the recruiter's name
+#         JobPost.job_status == 'Active'
+#     ).order_by(JobPost.id).all()
+
+#     on_hold_job_posts = JobPost.query.filter(
+#         JobPost.recruiter == recruiter_name,  # Filtering based on the recruiter's name
+#         JobPost.job_status == 'Hold'
+#     ).order_by(JobPost.id).all()
+
+#     # Update notification statuses after retrieving them
+#     for notification in unread_notifications:
+#         notification.notification_status = True
+#     db.session.commit()
+
+#     # Construct JSON response
+#     response_data = {
+#         "count_notification_no": len(unread_notifications),
+#         "job_posts": [job_post_to_dict(job_post) for job_post in active_job_posts],
+#         "user_name": recruiter_name,
+#         "job_posts_hold": [job_post_to_dict(job_post) for job_post in on_hold_job_posts],
+#         "redirect_url": url_for('add_candidate'),  # Optional, include if needed
+#         "no_doc_message": request.args.get('no_doc_message'),  # Optional, include if needed
+#         "career_count_notification_no": 0  # Placeholder, implement career notification logic
+#     }
+
+#     return jsonify(response_data)
+
 @app.route('/recruiter_job_posts', methods=['POST'])
 def recruiter_job_posts():
     data = request.json
@@ -2063,6 +2112,36 @@ def recruiter_job_posts():
     }
 
     return jsonify(response_data)
+
+# Helper function to convert JobPost object to dictionary
+def job_post_to_dict(job_post):
+    data_updated_date_str = job_post.data_updated_date.strftime('%Y-%m-%d') if job_post.data_updated_date else None
+    data_updated_time_str = job_post.data_updated_time.strftime('%H:%M:%S') if job_post.data_updated_time else None
+
+    return {
+        "id": job_post.id,
+        "client": job_post.client,
+        "experience_min": job_post.experience_min,
+        "experience_max": job_post.experience_max,
+        "budget_min": job_post.budget_min,
+        "budget_max": job_post.budget_max,
+        "location": job_post.location,
+        "shift_timings": job_post.shift_timings,
+        "notice_period": job_post.notice_period,
+        "role": job_post.role,
+        "detailed_jd": job_post.detailed_jd,
+        "mode": job_post.mode,
+        "recruiter": job_post.recruiter,
+        "management": job_post.management,
+        "date_created": job_post.date_created.strftime('%Y-%m-%d'),
+        "time_created": job_post.time_created.strftime('%H:%M:%S'),
+        "job_status": job_post.job_status,
+        "job_type": job_post.job_type,
+        "skills": job_post.skills,
+        "notification": job_post.notification,
+        "data_updated_date": data_updated_date_str,
+        "data_updated_time": data_updated_time_str
+    }
 
 # Helper function to convert JobPost object to dictionary
 def job_post_to_dict(job_post):
