@@ -94,8 +94,8 @@ class User(db.Model):
     otp = db.Column(db.String(6), default=False)
     registration_completed = db.Column(db.String(50))
     filename = db.Column(db.String(100))
-    image_file = db.Column(db.String(1000))
-    # image_file=db.Column(db.LargeBinary)
+    # image_file = db.Column(db.String(1000))
+    image_file=db.Column(db.LargeBinary)
     image_deleted=db.Column(db.Boolean, default=False)
     def serialize(self):
         return {
@@ -252,7 +252,8 @@ class JobPost(db.Model):
     notice_period = db.Column(db.String(100))
     role = db.Column(db.String(100))
     detailed_jd = db.Column(db.Text)
-    jd_pdf =  db.Column(db.String(1000))
+    # jd_pdf =  db.Column(db.String(1000))
+    jd_pdf =  db.Column(db.LargeBinary)
     mode = db.Column(db.String(100))
     recruiter = db.Column(db.String(1000))
     management = db.Column(db.String(100))
