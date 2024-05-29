@@ -2317,73 +2317,6 @@ def update_job_status(job_id):
     return jsonify({"success": False, "error": "Job post not found"}), 404
 
 
-@app.route('/edit_job_post/<int:job_id>', methods=['GET', 'POST'])
-def edit_job_post(job_id):
-    # Retrieve the job post from the database based on the provided job_id
-    user_id = request.json.get('user_id')
-    user = User.query.filter_by(id=user_id).first()
-
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-
-    username = user.username
-
-    job_post = JobPost.query.get(job_id)
-
-    if job_post:
-        if request.method == 'POST':
-            # Access JSON data from the request
-            data = request.json
-
-            # Update the job post fields based on the JSON data
-            job_post.client = data.get('client', job_post.client)
-            job_post.experience_min = data.get('experience_min', job_post.experience_min)
-            job_post.experience_max = data.get('experience_max', job_post.experience_max)
-            job_post.budget_min = data.get('budget_min', job_post.budget_min)
-            job_post.budget_max = data.get('budget_max', job_post.budget_max)
-            job_post.location = data.get('location', job_post.location)
-            job_post.shift_timings = data.get('shift_timings', job_post.shift_timings)
-            job_post.notice_period = data.get('notice_period', job_post.notice_period)
-            job_post.role = data.get('role', job_post.role)
-            job_post.detailed_jd = data.get('detailed_jd', job_post.detailed_jd)
-            job_post.mode = data.get('mode', job_post.mode)
-            job_post.job_status = data.get('job_status', job_post.job_status)
-            job_post.job_type = data.get('Job_Type', job_post.job_type)
-            job_post.skills = data.get('skills', job_post.skills)
-            job_post.recruiter = data.get('recruiter', job_post.recruiter)
-
-            # Commit the changes to the database
-            db.session.commit()
-
-            # Return a JSON response indicating success
-            return jsonify({"message": "Job Details Updated Successfully"})
-
-        # Return the job post data as JSON if it's a GET request
-        return jsonify({
-            "user_name": username,
-            "job_post": {
-                "client": job_post.client,
-                "experience_min": job_post.experience_min,
-                "experience_max": job_post.experience_max,
-                "budget_min": job_post.budget_min,
-                "budget_max": job_post.budget_max,
-                "currency_type_min": job_post.currency_type_min,
-                "currency_type_max": job_post.currency_type_max,
-                "location": job_post.location,
-                "shift_timings": job_post.shift_timings,
-                "notice_period": job_post.notice_period,
-                "role": job_post.role,
-                "detailed_jd": job_post.detailed_jd,
-                "mode": job_post.mode,
-                "job_status": job_post.job_status,
-                "Job_Type": job_post.job_type,
-                "skills": job_post.skills,
-                "recruiter": job_post.recruiter
-            }
-        })
-
-    # Handle the case where the job post with the given job_id is not found
-    return jsonify({"error": "Job post not found"}), 404
 
 
 import base64
@@ -3459,247 +3392,122 @@ def re_send_notification(recruiter_email, job_id):
     msg = Message('Job Update Notification', sender='ganesh.s@makonissoft.com', recipients=[recruiter_email])
     msg.body = f'Hello,\n\nThe job post with ID {job_id} has been updated.\n\nPlease check your dashboard for more details.'
     mail.send(msg)
-
-
-
-# @app.route('/edit_post_job/<int:job_id>', methods=['POST'])
-# def edit_post_job(job_id):
-#     data = request.form
-#     print("EDIT_DATA :", data)
-#     user_id = data.get('user_id')
-#     # if user_id is None:
-#     #     return jsonify({'error': 'User ID not provided'}), 400
+   
+@app.route('/edit_job_post/<int:job_post_id>', methods=['POST'])
+def edit_job_post(job_post_id):
+    try:
+        # Accessing the JSON data from the request
+        data = request.json
+        user_id = data.get('user_id')
         
-#     user = User.query.get(user_id)
-#     # if user is None:
-#     #     return jsonify({'error': 'User not found'}), 404
+        # Retrieve the user
+        user = User.query.filter_by(id=user_id).first()
+        
+        # Check if the user exists and has the right permissions
+        if user and user.user_type == 'management':
+            # Retrieve the job post to be edited
+            job_post = JobPost.query.get(job_post_id)
+            
+            if job_post:
+                # Update job post fields
+                job_post.client = data.get('client', job_post.client)
+                job_post.experience_min = data.get('experience_min', job_post.experience_min)
+                job_post.experience_max = data.get('experience_max', job_post.experience_max)
+                job_post.budget_min = data.get('budget_min', job_post.budget_min)
+                job_post.budget_max = data.get('budget_max', job_post.budget_max)
+                job_post.location = data.get('location', job_post.location)
+                job_post.shift_timings = data.get('shift_timings', job_post.shift_timings)
+                job_post.notice_period = data.get('notice_period', job_post.notice_period)
+                job_post.role = data.get('role', job_post.role)
+                job_post.detailed_jd = data.get('detailed_jd', job_post.detailed_jd)
+                job_post.mode = data.get('mode', job_post.mode)
+                job_post.job_status = data.get('job_status', job_post.job_status)
+                job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
+                job_post.skills = data.get('skills', job_post.skills)
+                job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
 
-#     job_post = JobPost.query.get(job_id)
-#     # if job_post is None:
-#     #     return jsonify({'error': 'Job not found'}), 404
+                # Update job post in the database
+                db.session.commit()
+                
+                # Increment num_notification count by 1 for each notification associated with the job post
+                notifications = Notification.query.filter_by(job_post_id=job_post_id).all()
+                for notification in notifications:
+                    notification.num_notification += 1
+                
+                db.session.commit()
+                
+                # Return success message
+                return jsonify({"message": "Job post updated successfully"}), 200
+            else:
+                return jsonify({"error": "Job post not found"}), 404
+        else:
+            return jsonify({"error": "Unauthorized"}), 401
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
-#     # Extract and process form data
-#     client = data['client']
-#     experience_min = data['experience_min']
-#     experience_max = data['experience_max']
-#     budget_min = data['budget_min']
-#     budget_max = data['budget_max']
-#     currency_type_min = data['currency_type_min']
-#     currency_type_max = data['currency_type_max']
-#     budget_min = f"{currency_type_min} {budget_min}"
-#     budget_max = f"{currency_type_max} {budget_max}"
-#     location = data['location']
-#     shift_timings = data['shift_timings']
-#     notice_period = data['notice_period']
-#     role = data['role']
-#     detailed_jd = data['detailed_jd']
-#     mode = data['mode']
-#     job_status = data['job_status']
-#     job_type = data['job_type']
-#     skills = data['skills']
-#     jd_pdf = data['jd_pdf']
 
-#     if job_type == 'Contract':
-#         job_type_details = data['job_type_details']
-#         job_type = f"{job_type} ({job_type_details} Months)"
-
-#     # Update the job post attributes
-#     job_post.client = client
-#     job_post.experience_min = experience_min
-#     job_post.experience_max = experience_max
-#     job_post.budget_min = budget_min
-#     job_post.budget_max = budget_max
-#     job_post.location = location
-#     job_post.shift_timings = shift_timings
-#     job_post.notice_period = notice_period
-#     job_post.role = role
-#     job_post.detailed_jd = detailed_jd
-#     job_post.mode = mode
-#     job_post.job_status = job_status
-#     job_post.job_type = job_type
-#     job_post.skills = skills
-#     job_post.jd_pdf = jd_pdf
-
-#     # Update the date and time fields
-#     current_datetime = datetime.now()
-#     job_post.data_updated_date = current_datetime.date()
-#     job_post.data_updated_time = current_datetime.time()
-
-#     # Update associated notifications if needed
-#     recruiter_names = data.getlist('recruiter[]')
-#     existing_recruiters = job_post.recruiter.split(', ') if job_post.recruiter else []
-#     to_remove = set(existing_recruiters) - set(recruiter_names)
-#     for recruiter_name in to_remove:
-#         Notification.query.filter_by(job_post_id=job_id, recruiter_name=recruiter_name.strip()).delete()
-#     for recruiter_name in recruiter_names:
-#         if recruiter_name.strip() not in existing_recruiters:
-#             notification = Notification(
-#                 job_post_id=job_id,
-#                 recruiter_name=recruiter_name.strip(),
-#                 notification_status=False
-#             )
-#             db.session.add(notification)
-
-#     # Commit changes to the database
-#     db.session.commit()
-
-#     # Send email notifications to recruiters
-#     for recruiter in User.query.filter(User.username.in_(recruiter_names), User.user_type == 'recruiter', User.is_active == True, User.is_verified == True):
-#         re_send_notification(recruiter.email, job_id)
-
-#     return jsonify({'message': 'Job updated successfully'})
-
-@app.route('/edit_post_job/<int:job_id>', methods=['POST'])
-def edit_post_job(job_id):
-    data = request.form
-    print("EDIT_DATA:", data)
-
-    user_id = data.get('user_id')
+@app.route('/jobs_notification/<int:user_id>', methods=['GET'])
+def get_jobs_notification(user_id):
+    # Retrieve the user
     user = User.query.filter_by(id=user_id).first()
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-
-    job_post = JobPost.query.get(job_id)
-    if not job_post:
-        return jsonify({'error': 'Job not found'}), 404
-
-    # Extract and process form data
-    job_post.client = data.get('client')
-    job_post.experience_min = data.get('experience_min')
-    job_post.experience_max = data.get('experience_max')
-    job_post.budget_min = f"{data.get('currency_type_min')} {data.get('budget_min')}"
-    job_post.budget_max = f"{data.get('currency_type_max')} {data.get('budget_max')}"
-    job_post.location = data.get('location')
-    job_post.shift_timings = data.get('shift_timings')
-    job_post.notice_period = data.get('notice_period')
-    job_post.role = data.get('role')
-    job_post.detailed_jd = data.get('detailed_jd')
-    job_post.mode = data.get('mode')
-    job_post.job_status = data.get('job_status')
-    job_post.skills = data.get('skills')
-
-    job_type = data.get('job_type')
-    if job_type == 'Contract':
-        job_type_details = data.get('job_type_details', '')
-        job_post.job_type = f"{job_type} ({job_type_details} Months)"
+    
+    # Check if the user exists and has the right permissions
+    if user and user.user_type == 'recruiter':
+        recruiter_name = user.username
+        
+        # Retrieve the notifications for the recruiter where num_notification >= 1
+        notifications = Notification.query.filter_by(recruiter_name=recruiter_name).filter(Notification.num_notification >= 1).all()
+        
+        # Format the notifications as a list of dictionaries
+        notifications_list = [
+            {
+                # 'id': notification.id,
+                'job_post_id': notification.job_post_id,
+                'recruiter_name': notification.recruiter_name,
+                'notification_status': notification.notification_status,
+                'num_notification': notification.num_notification
+            } for notification in notifications
+        ]
+        
+        return jsonify(notifications_list), 200
     else:
-        job_post.job_type = job_type
+        return jsonify({'error': 'User not found or does not have the right permissions'}), 404
 
-    # Update the date and time fields
-    current_datetime = datetime.now()
-    job_post.data_updated_date = current_datetime.date()
-    job_post.data_updated_time = current_datetime.time()
+@app.route('/checked_jobs_notification/<int:user_id>', methods=['POST'])
+def checked_jobs_notification(user_id):
+    data = request.json
+    checked_notification_status = data.get('checked_notification_status')
 
-    # Update associated notifications if needed
-    recruiter_names = request.form.getlist('recruiter[]')
-    existing_recruiters = job_post.recruiter.split(', ') if job_post.recruiter else []
-    to_remove = set(existing_recruiters) - set(recruiter_names)
-    for recruiter_name in to_remove:
-        notification = Notification.query.filter_by(job_post_id=job_id, recruiter_name=recruiter_name.strip()).first()
-        if notification:
-            db.session.delete(notification)
-    for recruiter_name in recruiter_names:
-        if recruiter_name.strip() not in existing_recruiters:
-            notification = Notification(
-                job_post_id=job_id,
-                recruiter_name=recruiter_name.strip(),
-                notification_status=False
-            )
-            db.session.add(notification)
-
-    db.session.commit()
-
-    # Send email notifications to recruiters
-    for recruiter in User.query.filter(User.username.in_(recruiter_names), User.user_type == 'recruiter', User.is_active == True, User.is_verified == True):
-        re_send_notification(recruiter.email, job_id)
-
-    return jsonify({'message': 'Job updated successfully'})
-
-# @app.route('/edit_post_job/<int:job_id>', methods=['POST'])
-# def edit_post_job(job_id):
-#     data = request.form
-#     print("EDIT_DATA :",data)
-#     user_id = data['user_id']
-#     user = User.query.filter_by(id=user_id).first()
-#     if not user:
-#         return jsonify({'error': 'User not found'})
-
-#     job_post = JobPost.query.get(job_id)
-#     if not job_post:
-#         return jsonify({'error': 'Job not found'})
-
-#     # Extract and process form data
-#     client = data['client']
-#     experience_min = data['experience_min']
-#     experience_max = data['experience_max']
-#     budget_min = data['budget_min']
-#     budget_max = data['budget_max']
-#     currency_type_min = data['currency_type_min']
-#     currency_type_max = data['currency_type_max']
-#     budget_min = f"{currency_type_min} {budget_min}"
-#     budget_max = f"{currency_type_max} {budget_max}"
-#     location = data['location']
-#     shift_timings = data['shift_timings']
-#     notice_period = data['notice_period']
-#     role = data['role']
-#     detailed_jd = data['detailed_jd']
-#     mode = data['mode']
-#     job_status = data['job_status']
-#     job_type = data['job_type', '']
-#     skills = data['skills']
-
+    user = User.query.filter_by(id=user_id).first()
     
-
-#     if job_type == 'Contract':
-#         job_type_details = data['job_type_details', '']
-#         job_type = f"{job_type} ({job_type_details} Months)"
-
-#     # Update the job post attributes
-#     job_post.client = client
-#     job_post.experience_min = experience_min
-#     job_post.experience_max = experience_max
-#     job_post.budget_min = budget_min
-#     job_post.budget_max = budget_max
-#     job_post.location = location
-#     job_post.shift_timings = shift_timings
-#     job_post.notice_period = notice_period
-#     job_post.role = role
-#     job_post.detailed_jd = detailed_jd
-#     job_post.mode = mode
-#     job_post.job_status = job_status
-#     job_post.job_type = job_type
-#     job_post.skills = skills
-#     job_post.jd_pdf = jd_pdf
-
-#     # Update the date and time fields
-#     current_datetime = datetime.now()
-#     job_post.data_updated_date = current_datetime.date()
-#     job_post.data_updated_time = current_datetime.time()
-
-#     # Update associated notifications if needed
-#     recruiter_names = data.getlist('recruiter[]')
-#     existing_recruiters = job_post.recruiter.split(', ') if job_post.recruiter else []
-#     to_remove = set(existing_recruiters) - set(recruiter_names)
-#     for recruiter_name in to_remove:
-#         Notification.query.filter_by(job_post_id=job_id, recruiter_name=recruiter_name.strip()).delete()
-#     for recruiter_name in recruiter_names:
-#         if recruiter_name.strip() not in existing_recruiters:
-#             notification = Notification(
-#                 job_post_id=job_id,
-#                 recruiter_name=recruiter_name.strip(),
-#                 notification_status=False
-#             )
-#             db.session.add(notification)
-
-#     # Commit changes to the database
-#     db.session.commit()
-
-#     # Send email notifications to recruiters
-#     for recruiter in User.query.filter(User.username.in_(recruiter_names), User.user_type == 'recruiter', User.is_active == True, User.is_verified == True):
-#         re_send_notification(recruiter.email, job_id)
-
-#     return jsonify({'message': 'Job updated successfully'})
-    
+    # Check if the user exists and has the right permissions
+    if user and user.user_type == 'recruiter':
+        recruiter_name = user.username
+        
+        # Retrieve the notifications for the recruiter
+        notifications = Notification.query.filter_by(recruiter_name=recruiter_name).all()
+        
+        if checked_notification_status:
+            # Update the num_notification to 0 for each notification
+            for notification in notifications:
+                notification.notification_status = checked_notification_status
+                notification.num_notification = 0
+                db.session.commit()
+        
+        # Format the notifications as a list of dictionaries
+        notifications_list = [
+            {
+                'id': notification.id,
+                'job_post_id': notification.job_post_id,
+                'recruiter_name': notification.recruiter_name,
+                'notification_status': notification.notification_status,
+                'num_notification': notification.num_notification
+            } for notification in notifications
+        ]
+        
+        return jsonify(notifications_list), 200
+    else:
+        return jsonify({'error': 'User not found or does not have the right permissions'}), 404
     
 @app.route('/get_candidate_data')
 def get_candidate_data():
