@@ -1675,9 +1675,9 @@ def post_job():
                 for recruiter_name in joined_recruiters.split(','):
                     notification_status = False
                     notification = Notification(
-                        recruiter_name=recruiter_name,
+                        recruiter_name_str=recruiter_name,
                         job_post_id=job_post_id,  # Add job_post_id to Notification
-                        recruiter_name=recruiter_name.strip(),
+                        recruiter_name=recruiter_name_str.strip(),
                         notification_status=notification_status
                     )
                     # Append each Notification instance to the notifications list
