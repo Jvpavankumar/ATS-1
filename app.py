@@ -2188,64 +2188,7 @@ def update_job_status(job_id):
     return jsonify({"success": False, "error": "Job post not found"}), 404
 
 
-@app.route('/edit_job_post/<int:job_id>', methods=['GET', 'POST'])
-def edit_job_post(job_id):
-    # Retrieve the job post from the database based on the provided job_id
-    user_id = request.json.get('user_id')
-    user = User.query.filter_by(id=user_id).first()
-    if not user:
-        return jsonify({"error": "User not found"}), 404
-    username = user.username
-    job_post = JobPost.query.get(job_id)
-    if job_post:
-        if request.method == 'POST':
-            # Access JSON data from the request
-            data = request.json
-            # Update the job post fields based on the JSON data
-            job_post.client = data.get('client', job_post.client)
-            job_post.experience_min = data.get('experience_min', job_post.experience_min)
-            job_post.experience_max = data.get('experience_max', job_post.experience_max)
-            job_post.budget_min = data.get('budget_min', job_post.budget_min)
-            job_post.budget_max = data.get('budget_max', job_post.budget_max)
-            job_post.location = data.get('location', job_post.location)
-            job_post.shift_timings = data.get('shift_timings', job_post.shift_timings)
-            job_post.notice_period = data.get('notice_period', job_post.notice_period)
-            job_post.role = data.get('role', job_post.role)
-            job_post.detailed_jd = data.get('detailed_jd', job_post.detailed_jd)
-            job_post.mode = data.get('mode', job_post.mode)
-            job_post.job_status = data.get('job_status', job_post.job_status)
-            job_post.job_type = data.get('Job_Type', job_post.job_type)
-            job_post.skills = data.get('skills', job_post.skills)
-            job_post.recruiter = data.get('recruiter', job_post.recruiter)
-            # Commit the changes to the database
-            db.session.commit()
-            # Return a JSON response indicating success
-            return jsonify({"message": "Job Details Updated Successfully"})
-        # Return the job post data as JSON if it's a GET request
-        return jsonify({
-            "user_name": username,
-            "job_post": {
-                "client": job_post.client,
-                "experience_min": job_post.experience_min,
-                "experience_max": job_post.experience_max,
-                "budget_min": job_post.budget_min,
-                "budget_max": job_post.budget_max,
-                "currency_type_min": job_post.currency_type_min,
-                "currency_type_max": job_post.currency_type_max,
-                "location": job_post.location,
-                "shift_timings": job_post.shift_timings,
-                "notice_period": job_post.notice_period,
-                "role": job_post.role,
-                "detailed_jd": job_post.detailed_jd,
-                "mode": job_post.mode,
-                "job_status": job_post.job_status,
-                "Job_Type": job_post.job_type,
-                "skills": job_post.skills,
-                "recruiter": job_post.recruiter
-            }
-        })
-    # Handle the case where the job post with the given job_id is not found
-    return jsonify({"error": "Job post not found"}), 404
+
 import base64
 @app.route('/view_all_jobs', methods=['POST'])
 def view_all_jobs():
