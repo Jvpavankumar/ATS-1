@@ -1693,10 +1693,10 @@ def post_job():
                 recruiter_emails = [recruiter.email for recruiter in User.query.filter(User.username.in_(recruiter_names),
                                                                                        User.user_type == 'recruiter',
                                                                                        User.is_active == True,
+                                                                                       User.is_verified == True)],
+                                                                                       User.user_type == 'recruiter',
+                                                                                       User.is_active == True,
                                                                                        User.is_verified == True)]
-                                                                                         User.user_type == 'recruiter',
-                                                                                         User.is_active == True,
-                                                                                         User.is_verified == True)]
                 for email in recruiter_emails:
                     send_notification(email)
 
