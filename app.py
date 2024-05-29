@@ -811,65 +811,6 @@ def dashboard():
 
     response_data = {}
 
-    def serialize_candidate(candidate):
-        return {
-            'id': candidate.id,
-            'job_id': candidate.job_id,
-            'name': candidate.name,
-            'mobile': candidate.mobile,
-            'email': candidate.email,
-            'client': candidate.client,
-            'current_company': candidate.current_company,
-            'position': candidate.position,
-            'profile': candidate.profile,
-            'current_job_location': candidate.current_job_location,
-            'preferred_job_location': candidate.preferred_job_location,
-            'qualifications': candidate.qualifications,
-            'experience': candidate.experience,
-            'relevant_experience': candidate.relevant_experience,
-            'current_ctc': candidate.current_ctc,
-            'expected_ctc': candidate.expected_ctc,
-            'notice_period': candidate.notice_period,
-            'linkedin_url': candidate.linkedin_url,
-            'holding_offer': candidate.holding_offer,
-            'recruiter': candidate.recruiter,
-            'management': candidate.management,
-            'status': candidate.status,
-            'remarks': candidate.remarks,
-            'skills': candidate.skills,
-            'resume': base64.b64encode(candidate.resume).decode('utf-8') if candidate.resume else None,
-            'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
-            'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
-            'buyout': candidate.buyout,
-            'date_created': str(candidate.date_created),
-            'time_created': str(candidate.time_created)
-        }
-
-    def serialize_job(job):
-        return {
-            'id': job.id,
-            'client': job.client,
-            'experience_min': job.experience_min,
-            'experience_max': job.experience_max,
-            'budget_min': job.budget_min,
-            'budget_max': job.budget_max,
-            'location': job.location,
-            'shift_timings': job.shift_timings,
-            'notice_period': job.notice_period,
-            'role': job.role,
-            'detailed_jd': job.detailed_jd,
-            'jd_pdf': base64.b64encode(job.jd_pdf).decode('utf-8') if job.jd_pdf else None,
-            'mode': job.mode,
-            'recruiter': job.recruiter,
-            'management': job.management,
-            'date_created': str(job.date_created),
-            'time_created': str(job.time_created),
-            'job_status': job.job_status,
-            'job_type': job.job_type,
-            'skills': job.skills,
-            'notification': job.notification
-        }
-
     if user_id and user_type:
         if user_type == 'recruiter':
             recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
@@ -879,6 +820,7 @@ def dashboard():
                 jobs = JobPost.query.filter_by(recruiter=user_name).all()
                 count_notification_no = Notification.query.filter(Notification.notification_status == 'false', Notification.recruiter_name == user_name).count()
                 career_count_notification_no = Career_notification.query.filter(Career_notification.notification_status == 'false', Career_notification.recruiter_name == user_name).count()
+                
                 response_data = {
                     'user': {
                         'id': recruiter.id,
@@ -888,34 +830,157 @@ def dashboard():
                     },
                     'user_type': user_type,
                     'user_name': user_name,
-                    'candidates': [serialize_candidate(candidate) for candidate in candidates],
-                    'jobs': [serialize_job(job) for job in jobs],
+                    'candidates': [],
+                    'jobs': [],
                     'edit_candidate_message': edit_candidate_message,
                     'page_no': page_no,
                     'count_notification_no': count_notification_no,
                     'career_count_notification_no': career_count_notification_no
                 }
+
+                for candidate in candidates:
+                    response_data['candidates'].append({
+                        'id': candidate.id,
+                        'job_id': candidate.job_id,
+                        'name': candidate.name,
+                        'mobile': candidate.mobile,
+                        'email': candidate.email,
+                        'client': candidate.client,
+                        'current_company': candidate.current_company,
+                        'position': candidate.position,
+                        'profile': candidate.profile,
+                        'current_job_location': candidate.current_job_location,
+                        'preferred_job_location': candidate.preferred_job_location,
+                        'qualifications': candidate.qualifications,
+                        'experience': candidate.experience,
+                        'relevant_experience': candidate.relevant_experience,
+                        'current_ctc': candidate.current_ctc,
+                        'expected_ctc': candidate.expected_ctc,
+                        'notice_period': candidate.notice_period,
+                        'linkedin_url': candidate.linkedin_url,
+                        'holding_offer': candidate.holding_offer,
+                        'recruiter': candidate.recruiter,
+                        'management': candidate.management,
+                        'status': candidate.status,
+                        'remarks': candidate.remarks,
+                        'skills': candidate.skills,
+                        'resume': base64.b64encode(candidate.resume).decode('utf-8') if candidate.resume else None,
+                        'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+                        'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                        'buyout': candidate.buyout,
+                        'date_created': str(candidate.date_created),
+                        'time_created': str(candidate.time_created)
+                    })
+
+                for job in jobs:
+                    response_data['jobs'].append({
+                        'id': job.id,
+                        'client': job.client,
+                        'experience_min': job.experience_min,
+                        'experience_max': job.experience_max,
+                        'budget_min': job.budget_min,
+                        'budget_max': job.budget_max,
+                        'location': job.location,
+                        'shift_timings': job.shift_timings,
+                        'notice_period': job.notice_period,
+                        'role': job.role,
+                        'detailed_jd': job.detailed_jd,
+                        'jd_pdf': base64.b64encode(job.jd_pdf).decode('utf-8') if job.jd_pdf else None,
+                        'mode': job.mode,
+                        'recruiter': job.recruiter,
+                        'management': job.management,
+                        'date_created': str(job.date_created),
+                        'time_created': str(job.time_created),
+                        'job_status': job.job_status,
+                        'job_type': job.job_type,
+                        'skills': job.skills,
+                        'notification': job.notification
+                    })
+
         elif user_type == 'management':
             users = User.query.all()
             candidates = Candidate.query.filter(Candidate.reference.is_(None)).all()
             candidates = sorted(candidates, key=lambda candidate: candidate.id)
             jobs = JobPost.query.all()
             response_data = {
-                'users': [{
-                    'id': user.id,
-                    'name': user.name,
-                    'user_type': user.user_type,
-                    'email': user.email
-                } for user in users],
+                'users': [],
                 'user_type': user_type,
                 'user_name': user_name,
-                'candidates': [serialize_candidate(candidate) for candidate in candidates],
-                'jobs': [serialize_job(job) for job in jobs],
+                'candidates': [],
+                'jobs': [],
                 'signup_message': signup_message,
                 'job_message': job_message,
                 'page_no': page_no,
                 'edit_candidate_message': edit_candidate_message
             }
+
+            for user in users:
+                response_data['users'].append({
+                    'id': user.id,
+                    'name': user.name,
+                    'user_type': user.user_type,
+                    'email': user.email
+                })
+
+            for candidate in candidates:
+                response_data['candidates'].append({
+                    'id': candidate.id,
+                    'job_id': candidate.job_id,
+                    'name': candidate.name,
+                    'mobile': candidate.mobile,
+                    'email': candidate.email,
+                    'client': candidate.client,
+                    'current_company': candidate.current_company,
+                    'position': candidate.position,
+                    'profile': candidate.profile,
+                    'current_job_location': candidate.current_job_location,
+                    'preferred_job_location': candidate.preferred_job_location,
+                    'qualifications': candidate.qualifications,
+                    'experience': candidate.experience,
+                    'relevant_experience': candidate.relevant_experience,
+                    'current_ctc': candidate.current_ctc,
+                    'expected_ctc': candidate.expected_ctc,
+                    'notice_period': candidate.notice_period,
+                    'linkedin_url': candidate.linkedin_url,
+                    'holding_offer': candidate.holding_offer,
+                    'recruiter': candidate.recruiter,
+                    'management': candidate.management,
+                    'status': candidate.status,
+                    'remarks': candidate.remarks,
+                    'skills': candidate.skills,
+                    'resume': base64.b64encode(candidate.resume).decode('utf-8') if candidate.resume else None,
+                    'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+                    'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                    'buyout': candidate.buyout,
+                    'date_created': str(candidate.date_created),
+                    'time_created': str(candidate.time_created)
+                })
+
+            for job in jobs:
+                response_data['jobs'].append({
+                    'id': job.id,
+                    'client': job.client,
+                    'experience_min': job.experience_min,
+                    'experience_max': job.experience_max,
+                    'budget_min': job.budget_min,
+                    'budget_max': job.budget_max,
+                    'location': job.location,
+                    'shift_timings': job.shift_timings,
+                    'notice_period': job.notice_period,
+                    'role': job.role,
+                    'detailed_jd': job.detailed_jd,
+                    'jd_pdf': base64.b64encode(job.jd_pdf).decode('utf-8') if job.jd_pdf else None,
+                    'mode': job.mode,
+                    'recruiter': job.recruiter,
+                    'management': job.management,
+                    'date_created': str(job.date_created),
+                    'time_created': str(job.time_created),
+                    'job_status': job.job_status,
+                    'job_type': job.job_type,
+                    'skills': job.skills,
+                    'notification': job.notification
+                })
+
         else:
             user = User.query.filter_by(id=user_id).first()
             if user:
@@ -929,8 +994,43 @@ def dashboard():
                     },
                     'user_type': user_type,
                     'user_name': user_name,
-                    'candidates': [serialize_candidate(candidate) for candidate in candidates],
+                    'candidates': []
                 }
+
+                for candidate in candidates:
+                    response_data['candidates'].append({
+                        'id': candidate.id,
+                        'job_id': candidate.job_id,
+                        'name': candidate.name,
+                        'mobile': candidate.mobile,
+                        'email': candidate.email,
+                        'client': candidate.client,
+                        'current_company': candidate.current_company,
+                        'position': candidate.position,
+                        'profile': candidate.profile,
+                        'current_job_location': candidate.current_job_location,
+                        'preferred_job_location': candidate.preferred_job_location,
+                        'qualifications': candidate.qualifications,
+                        'experience': candidate.experience,
+                        'relevant_experience': candidate.relevant_experience,
+                        'current_ctc': candidate.current_ctc,
+                        'expected_ctc': candidate.expected_ctc,
+                        'notice_period': candidate.notice_period,
+                        'linkedin_url': candidate.linkedin_url,
+                        'holding_offer': candidate.holding_offer,
+                        'recruiter': candidate.recruiter,
+                        'management': candidate.management,
+                        'status': candidate.status,
+                        'remarks': candidate.remarks,
+                        'skills': candidate.skills,
+                        'resume': base64.b64encode(candidate.resume).decode('utf-8') if candidate.resume else None,
+                        'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+                        'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                        'buyout': candidate.buyout,
+                        'date_created': str(candidate.date_created),
+                        'time_created': str(candidate.time_created)
+                    })
+
     else:
         response_data = {"message": "User ID or User Type missing"}
 
