@@ -674,24 +674,55 @@ def get_recruiters_list():
     
     return jsonify(usernames)
 
-
-@app.route('/get_recruiters_candidate', methods=['POST']) 
+@app.route('/get_recruiters_candidate', methods=['POST'])
 def recruiter_candidate_list():
     data = request.json
+    
+    if not data or 'user_name' not in data:
+        return jsonify({'error': 'Invalid input'}), 400
+    
     username = data['user_name']
     
     # Find the recruiter with the given username
     recruiter = User.query.filter_by(username=username, user_type='recruiter').first()
+    print("recruiter:",recruiter)
     
     if recruiter:
         # Find all candidates linked with the recruiter's username
-        candidates = Candidate.query.filter_by(recruiter=recruiter.username).all()
+        candidates = Candidate.query.filter_by(recruiter=username).all()
         
         # Prepare response data
-        candidates_list = [{'id': candidate.id, 'username': candidate.name, 'status':candidate.status, 'profile':candidate.profile, 'recruiter':candidate.recruiter} for candidate in candidates]
+        candidates_list = [
+            {
+                'id': candidate.id,
+                'username': candidate.name,
+                'status': candidate.status,
+                'profile': candidate.profile,
+                'recruiter': candidate.recruiter
+            } 
+            for candidate in candidates
+        ]
         return jsonify(candidates_list)
     else:
-        return jsonify({'error': 'Recruiter not found'})
+        return jsonify({'error': 'Recruiter not found'}), 404
+
+# @app.route('/get_recruiters_candidate', methods=['POST']) 
+# def recruiter_candidate_list():
+#     data = request.json
+#     username = data['user_name']
+    
+#     # Find the recruiter with the given username
+#     recruiter = User.query.filter_by(username=username, user_type='recruiter').first()
+    
+#     if recruiter:
+#         # Find all candidates linked with the recruiter's username
+#         candidates = Candidate.query.filter_by(recruiter=recruiter.username).all()
+        
+#         # Prepare response data
+#         candidates_list = [{'id': candidate.id, 'username': candidate.name, 'status':candidate.status, 'profile':candidate.profile, 'recruiter':candidate.recruiter} for candidate in candidates]
+#         return jsonify(candidates_list)
+#     else:
+#         return jsonify({'error': 'Recruiter not found'})
 
 
 @app.route('/assign_candidate_new_recuriter', methods=['POST']) 
