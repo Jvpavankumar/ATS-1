@@ -1119,17 +1119,7 @@ def add_candidate():
         print("Resume : ",type(resume))
 
 
-        # # Check if the resume is a hexadecimal string and convert it to bytes
-        # if isinstance(resume, str):
-        #     # Remove leading backslashes and split the string into pairs of hexadecimal digits
-        #     hex_string = resume.replace("\\", "").replace("\\", "")
-        #     # Decode the hexadecimal string to bytes using binascii.unhexlify()
-        #     resume = binascii.unhexlify(hex_string)
-
-        # elif isinstance(resume, bytes):
-        #     resume = resume
-        # # else:
-        # #     raise ValueError("Resume must be either a hexadecimal string or bytes.")
+        
 
         # # Check if the user is logged in
         if request.method == 'POST':
@@ -3696,6 +3686,7 @@ def edit_job_post(job_post_id):
                 job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
                 job_post.skills = data.get('skills', job_post.skills)
                 job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
+                job_post.recruiter=data.get('recruiter',job_post.recruiter)
 
                 # Update job post in the database
                 db.session.commit()
