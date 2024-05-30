@@ -2726,6 +2726,36 @@ import io
 import base64
 import mimetypes
 
+# @app.route('/user_image/<int:user_id>', methods=['GET'])
+# def user_image(user_id):
+#     # Retrieve the user data from the database
+#     user = User.query.filter_by(id=user_id).first()
+#     if not user or not user.image_file:
+#         return jsonify({'message': 'Image not found'}), 400
+    
+#     # Decode the bytea image data
+#     image_data = user.image_file
+#     image_file = base64.b64decode(image_data)
+    
+#     # Determine the MIME type dynamically
+#     mime_type, _ = mimetypes.guess_type(user.image_filename)  # Assuming user.image_filename holds the filename
+    
+#     # Default to 'application/octet-stream' if MIME type couldn't be guessed
+#     if not mime_type:
+#         mime_type = 'application/octet-stream'
+    
+#     # Send the file as a response
+#     return send_file(
+#         io.BytesIO(image_file),
+#         mimetype=mime_type,
+#         as_attachment=False
+#     )
+
+import io
+import base64
+from PIL import Image
+import mimetypes
+
 @app.route('/user_image/<int:user_id>', methods=['GET'])
 def user_image(user_id):
     # Retrieve the user data from the database
@@ -2734,23 +2764,18 @@ def user_image(user_id):
         return jsonify({'message': 'Image not found'}), 400
     
     # Decode the bytea image data
-    image_data = user.image_file
-    image_file = base64.b64decode(image_data)
+    image_data = base64.b64decode(user.image_file)
     
-    # Determine the MIME type dynamically
-    mime_type, _ = mimetypes.guess_type(user.image_filename)  # Assuming user.image_filename holds the filename
-    
-    # Default to 'application/octet-stream' if MIME type couldn't be guessed
-    if not mime_type:
-        mime_type = 'application/octet-stream'
+    # Determine the MIME type
+    image = Image.open(io.BytesIO(image_data))
+    mime_type = Image.MIME.get(image.format)
     
     # Send the file as a response
     return send_file(
-        io.BytesIO(image_file),
+        io.BytesIO(image_data),
         mimetype=mime_type,
         as_attachment=False
     )
-
 
 # @app.route('/user_image/<int:user_id>', methods=['GET'])
 # def user_image(user_id):
