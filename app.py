@@ -3394,45 +3394,69 @@ from flask import send_file
 
 @app.route('/view_jd/<int:job_id>', methods=['GET'])
 def view_jd(job_id):
-    # Retrieve the resume data from the database using SQLAlchemy
+    # Retrieve the job post data from the database using SQLAlchemy
     jobpost = JobPost.query.filter_by(id=job_id).first()
     if not jobpost:
-        return 'Job post not found', 404  # Return 404 Not Found status
-    # Decode the base64 encoded resume data
-    print("jobpost.jd_pdf",jobpost.jd_pdf.tobytes())
-    if "==" not in str(jobpost.jd_pdf.tobytes()):
-        if request.args.get('decode') == 'base64':
-            # Decode the base64 encoded resume data
-            decoded_jd_pdf = base64.b64decode(jobpost.jd_pdf)
-            jd_pdf_binary = decoded_jd_pdf
-        else:
-            # Retrieve the resume binary data from the database
-            jd_pdf_binary = jobpost.jd_pdf.tobytes()  # Convert memoryview to bytes
+        return jsonify({'error': 'Job post not found'}), 404  # Return JSON error with 404 status
 
-        # Determine the mimetype based on the file content
-        is_pdf = jd_pdf_binary.startswith(b"%PDF")
-        mimetype = 'application/pdf' if is_pdf else 'application/msword'
+    # Retrieve the job description data (assumed to be in jobpost.jd_pdf)
+    jd_pdf_data = jobpost.jd_pdf.tobytes()  # Convert memoryview to bytes
 
-        # Send the file as a response
-        return send_file(
-            io.BytesIO(jd_pdf_binary),
-            mimetype=mimetype,
-            as_attachment=False
-        )
-    else:
-        decoded_jd_pdf = base64.b64decode(jobpost.jd_pdf)
-        # Create a file-like object (BytesIO) from the decoded resume data
-        jd_pdf_file = io.BytesIO(decoded_jd_pdf)
-        # Determine the mimetype based on the file content
-        is_pdf = decoded_jd_pdf.startswith(b"%PDF")
-        mimetype = 'application/pdf' if is_pdf else 'application/msword'
+    # Check if the request has 'decode=base64' argument
+    if request.args.get('decode') == 'base64':
+        # Decode the base64 encoded job description data
+        jd_pdf_data = base64.b64decode(jd_pdf_data)
 
-        # Send the file as a response
-        return send_file(
-            jd_pdf_file,
-            mimetype=mimetype,
-            as_attachment=False
-        )
+    # Create a file-like object (BytesIO) from the job description data
+    jd_pdf_file = io.BytesIO(jd_pdf_data)
+
+    # Determine the mimetype based on the file content
+    mimetype = 'application/pdf' if jd_pdf_data.startswith(b"%PDF") else 'application/msword'
+
+    # Send the file as a response
+    return send_file(jd_pdf_file, mimetype=mimetype, as_attachment=False)
+
+# @app.route('/view_jd/<int:job_id>', methods=['GET'])
+# def view_jd(job_id):
+#     # Retrieve the resume data from the database using SQLAlchemy
+#     jobpost = JobPost.query.filter_by(id=job_id).first()
+#     if not jobpost:
+#         return 'Job post not found', 404  # Return 404 Not Found status
+#     # Decode the base64 encoded resume data
+#     print("jobpost.jd_pdf",jobpost.jd_pdf.tobytes())
+#     if "==" not in str(jobpost.jd_pdf.tobytes()):
+#         if request.args.get('decode') == 'base64':
+#             # Decode the base64 encoded resume data
+#             decoded_jd_pdf = base64.b64decode(jobpost.jd_pdf)
+#             jd_pdf_binary = decoded_jd_pdf
+#         else:
+#             # Retrieve the resume binary data from the database
+#             jd_pdf_binary = jobpost.jd_pdf.tobytes()  # Convert memoryview to bytes
+
+#         # Determine the mimetype based on the file content
+#         is_pdf = jd_pdf_binary.startswith(b"%PDF")
+#         mimetype = 'application/pdf' if is_pdf else 'application/msword'
+
+#         # Send the file as a response
+#         return send_file(
+#             io.BytesIO(jd_pdf_binary),
+#             mimetype=mimetype,
+#             as_attachment=False
+#         )
+#     else:
+#         decoded_jd_pdf = base64.b64decode(jobpost.jd_pdf)
+#         # Create a file-like object (BytesIO) from the decoded resume data
+#         jd_pdf_file = io.BytesIO(decoded_jd_pdf)
+#         # Determine the mimetype based on the file content
+#         is_pdf = decoded_jd_pdf.startswith(b"%PDF")
+#         mimetype = 'application/pdf' if is_pdf else 'application/msword'
+
+#         # Send the file as a response
+#         return send_file(
+#             jd_pdf_file,
+#             mimetype=mimetype,
+#             as_attachment=False
+#         )
 
 # @app.route('/view_jd/<int:job_id>', methods=['GET'])
 # def view_jd(job_id):
