@@ -3002,6 +3002,7 @@ def assign_job(job_id):
             if recruiter_name.strip() in new_recruiter_names:
                 notification_status = False  # Set the initial status
                 notification = Notification(
+                    job_post_id=job_post.id,
                     recruiter_name=recruiter_name.strip(),
                     notification_status=notification_status
                 )
