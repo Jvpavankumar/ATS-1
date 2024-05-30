@@ -2722,24 +2722,54 @@ import io
 #     return jsonify({'message': user.image_file}), 200
 
 
+import io
+import base64
+import mimetypes
+
 @app.route('/user_image/<int:user_id>', methods=['GET'])
 def user_image(user_id):
     # Retrieve the user data from the database
     user = User.query.filter_by(id=user_id).first()
     if not user or not user.image_file:
-        return jsonify({'message': 'Image not found'}),400
+        return jsonify({'message': 'Image not found'}), 400
     
     # Decode the bytea image data
     image_data = user.image_file
-    
     image_file = base64.b64decode(image_data)
+    
+    # Determine the MIME type dynamically
+    mime_type, _ = mimetypes.guess_type(user.image_filename)  # Assuming user.image_filename holds the filename
+    
+    # Default to 'application/octet-stream' if MIME type couldn't be guessed
+    if not mime_type:
+        mime_type = 'application/octet-stream'
     
     # Send the file as a response
     return send_file(
         io.BytesIO(image_file),
-         mimetype = 'image/jpeg',
+        mimetype=mime_type,
         as_attachment=False
     )
+
+
+# @app.route('/user_image/<int:user_id>', methods=['GET'])
+# def user_image(user_id):
+#     # Retrieve the user data from the database
+#     user = User.query.filter_by(id=user_id).first()
+#     if not user or not user.image_file:
+#         return jsonify({'message': 'Image not found'}),400
+    
+#     # Decode the bytea image data
+#     image_data = user.image_file
+    
+#     image_file = base64.b64decode(image_data)
+    
+#     # Send the file as a response
+#     return send_file(
+#         io.BytesIO(image_file),
+#          mimetype = 'image/jpeg',
+#         as_attachment=False
+#     )
 
 
 
