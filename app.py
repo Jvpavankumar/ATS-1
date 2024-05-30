@@ -3393,7 +3393,7 @@ import io
 from flask import send_file
 
 @app.route('/view_jd/<int:job_id>', methods=['GET'])
-def view_resume(job_id):
+def view_jd(job_id):
     # Retrieve the resume data from the database using SQLAlchemy
     jobpost = JobPost.query.filter_by(id=job_id).first()
     if not jobpost:
