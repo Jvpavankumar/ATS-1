@@ -3392,47 +3392,47 @@ import base64
 import io
 from flask import send_file
 
-@app.route('/view_jd/<int:job_id>', methods=['GET'])
-def view_jd(job_id):
-    # Retrieve the resume data from the database using SQLAlchemy
-    jobpost = JobPost.query.filter_by(id=job_id).first()
-    if not jobpost:
-        return 'Job post not found', 404  # Return 404 Not Found status
-    # Decode the base64 encoded resume data
-    print("jobpost.jd_pdf",jobpost.jd_pdf.tobytes())
-    if "==" not in str(jobpost.jd_pdf.tobytes()):
-        if request.args.get('decode') == 'base64':
-            # Decode the base64 encoded resume data
-            decoded_resume = base64.b64decode(jobpost.jd_pdf)
-            resume_binary = decoded_resume
-        else:
-            # Retrieve the resume binary data from the database
-            resume_binary = jobpost.jd_pdf.tobytes()  # Convert memoryview to bytes
+# @app.route('/view_jd/<int:job_id>', methods=['GET'])
+# def view_jd(job_id):
+#     # Retrieve the resume data from the database using SQLAlchemy
+#     jobpost = JobPost.query.filter_by(id=job_id).first()
+#     if not jobpost:
+#         return 'Job post not found', 404  # Return 404 Not Found status
+#     # Decode the base64 encoded resume data
+#     print("jobpost.jd_pdf",jobpost.jd_pdf.tobytes())
+#     if "==" not in str(jobpost.jd_pdf.tobytes()):
+#         if request.args.get('decode') == 'base64':
+#             # Decode the base64 encoded resume data
+#             decoded_resume = base64.b64decode(jobpost.jd_pdf)
+#             resume_binary = decoded_resume
+#         else:
+#             # Retrieve the resume binary data from the database
+#             resume_binary = jobpost.jd_pdf.tobytes()  # Convert memoryview to bytes
 
-        # Determine the mimetype based on the file content
-        is_pdf = resume_binary.startswith(b"%PDF")
-        mimetype = 'application/pdf' if is_pdf else 'application/msword'
+#         # Determine the mimetype based on the file content
+#         is_pdf = resume_binary.startswith(b"%PDF")
+#         mimetype = 'application/pdf' if is_pdf else 'application/msword'
 
-        # Send the file as a response
-        return send_file(
-            io.BytesIO(resume_binary),
-            mimetype=mimetype,
-            as_attachment=False
-        )
-    else:
-        decoded_resume = base64.b64decode(jobpost.jd_pdf)
-        # Create a file-like object (BytesIO) from the decoded resume data
-        resume_file = io.BytesIO(decoded_resume)
-        # Determine the mimetype based on the file content
-        is_pdf = decoded_resume.startswith(b"%PDF")
-        mimetype = 'application/pdf' if is_pdf else 'application/msword'
+#         # Send the file as a response
+#         return send_file(
+#             io.BytesIO(resume_binary),
+#             mimetype=mimetype,
+#             as_attachment=False
+#         )
+#     else:
+#         decoded_resume = base64.b64decode(jobpost.jd_pdf)
+#         # Create a file-like object (BytesIO) from the decoded resume data
+#         resume_file = io.BytesIO(decoded_resume)
+#         # Determine the mimetype based on the file content
+#         is_pdf = decoded_resume.startswith(b"%PDF")
+#         mimetype = 'application/pdf' if is_pdf else 'application/msword'
 
-        # Send the file as a response
-        return send_file(
-            resume_file,
-            mimetype=mimetype,
-            as_attachment=False
-        )
+#         # Send the file as a response
+#         return send_file(
+#             resume_file,
+#             mimetype=mimetype,
+#             as_attachment=False
+#         )
 
 # @app.route('/view_jd/<int:job_id>', methods=['GET'])
 # def view_jd(job_id):
@@ -3558,6 +3558,48 @@ def view_jd(job_id):
 #         )
 #     else:
 #         return 'JD PDF not available', 404  # Return 404 Not Found status if JD PDF is not available
+
+import magic
+
+@app.route('/view_jd/<int:job_id>', methods=['GET'])
+def view_jd(job_id):
+    # Retrieve the job post data from the database using SQLAlchemy
+    jobpost = JobPost.query.filter_by(id=job_id).first()
+    if not jobpost:
+        return 'Job post not found', 404  # Return 404 Not Found status
+    
+    # Check if the job post contains a JD PDF
+    if jobpost.jd_pdf:
+        # Decode the base64 string back to its original binary data
+        jd_binary = base64.b64decode(jobpost.jd_pdf)
+ 
+        # Create a file-like object (BytesIO) from the decoded binary data
+        jd_file = io.BytesIO(jd_binary)
+ 
+        # Detect the mimetype using more complex logic
+        mimetype = detect_mimetype(jd_binary)
+ 
+        # Return the file as a response
+        return send_file(
+            jd_file,
+            mimetype=mimetype,
+            as_attachment=False
+        )
+    else:
+        return 'JD PDF not available', 404  # Return 404 Not Found status if JD PDF is not available
+
+def detect_mimetype(data):
+    # Check for PDF magic number
+    if data.startswith(b"%PDF"):
+        return 'application/pdf'
+    # Check for MS Word magic number
+    elif data.startswith(b"\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1"):
+        return 'application/msword'
+    # Add more checks for other file types if needed
+    else:
+        # If no specific type is detected, fallback to using python-magic
+        mime = magic.Magic(mime=True)
+        return mime.from_buffer(data)
 
 
 from flask import Flask, jsonify, request
