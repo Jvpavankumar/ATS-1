@@ -164,8 +164,8 @@ class Candidate(db.Model):
     reference_name = db.Column(db.String(200))
     reference_position = db.Column(db.String(200))
     reference_information = db.Column(db.String(200))
-    data_updated_date = db.Column(db.Date, nullable=True)
-    data_updated_time = db.Column(db.Time, nullable=True)
+    data_updated_date = db.Column(db.Date, default=datetime.date.today)
+    data_updated_time = db.Column(db.Time, default=datetime.datetime.now().time())
     def serialize(self):
         return {
             'id': self.id,
