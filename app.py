@@ -164,6 +164,8 @@ class Candidate(db.Model):
     reference_name = db.Column(db.String(200))
     reference_position = db.Column(db.String(200))
     reference_information = db.Column(db.String(200))
+    data_updated_date = db.Column(db.Date, nullable=True)
+    data_updated_time = db.Column(db.Time, nullable=True)
     def serialize(self):
         return {
             'id': self.id,
@@ -215,6 +217,8 @@ class Candidate(db.Model):
             'reference_name': self.reference_name,
             'reference_position': self.reference_position,
             'reference_information': self.reference_information
+            'data_updated_date': self.data_updated_date.strftime('%Y-%m-%d') if self.data_updated_date else None,
+            'data_updated_time': self.data_updated_time.strftime('%H:%M:%S') if self.data_updated_time else None
         }
 
 class Career_user(db.Model):
@@ -3688,6 +3692,11 @@ def edit_job_post(job_post_id):
                 job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
                 job_post.recruiter=data.get('recruiter',job_post.recruiter)
 
+                # Update data_updated_date and data_updated_time
+                current_datetime = datetime.now()
+                job_post.data_updated_date = current_datetime.date()
+                job_post.data_updated_time = current_datetime.time()
+                
                 # Update job post in the database
                 db.session.commit()
                 
