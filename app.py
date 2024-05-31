@@ -156,7 +156,7 @@ class Candidate(db.Model):
     onboarded = db.Column(db.Boolean, default=False)
     dropped_after_onboarding = db.Column(db.Boolean, default=False)
     date_created = db.Column(db.Date, default=date.today)
-    time_created = db.Column(db.Time, default=datetime.now().time)
+    time_created = db.Column(db.Time, default=datetime.now().time()
     comments = db.Column(db.String(1000))
     linkedin_url = db.Column(db.String(1000))
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
@@ -2388,7 +2388,8 @@ def view_all_jobs():
                 "job_type": job_post.job_type,
                 "skills": job_post.skills,
                 "date_created": str(job_post.date_created),
-                "time_created": str(job_post.time_created)
+                "time_created": str(job_post.time_created),
+                "
                 # Include other attributes as needed
             }
             for job_post in job_posts_active
