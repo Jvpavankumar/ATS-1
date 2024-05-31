@@ -166,8 +166,7 @@ class Candidate(db.Model):
     reference_name = db.Column(db.String(200))
     reference_position = db.Column(db.String(200))
     reference_information = db.Column(db.String(200))
-    data_updated_date = db.Column(db.Date, default=date.today)
-    data_updated_time = db.Column(db.Time, default=datetime.now().time)
+    
 
     def serialize(self):
         return {
@@ -220,8 +219,7 @@ class Candidate(db.Model):
             'reference_name': self.reference_name,
             'reference_position': self.reference_position,
             'reference_information': self.reference_information,
-            'data_updated_date':self.data_updated_date.strftime('%Y-%m-%d'),
-            'data_updated_time':self.data_updated_time.strftime('%H:%M:%S')
+            
         }
         
 class Career_user(db.Model):
