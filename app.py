@@ -216,7 +216,7 @@ class Candidate(db.Model):
             'reference': self.reference,
             'reference_name': self.reference_name,
             'reference_position': self.reference_position,
-            'reference_information': self.reference_information
+            'reference_information': self.reference_information,
             'data_updated_date': self.data_updated_date.strftime('%Y-%m-%d') if self.data_updated_date else None,
             'data_updated_time': self.data_updated_time.strftime('%H:%M:%S') if self.data_updated_time else None
         }
