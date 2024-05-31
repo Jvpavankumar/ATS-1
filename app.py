@@ -2391,7 +2391,8 @@ def view_all_jobs():
                 "skills": job_post.skills,
                 "date_created": str(job_post.date_created),
                 "time_created": str(job_post.time_created),
-                "
+                "data_updated_date":str(job_post.data_updated_date),
+                "data_updated_time":str(jobs_post.data_updated_time)
                 # Include other attributes as needed
             }
             for job_post in job_posts_active
@@ -2417,7 +2418,9 @@ def view_all_jobs():
                 "job_type": job_post.job_type,
                 "skills": job_post.skills,
                 "date_created": str(job_post.date_created),
-                "time_created": str(job_post.time_created)
+                "time_created": str(job_post.time_created),
+                "data_updated_date":str(job_post.data_updated_date),
+                "data_updated_time":str(jobs_post.data_updated_time)
                 # Include other attributes as needed
             }
             for job_post in job_posts_hold
