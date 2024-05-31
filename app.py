@@ -166,7 +166,8 @@ class Candidate(db.Model):
     reference_name = db.Column(db.String(200))
     reference_position = db.Column(db.String(200))
     reference_information = db.Column(db.String(200))
-    
+    data_updated_date = db.Column(db.Date)
+    data_updated_time = db.Column(db.Time)
 
     def serialize(self):
         return {
@@ -2390,7 +2391,7 @@ def view_all_jobs():
                 "date_created": str(job_post.date_created),
                 "time_created": str(job_post.time_created),
                 "data_updated_date":str(job_post.data_updated_date),
-                "data_updated_time":str(jobs_post.data_updated_time)
+                "data_updated_time":str(job_post.data_updated_time)
                 # Include other attributes as needed
             }
             for job_post in job_posts_active
@@ -2418,7 +2419,7 @@ def view_all_jobs():
                 "date_created": str(job_post.date_created),
                 "time_created": str(job_post.time_created),
                 "data_updated_date":str(job_post.data_updated_date),
-                "data_updated_time":str(jobs_post.data_updated_time)
+                "data_updated_time":str(job_post.data_updated_time)
                 # Include other attributes as needed
             }
             for job_post in job_posts_hold
@@ -2427,6 +2428,83 @@ def view_all_jobs():
 
     # Return JSON response
     return jsonify(response_data)
+
+
+# @app.route('/view_all_jobs', methods=['POST'])
+# def view_all_jobs():
+#     # Get data from JSON request
+#     data = request.json
+
+#     # Extract any parameters you need from the JSON data
+#     user_name = data['username']
+
+#     # Retrieve all job posts from the database
+#     job_posts_active = JobPost.query.filter_by(job_status='Active').order_by(JobPost.id).all()
+#     job_posts_hold = JobPost.query.filter_by(job_status='Hold').order_by(JobPost.id).all()
+
+#     # Construct JSON response
+#     response_data = {
+#         "user_name": user_name,
+#         "job_posts_active": [
+#             {
+#                 "id": job_post.id,
+#                 "client": job_post.client,
+#                 "role": job_post.role,
+#                 "experience_min": job_post.experience_min,
+#                 "experience_max": job_post.experience_max,
+#                 "budget_min": job_post.budget_min,
+#                 "budget_max": job_post.budget_max,
+#                 "location": job_post.location,
+#                 "shift_timings": job_post.shift_timings,
+#                 "notice_period": job_post.notice_period,
+#                 "detailed_jd": job_post.detailed_jd,
+#                 "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
+#                 "mode": job_post.mode,
+#                 "recruiter": job_post.recruiter,
+#                 "management": job_post.management,
+#                 "job_status": job_post.job_status,
+#                 "job_type": job_post.job_type,
+#                 "skills": job_post.skills,
+#                 "date_created": str(job_post.date_created),
+#                 "time_created": str(job_post.time_created),
+#                 "data_updated_date":str(job_post.data_updated_date),
+#                 "data_updated_time":str(jobs_post.data_updated_time)
+#                 # Include other attributes as needed
+#             }
+#             for job_post in job_posts_active
+#         ],
+#         "job_posts_hold": [
+#             {
+#                 "id": job_post.id,
+#                 "client": job_post.client,
+#                 "role": job_post.role,
+#                 "experience_min": job_post.experience_min,
+#                 "experience_max": job_post.experience_max,
+#                 "budget_min": job_post.budget_min,
+#                 "budget_max": job_post.budget_max,
+#                 "location": job_post.location,
+#                 "shift_timings": job_post.shift_timings,
+#                 "notice_period": job_post.notice_period,
+#                 "detailed_jd": job_post.detailed_jd,
+#                 "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
+#                 "mode": job_post.mode,
+#                 "recruiter": job_post.recruiter,
+#                 "management": job_post.management,
+#                 "job_status": job_post.job_status,
+#                 "job_type": job_post.job_type,
+#                 "skills": job_post.skills,
+#                 "date_created": str(job_post.date_created),
+#                 "time_created": str(job_post.time_created),
+#                 "data_updated_date":str(job_post.data_updated_date),
+#                 "data_updated_time":str(jobs_post.data_updated_time)
+#                 # Include other attributes as needed
+#             }
+#             for job_post in job_posts_hold
+#         ]
+#     }
+
+#     # Return JSON response
+#     return jsonify(response_data)
 
 def send_notification(recruiter_email):
     msg = Message('New Job Posted', sender='ganesh.s@makonissoft.com', recipients=[recruiter_email])
