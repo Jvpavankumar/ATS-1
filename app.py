@@ -15,6 +15,105 @@ import ast
 import datetime
 import os
 import json
+
+from flask_cors import CORS
+import re
+# import spacy
+from flask_mail import Mail, Message
+from flask import render_template, redirect, url_for, flash
+from flask_mail import Mail, Message
+from itsdangerous import URLSafeTimedSerializer
+# from spacy.matcher import Matcher
+from flask import Flask, request, render_template
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
+from itsdangerous import URLSafeTimedSerializer
+from flask import request, render_template, flash, redirect, url_for
+import secrets
+import secrets
+from urllib.parse import quote_plus
+from flask_migrate import Migrate
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from datetime import datetime
+import pytz 
+
+app = Flask(__name__)
+cors = CORS(app)
+# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_SERVER'] = 'smtp.office365.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = 'ganesh.s@makonissoft.com'
+app.config['MAIL_PASSWORD'] = 'Fol98135'
+# app.config['MAIL_PASSWORD'] = 'tozvnmxbcejynxpe'
+mail = Mail(app)
+
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+
+app.config['SECRET_KEY'] = secrets.token_hex(16)
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+Session = sessionmaker(bind=engine)
+app.config['SECRET_KEY'] = secrets.token_hex(16)
+# Specify the folder where uploaded resumes will be stored
+UPLOAD_FOLDER = 'C:/Users/Makonis/PycharmProjects/login/'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+cors = CORS(app)
+# Specify the allowed resume file extensions
+ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+from datetime import timedelta
+#hello
+
+# Specify the folder where uploaded resumes will be stored
+# UPLOAD_FOLDER = 'static/'
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+# cors = CORS(app)
+# Specify the allowed resume file extensions
+# ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
+
+# db = SQLAlchemy(app)
+# migrate = Migrate(app, db)
+
+def generate_verification_token(user_id):
+    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return serializer.dumps(user_id)
+
+class User(db.Model):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True,nullable=False)
+    username = db.Column(db.String(50), unique=True, nullable=False)
+    password = db.Column(db.String(50), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    user_type = db.Column(db.String(20), nullable=False)
+    client = db.Column(db.String(100))
+    candidate = relationship("Candidate", back_populates="user", uselist=False)
+    is_active = db.Column(db.Boolean, default=True)
+    is_verified = db.Column(db.Boolean, default=False)
+    created_by = db.Column(db.String(50))
+    otp = db.Column(db.String(6), default=False)
+    registration_completed = db.Column(db.String(50))
+    filename = db.Column(db.String(100))
+    # image_file = db.Column(db.String(1000))
+    image_file=db.Column(db.LargeBinary)
+    image_deleted=db.Column(db.Boolean, default=False)
+    def serialize(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'name': self.name,
+            'email': self.email,
+            'user_type': self.user_type,
+            'client': self.client,
+            'is_active': self.is_active,
+            'is_verified': self.is_verified,
+            'created_by': self.created_by,
+            'otp': self.otp,
+            'registration_completed': self.registration_completed
+        }
+
 # import magicuserclass Candidate(db.Model):
     __tablename__ = 'candidates'
     id = db.Column(db.Integer, primary_key=True)
@@ -123,211 +222,6 @@ import json
             'reference_information': self.reference_information,
             'data_updated_date':self.data_updated_date.strftime('%Y-%m-%d'),
             'data_updated_time':self.data_updated_time.strftime('%H:%M:%S')
-        }
-from flask_cors import CORS
-import re
-# import spacy
-from flask_mail import Mail, Message
-from flask import render_template, redirect, url_for, flash
-from flask_mail import Mail, Message
-from itsdangerous import URLSafeTimedSerializer
-# from spacy.matcher import Matcher
-from flask import Flask, request, render_template
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
-from itsdangerous import URLSafeTimedSerializer
-from flask import request, render_template, flash, redirect, url_for
-import secrets
-import secrets
-from urllib.parse import quote_plus
-from flask_migrate import Migrate
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from datetime import datetime
-import pytz 
-
-app = Flask(__name__)
-cors = CORS(app)
-# app.config['MAIL_SERVER'] = 'smtp.gmail.com'
-app.config['MAIL_SERVER'] = 'smtp.office365.com'
-app.config['MAIL_PORT'] = 587
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USERNAME'] = 'ganesh.s@makonissoft.com'
-app.config['MAIL_PASSWORD'] = 'Fol98135'
-# app.config['MAIL_PASSWORD'] = 'tozvnmxbcejynxpe'
-mail = Mail(app)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
-
-app.config['SECRET_KEY'] = secrets.token_hex(16)
-engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-Session = sessionmaker(bind=engine)
-app.config['SECRET_KEY'] = secrets.token_hex(16)
-# Specify the folder where uploaded resumes will be stored
-UPLOAD_FOLDER = 'C:/Users/Makonis/PycharmProjects/login/'
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-cors = CORS(app)
-# Specify the allowed resume file extensions
-ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-from datetime import timedelta
-#hello
-
-# Specify the folder where uploaded resumes will be stored
-# UPLOAD_FOLDER = 'static/'
-# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# cors = CORS(app)
-# Specify the allowed resume file extensions
-# ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
-
-# db = SQLAlchemy(app)
-# migrate = Migrate(app, db)
-
-def generate_verification_token(user_id):
-    serializer = URLSafeTimedSerializer(app.config['SECRET_KEY'])
-    return serializer.dumps(user_id)
-
-class User(db.Model):
-    __tablename__ = 'users'
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True,nullable=False)
-    username = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(50), nullable=False)
-    name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-    user_type = db.Column(db.String(20), nullable=False)
-    client = db.Column(db.String(100))
-    candidate = relationship("Candidate", back_populates="user", uselist=False)
-    is_active = db.Column(db.Boolean, default=True)
-    is_verified = db.Column(db.Boolean, default=False)
-    created_by = db.Column(db.String(50))
-    otp = db.Column(db.String(6), default=False)
-    registration_completed = db.Column(db.String(50))
-    filename = db.Column(db.String(100))
-    image_file = db.Column(db.String(1000))
-    # image_file=db.Column(db.LargeBinary)
-    image_deleted=db.Column(db.Boolean, default=False)
-    def serialize(self):
-        return {
-            'id': self.id,
-            'username': self.username,
-            'name': self.name,
-            'email': self.email,
-            'user_type': self.user_type,
-            'client': self.client,
-            'is_active': self.is_active,
-            'is_verified': self.is_verified,
-            'created_by': self.created_by,
-            'otp': self.otp,
-            'registration_completed': self.registration_completed
-        }
-
-class Candidate(db.Model):
-    __tablename__ = 'candidates'
-    id = db.Column(db.Integer, primary_key=True)
-    job_id = db.Column(db.Integer)
-    name = db.Column(db.String(100), nullable=False)
-    mobile = db.Column(db.String(20), nullable=False)
-    email = db.Column(db.String(100), nullable=False)
-    client = db.Column(db.String(100), nullable=False)
-    current_company = db.Column(db.String(100))
-    position = db.Column(db.String(100))
-    profile = db.Column(db.String(200))
-    current_job_location = db.Column(db.String(100))
-    preferred_job_location = db.Column(db.String(100))
-    resume = db.Column(db.String(1000))
-    skills = db.Column(db.String(500))
-    qualifications = db.Column(db.String(200))
-    experience = db.Column(db.String(200))
-    relevant_experience = db.Column(db.String(200))
-    current_ctc = db.Column(db.String(200))
-    expected_ctc = db.Column(db.String(200))
-    notice_period = db.Column(db.String(20))
-    last_working_date = db.Column(db.Date)
-    buyout = db.Column(db.Boolean, default=False)
-    holding_offer = db.Column(db.String(20))
-    total = db.Column(db.Integer)
-    package_in_lpa = db.Column(db.Float)
-    recruiter = db.Column(db.String(100))
-    management = db.Column(db.String(100))
-    status = db.Column(db.String(100))
-    reason_for_job_change = db.Column(db.String(200))
-    remarks = db.Column(db.String(200))
-    screening_done = db.Column(db.Boolean, default=False)
-    rejected_at_screening = db.Column(db.Boolean, default=False)
-    l1_cleared = db.Column(db.Boolean, default=False)
-    rejected_at_l1 = db.Column(db.Boolean, default=False)
-    dropped_after_clearing_l1 = db.Column(db.Boolean, default=False)
-    l2_cleared = db.Column(db.Boolean, default=False)
-    rejected_at_l2 = db.Column(db.Boolean, default=False)
-    dropped_after_clearing_l2 = db.Column(db.Boolean, default=False)
-    onboarded = db.Column(db.Boolean, default=False)
-    dropped_after_onboarding = db.Column(db.Boolean, default=False)
-    date_created = db.Column(db.Date, default=date.today)
-    time_created = db.Column(db.Time, default=datetime.now().time()
-    comments = db.Column(db.String(1000))
-    linkedin_url = db.Column(db.String(1000))
-    user_id = db.Column(db.Integer, ForeignKey('users.id'))
-    period_of_notice = db.Column(db.String(1000))
-    user = relationship("User", back_populates="candidate")
-    reference = db.Column(db.String(200))
-    reference_name = db.Column(db.String(200))
-    reference_position = db.Column(db.String(200))
-    reference_information = db.Column(db.String(200))
-    data_updated_date = db.Column(db.Date, nullable=True)
-    data_updated_time = db.Column(db.Time, nullable=True)
-
-    def serialize(self):
-        return {
-            'id': self.id,
-            'job_id': self.job_id,
-            'name': self.name,
-            'mobile': self.mobile,
-            'email': self.email,
-            'client': self.client,
-            'current_company': self.current_company,
-            'position': self.position,
-            'profile': self.profile,
-            'current_job_location': self.current_job_location,
-            'preferred_job_location': self.preferred_job_location,
-            'resume': self.resume,
-            'skills': self.skills,
-            'qualifications': self.qualifications,
-            'experience': self.experience,
-            'relevant_experience': self.relevant_experience,
-            'current_ctc': self.current_ctc,
-            'expected_ctc': self.expected_ctc,
-            'notice_period': self.notice_period,
-            'last_working_date': self.last_working_date.strftime('%Y-%m-%d') if self.last_working_date else None,
-            'buyout': self.buyout,
-            'holding_offer': self.holding_offer,
-            'total': self.total,
-            'package_in_lpa': self.package_in_lpa,
-            'recruiter': self.recruiter,
-            'management': self.management,
-            'status': self.status,
-            'reason_for_job_change': self.reason_for_job_change,
-            'remarks': self.remarks,
-            'screening_done': self.screening_done,
-            'rejected_at_screening': self.rejected_at_screening,
-            'l1_cleared': self.l1_cleared,
-            'rejected_at_l1': self.rejected_at_l1,
-            'dropped_after_clearing_l1': self.dropped_after_clearing_l1,
-            'l2_cleared': self.l2_cleared,
-            'rejected_at_l2': self.rejected_at_l2,
-            'dropped_after_clearing_l2': self.dropped_after_clearing_l2,
-            'onboarded': self.onboarded,
-            'dropped_after_onboarding': self.dropped_after_onboarding,
-            'date_created': self.date_created.strftime('%Y-%m-%d'),
-            'time_created': self.time_created.strftime('%H:%M:%S'),
-            'comments': self.comments,
-            'linkedin_url': self.linkedin_url,
-            'user_id': self.user_id,
-            'period_of_notice': self.period_of_notice,
-            'reference': self.reference,
-            'reference_name': self.reference_name,
-            'reference_position': self.reference_position,
-            'reference_information': self.reference_information
         }
         
 class Career_user(db.Model):
