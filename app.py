@@ -127,7 +127,7 @@ class Candidate(db.Model):
     profile = db.Column(db.String(200))
     current_job_location = db.Column(db.String(100))
     preferred_job_location = db.Column(db.String(100))
-    resume =  db.Column(db.String(1000))
+    resume = db.Column(db.String(1000))
     skills = db.Column(db.String(500))
     qualifications = db.Column(db.String(200))
     experience = db.Column(db.String(200))
@@ -155,8 +155,8 @@ class Candidate(db.Model):
     dropped_after_clearing_l2 = db.Column(db.Boolean, default=False)
     onboarded = db.Column(db.Boolean, default=False)
     dropped_after_onboarding = db.Column(db.Boolean, default=False)
-    date_created = db.Column(db.Date, default=datetime.date.today)
-    time_created = db.Column(db.Time, default=datetime.datetime.now().time())
+    date_created = db.Column(db.Date, default=date.today)
+    time_created = db.Column(db.Time, default=datetime.now().time)
     comments = db.Column(db.String(1000))
     linkedin_url = db.Column(db.String(1000))
     user_id = db.Column(db.Integer, ForeignKey('users.id'))
@@ -166,7 +166,9 @@ class Candidate(db.Model):
     reference_name = db.Column(db.String(200))
     reference_position = db.Column(db.String(200))
     reference_information = db.Column(db.String(200))
-    
+    data_updated_date = db.Column(db.Date, nullable=True)
+    data_updated_time = db.Column(db.Time, nullable=True)
+
     def serialize(self):
         return {
             'id': self.id,
@@ -218,9 +220,8 @@ class Candidate(db.Model):
             'reference_name': self.reference_name,
             'reference_position': self.reference_position,
             'reference_information': self.reference_information
-            
         }
-
+        
 class Career_user(db.Model):
     __tablename__ = 'career_users'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
