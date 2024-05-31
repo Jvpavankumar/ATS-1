@@ -3693,7 +3693,8 @@ def edit_job_post(job_post_id):
                 job_post.recruiter=data.get('recruiter',job_post.recruiter)
 
                 # Update data_updated_date and data_updated_time
-                current_datetime = datetime.now()
+                # current_datetime = datetime.now()
+                current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
                 job_post.data_updated_date = current_datetime.date()
                 job_post.data_updated_time = current_datetime.time()
                 
