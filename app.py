@@ -3446,7 +3446,6 @@ def download_jd(job_id):
     if jobpost is None or jobpost.jd_pdf is None:
         return redirect(url_for('dashboard'))
 
-    # Save the resume file from the database
     jd_file = io.BytesIO(jobpost.jd_pdf)
     is_pdf = jd_file.getvalue().startswith(b"%PDF")
     if is_pdf : 
