@@ -113,8 +113,8 @@ class User(db.Model):
             'otp': self.otp,
             'registration_completed': self.registration_completed
         }
-
-# import magicuserclass Candidate(db.Model):
+        
+class Candidate(db.Model):
     __tablename__ = 'candidates'
     id = db.Column(db.Integer, primary_key=True)
     job_id = db.Column(db.Integer)
