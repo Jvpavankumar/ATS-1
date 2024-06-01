@@ -3539,43 +3539,15 @@ def view_resume(candidate_id):
 
 #     return jsonify({'message': 'Image updated successfully'}), 200
 
-# @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
-# def upload_user_image(user_id):
-#     try:
-#         # Extract file from request
-#         data=request.json
-#         image_file = data['image']
-#         filename = data['filename']
-#         image_delete_status=data['image_delete_status']
-        
-#         # Find the user by user_id
-#         user = User.query.get(user_id)
-#         if not user:
-#             return jsonify({'error': 'User not found'}), 404
-
-#         # Update user's filename and image content
-#         user.filename = filename
-#         user.image_file = image_file  # Store image content as binary data
-#         user.image_deleted=image_delete_status
-#         # Commit changes to the database
-#         db.session.commit()
-
-#         return jsonify({'message': 'Image updated successfully'}), 200
-#     except Exception as e:
-#         return jsonify({'error': str(e)}), 500
-
 @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
 def upload_user_image(user_id):
     try:
-        # Extract data from the request
-        data = request.json
-        image_base64 = data['image']
+        # Extract file from request
+        data=request.json
+        image_file = data['image']
         filename = data['filename']
-        image_delete_status = data['image_delete_status']
-
-        # Decode the base64 image
-        image_binary = base64.b64decode(image_base64)
-
+        image_delete_status=data['image_delete_status']
+        
         # Find the user by user_id
         user = User.query.get(user_id)
         if not user:
@@ -3583,15 +3555,43 @@ def upload_user_image(user_id):
 
         # Update user's filename and image content
         user.filename = filename
-        user.image_file = image_binary  # Store image content as binary data
-        user.image_deleted = image_delete_status
-
+        user.image_file = image_file  # Store image content as binary data
+        user.image_deleted=image_delete_status
         # Commit changes to the database
         db.session.commit()
 
-        return jsonify({'message': 'Image updated successfully', 'imageUrl': '/path/to/image'}), 200  # Adjust the imageUrl path as needed
+        return jsonify({'message': 'Image updated successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# @app.route('/upload_user_image/<int:user_id>', methods=['POST'])
+# def upload_user_image(user_id):
+#     try:
+#         # Extract data from the request
+#         data = request.json
+#         image_base64 = data['image']
+#         filename = data['filename']
+#         image_delete_status = data['image_delete_status']
+
+#         # Decode the base64 image
+#         image_binary = base64.b64decode(image_base64)
+
+#         # Find the user by user_id
+#         user = User.query.get(user_id)
+#         if not user:
+#             return jsonify({'error': 'User not found'}), 404
+
+#         # Update user's filename and image content
+#         user.filename = filename
+#         user.image_file = image_binary  # Store image content as binary data
+#         user.image_deleted = image_delete_status
+
+#         # Commit changes to the database
+#         db.session.commit()
+
+#         return jsonify({'message': 'Image updated successfully', 'imageUrl': '/path/to/image'}), 200  # Adjust the imageUrl path as needed
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500
 
 
 #################################################################################################
