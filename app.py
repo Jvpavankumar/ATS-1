@@ -3354,64 +3354,37 @@ def view_resume(candidate_id):
     # Retrieve the resume data from the database using SQLAlchemy
     candidate = Candidate.query.filter_by(id=candidate_id).first()
     if not candidate:
-        return 'Candidate not found', 404
+        return 'Candidate not found'
 
-    resume_data = candidate.resume
+    resume_binary = candidate.resume
+    if isinstance(resume_binary, memoryview):
+        resume_binary = resume_binary.tobytes()
 
-    # Check if the resume is base64 encoded
-    if isinstance(resume_data, str) and resume_data.endswith('=='):
-        decoded_resume = base64.b64decode(resume_data)
+    # Check if the resume data is base64 encoded
+    if "==" not in resume_binary.decode('utf-8', errors='ignore'):
+        if request.args.get('decode') == 'base64':
+            # Decode the base64 encoded resume data
+            resume_binary = base64.b64decode(resume_binary)
+        # Convert memoryview to bytes if needed
+        else:
+            resume_binary = candidate.resume.tobytes()
+
     else:
-        decoded_resume = resume_data.tobytes()  # Convert memoryview to bytes if necessary
+        resume_binary = base64.b64decode(candidate.resume)
+
+    # Create a file-like object (BytesIO) from the resume data
+    resume_file = io.BytesIO(resume_binary)
 
     # Determine the mimetype based on the file content
-    is_pdf = decoded_resume.startswith(b"%PDF")
+    is_pdf = resume_binary.startswith(b"%PDF")
     mimetype = 'application/pdf' if is_pdf else 'application/msword'
 
     # Send the file as a response
     return send_file(
-        io.BytesIO(decoded_resume),
+        resume_file,
         mimetype=mimetype,
         as_attachment=False
     )
-
-
-# @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
-# def view_resume(candidate_id):
-#     # Retrieve the resume data from the database using SQLAlchemy
-#     candidate = Candidate.query.filter_by(id=candidate_id).first()
-#     if not candidate:
-#         return 'Candidate not found'
-
-#     resume_binary = candidate.resume
-#     if isinstance(resume_binary, memoryview):
-#         resume_binary = resume_binary.tobytes()
-
-#     # Check if the resume data is base64 encoded
-#     if "==" not in resume_binary.decode('utf-8', errors='ignore'):
-#         if request.args.get('decode') == 'base64':
-#             # Decode the base64 encoded resume data
-#             resume_binary = base64.b64decode(resume_binary)
-#         # Convert memoryview to bytes if needed
-#         else:
-#             resume_binary = candidate.resume.tobytes()
-
-#     else:
-#         resume_binary = base64.b64decode(candidate.resume)
-
-#     # Create a file-like object (BytesIO) from the resume data
-#     resume_file = io.BytesIO(resume_binary)
-
-#     # Determine the mimetype based on the file content
-#     is_pdf = resume_binary.startswith(b"%PDF")
-#     mimetype = 'application/pdf' if is_pdf else 'application/msword'
-
-#     # Send the file as a response
-#     return send_file(
-#         resume_file,
-#         mimetype=mimetype,
-#         as_attachment=False
-#     )
 
 
 # @app.route('/view_resume/<int:candidate_id>', methods=['GET'])
