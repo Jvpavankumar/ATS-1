@@ -4717,6 +4717,7 @@ def get_jobs_notification(user_id):
     else:
         return jsonify({'error': 'User not found or does not have the right permissions'}), 404
 
+
 @app.route('/checked_jobs_notification/<int:user_id>', methods=['POST'])
 def checked_jobs_notification(user_id):
     data = request.json
@@ -4737,6 +4738,12 @@ def checked_jobs_notification(user_id):
                 notification.notification_status = checked_notification_status
                 notification.num_notification = 0
                 db.session.commit()
+                
+            # Delete notifications where num_notification is 0
+            notifications_to_delete = Notification.query.filter_by(recruiter_name=recruiter_name, num_notification=0).all()
+            for notification in notifications_to_delete:
+                db.session.delete(notification)
+                db.session.commit()
         
         # Format the notifications as a list of dictionaries
         notifications_list = [
@@ -4752,6 +4759,43 @@ def checked_jobs_notification(user_id):
         return jsonify(notifications_list), 200
     else:
         return jsonify({'error': 'User not found or does not have the right permissions'}), 404
+
+
+# @app.route('/checked_jobs_notification/<int:user_id>', methods=['POST'])
+# def checked_jobs_notification(user_id):
+#     data = request.json
+#     checked_notification_status = data.get('checked_notification_status')
+
+#     user = User.query.filter_by(id=user_id).first()
+    
+#     # Check if the user exists and has the right permissions
+#     if user and user.user_type == 'recruiter':
+#         recruiter_name = user.username
+        
+#         # Retrieve the notifications for the recruiter
+#         notifications = Notification.query.filter_by(recruiter_name=recruiter_name).all()
+        
+#         if checked_notification_status:
+#             # Update the num_notification to 0 for each notification
+#             for notification in notifications:
+#                 notification.notification_status = checked_notification_status
+#                 notification.num_notification = 0
+#                 db.session.commit()
+        
+#         # Format the notifications as a list of dictionaries
+#         notifications_list = [
+#             {
+#                 'id': notification.id,
+#                 'job_post_id': notification.job_post_id,
+#                 'recruiter_name': notification.recruiter_name,
+#                 'notification_status': notification.notification_status,
+#                 'num_notification': notification.num_notification
+#             } for notification in notifications
+#         ]
+        
+#         return jsonify(notifications_list), 200
+#     else:
+#         return jsonify({'error': 'User not found or does not have the right permissions'}), 404
     
 @app.route('/get_candidate_data')
 def get_candidate_data():
