@@ -3367,7 +3367,9 @@ def view_resume(candidate_id):
             resume_binary = base64.b64decode(resume_binary)
         # Convert memoryview to bytes if needed
         else:
-            resume_binary = candidate.resume.tobytes()
+            # resume_binary = candidate.resume.tobytes()
+            resume_binary = candidate.resume
+
 
     else:
         resume_binary = base64.b64decode(candidate.resume)
