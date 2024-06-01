@@ -4694,7 +4694,6 @@ def edit_job_post(job_post_id):
         return jsonify({"error": str(e)}), 500
 
 
-
 # @app.route('/edit_job_post/<int:job_post_id>', methods=['POST'])
 # def edit_job_post(job_post_id):
 #     try:
