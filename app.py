@@ -3710,24 +3710,58 @@ from flask import send_file, jsonify
 #         as_attachment=False
 #     )
 
+import io
+import base64
+import imghdr
 @app.route('/user_image/<int:user_id>', methods=['GET'])
 def user_image(user_id):
     # Retrieve the user data from the database
     user = User.query.filter_by(id=user_id).first()
     if not user or not user.image_file:
-        return jsonify({'message': 'Image not found'}),400
+        return jsonify({'message': 'Image not found'}), 404
     
-    # Decode the bytea image data
+    # Get the image data from the user object
     image_data = user.image_file
     
-    image_file = base64.b64decode(image_data)
+    # Determine the image format dynamically
+    image_format = imghdr.what(None, h=image_data)
+    if not image_format:
+        return jsonify({'error': 'Unknown image format'}), 500
+    
+    # Determine the MIME type based on the image format
+    if image_format == 'jpeg':
+        mimetype = 'image/jpeg'
+    elif image_format == 'png':
+        mimetype = 'image/png'
+    else:
+        # Handle other image formats as needed
+        return jsonify({'error': 'Unsupported image format'}), 500
     
     # Send the file as a response
     return send_file(
-        io.BytesIO(image_file),
-         mimetype = 'image/jpeg',
+        io.BytesIO(image_data),
+        mimetype=mimetype,
         as_attachment=False
     )
+
+# @app.route('/user_image/<int:user_id>', methods=['GET'])
+# def user_image(user_id):
+#     # Retrieve the user data from the database
+#     user = User.query.filter_by(id=user_id).first()
+#     if not user or not user.image_file:
+#         return jsonify({'message': 'Image not found'}),400
+    
+#     # Decode the bytea image data
+#     image_data = user.image_file
+    
+#     image_file = base64.b64decode(image_data)
+    
+#     # Send the file as a response
+#     return send_file(
+#         io.BytesIO(image_file),
+#          mimetype = 'image/jpeg',
+#         as_attachment=False
+#     )
 
 
 
