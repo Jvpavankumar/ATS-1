@@ -4673,13 +4673,13 @@ def edit_job_post(job_post_id):
                 db.session.commit()
                 
                 # Check if a notification exists for the job post and user combination
-                notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=job_post.recruiter, recruiter_user_type='recruiter').first()
+                notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=job_post.recruiter).first()
                 if notification:
                     # If notification exists, increment num_notification by 1
                     notification.num_notification += 1
                 else:
                     # If notification does not exist, create a new record
-                    new_notification = Notification(job_post_id=job_post_id, recruiter_name=job_post.recruiter, recruiter_user_type='recruiter', num_notification=1)
+                    new_notification = Notification(job_post_id=job_post_id, recruiter_name=job_post.recruiter, num_notification=1)
                     db.session.add(new_notification)
                 
                 db.session.commit()
