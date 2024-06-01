@@ -4673,16 +4673,14 @@ def edit_job_post(job_post_id):
                 db.session.commit()
                 
                 # Check if a notification exists for the job post and user combination
-                notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=user.username).first()
+                notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=job_post.recruiter, recruiter_user_type='recruiter').first()
                 if notification:
                     # If notification exists, increment num_notification by 1
                     notification.num_notification += 1
                 else:
                     # If notification does not exist, create a new record
-                    new_notification = Notification(job_post_id=job_post_id, recruiter_name=user.username)
+                    new_notification = Notification(job_post_id=job_post_id, recruiter_name=job_post.recruiter, recruiter_user_type='recruiter', num_notification=1)
                     db.session.add(new_notification)
-                    db.session.commit()  # Commit before setting num_notification
-                    new_notification.num_notification = 1  # Set num_notification after committing
                 
                 db.session.commit()
                 
@@ -4694,6 +4692,7 @@ def edit_job_post(job_post_id):
             return jsonify({"error": "Unauthorized"}), 401
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 # @app.route('/edit_job_post/<int:job_post_id>', methods=['POST'])
