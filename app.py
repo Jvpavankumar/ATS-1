@@ -4681,8 +4681,10 @@ def edit_job_post(job_post_id):
                         notification.num_notification += 1
                     else:
                         # If notification does not exist, create a new record with num_notification set to 1
-                        new_notification = Notification(job_post_id=job_post_id, recruiter_name=recruiter, num_notification=1)
+                        new_notification = Notification(job_post_id=job_post_id, recruiter_name=job_post.recruiter)
                         db.session.add(new_notification)
+                        db.session.commit()
+                        new_notification.num_notification = 1
                 
                 db.session.commit()
                 
