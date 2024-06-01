@@ -4662,7 +4662,7 @@ def edit_job_post(job_post_id):
                 job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
                 job_post.skills = data.get('skills', job_post.skills)
                 job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
-                job_post.recruiter = data.get('recruiter', job_post.recruiter)
+                recruiters = data.get('recruiter', job_post.recruiter)
 
                 # Update data_updated_date and data_updated_time
                 current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
@@ -4672,18 +4672,19 @@ def edit_job_post(job_post_id):
                 # Update job post in the database
                 db.session.commit()
                 
-                # Check if a notification exists for the job post and user combination
-                notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=job_post.recruiter).first()
-                if notification:
-                    # If notification exists, increment num_notification by 1
-                    notification.num_notification = notification.num_notification + 1
-                else:
-                    # If notification does not exist, create a new record
-                    new_notification = Notification(job_post_id=job_post_id, recruiter_name=job_post.recruiter)
-                    db.session.add(new_notification)
-                    db.session.commit()
-                    new_notification.num_notification = 1
-                    db.session.commit()
+                # Iterate over recruiters and create notification records for each
+                for recruiter in recruiters:
+                    # Check if a notification exists for the job post and recruiter combination
+                    notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=recruiter).first()
+                    if notification:
+                        # If notification exists, increment num_notification by 1
+                        notification.num_notification += 1
+                    else:
+                        # If notification does not exist, create a new record with num_notification set to 1
+                        new_notification = Notification(job_post_id=job_post_id, recruiter_name=recruiter, num_notification=1)
+                        db.session.add(new_notification)
+                
+                db.session.commit()
                 
                 # Return success message
                 return jsonify({"message": "Job post updated successfully"}), 200
@@ -4693,7 +4694,6 @@ def edit_job_post(job_post_id):
             return jsonify({"error": "Unauthorized"}), 401
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
 
 
 # @app.route('/edit_job_post/<int:job_post_id>', methods=['POST'])
