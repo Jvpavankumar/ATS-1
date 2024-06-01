@@ -1069,7 +1069,12 @@ def dashboard():
     for job in response_data.get('jobs', []):
         if job.get('date_created'):
             job['date_created'] = job['date_created'].isoformat()
-    return Response(json.dumps(response_data, default=str), content_type='application/json')
+    # Convert response_data to JSON string
+    response_json = json.dumps(response_data)
+
+    # Create the response
+    return Response(response_json, content_type='application/json')
+    # return Response(json.dumps(response_data, default=str), content_type='application/json')
 
 # @app.route('/dashboard', methods=['POST'])
 # def dashboard():
