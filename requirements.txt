@@ -68,3 +68,5 @@ docx
 Pillow
 
 PyMuPDF
+
+imghdr
