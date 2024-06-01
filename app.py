@@ -127,8 +127,8 @@ class Candidate(db.Model):
     profile = db.Column(db.String(200))
     current_job_location = db.Column(db.String(100))
     preferred_job_location = db.Column(db.String(100))
-    resume = db.Column(db.String(1000))
-    # resume = db.Column(db.LargeBinary)
+    # resume = db.Column(db.String(1000))
+    resume = db.Column(db.LargeBinary)
     skills = db.Column(db.String(500))
     qualifications = db.Column(db.String(200))
     experience = db.Column(db.String(200))
@@ -1078,7 +1078,7 @@ def dashboard():
                         'data_updated_time': candidate.data_updated_time
                 # Add more attributes as needed
             } for candidate in candidates],
-            print(" candidate.resume:", candidate.resume)
+            
         }
         
     # Convert response_data to JSON string
