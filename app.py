@@ -837,7 +837,9 @@ def dashboard():
     # data = request.json
     user_id = data['user_id']
     user = User.query.filter_by(id=user_id).first()
+    print("user :",user)
     user_type = user.user_type
+    print("user_type :",user_type)
     user_name = user.username
 
     response_data = {}
