@@ -900,7 +900,7 @@ def dashboard():
                         'remarks': candidate.remarks,
                         'skills': candidate.skills,
                         # 'resume': candidate.resume,
-                        'resume': candidate.resume if candidate.resume is not None else ""
+                        'resume': candidate.resume if candidate.resume is not None else "",
                         'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                         'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
                         'buyout': candidate.buyout,
@@ -985,7 +985,7 @@ def dashboard():
                         'remarks': candidate.remarks,
                         'skills': candidate.skills,
                         # 'resume': candidate.resume,
-                        'resume': candidate.resume if candidate.resume is not None else ""
+                        'resume': candidate.resume if candidate.resume is not None else "",
                         'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                         'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
                         'buyout': candidate.buyout,
@@ -1067,7 +1067,7 @@ def dashboard():
                         'status': candidate.status,
                         'remarks': candidate.remarks,
                         'skills': candidate.skills,
-                        'resume': candidate.resume if candidate.resume is not None else ""
+                        'resume': candidate.resume if candidate.resume is not None else "",
                         # 'resume': candidate.resume,
                         'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                         'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
