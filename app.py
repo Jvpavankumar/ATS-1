@@ -3642,30 +3642,30 @@ import mimetypes
 
 from flask import send_file, jsonify
 
-@app.route('/user_image/<int:user_id>', methods=['GET'])
-def user_image(user_id):
-    # Retrieve the user data from the database
-    user = User.query.filter_by(id=user_id).first()
-    if not user or not user.image_file:
-        return jsonify({'message': 'Image not found'}), 400
+# @app.route('/user_image/<int:user_id>', methods=['GET'])
+# def user_image(user_id):
+#     # Retrieve the user data from the database
+#     user = User.query.filter_by(id=user_id).first()
+#     if not user or not user.image_file:
+#         return jsonify({'message': 'Image not found'}), 400
     
-    # Decode the bytea image data
-    image_data = base64.b64decode(user.image_file)
+#     # Decode the bytea image data
+#     image_data = base64.b64decode(user.image_file)
     
-    # Determine the MIME type
-    image = Image.open(io.BytesIO(image_data))
-    mime_type = Image.MIME.get(image.format)
+#     # Determine the MIME type
+#     image = Image.open(io.BytesIO(image_data))
+#     mime_type = Image.MIME.get(image.format)
     
-    # Get the original filename from the user object
-    filename = user.filename
+#     # Get the original filename from the user object
+#     filename = user.filename
     
-    # Send the file as inline content with filename
-    return send_file(
-        io.BytesIO(image_data),
-        mimetype=mime_type,
-        as_attachment=False,
-        attachment_filename=filename  # Set the filename in the response headers
-    )
+#     # Send the file as inline content with filename
+#     return send_file(
+#         io.BytesIO(image_data),
+#         mimetype=mime_type,
+#         as_attachment=False,
+#         attachment_filename=filename  # Set the filename in the response headers
+#     )
 
 # @app.route('/user_image/<int:user_id>', methods=['GET'])
 # def user_image(user_id):
@@ -3710,24 +3710,24 @@ def user_image(user_id):
 #         as_attachment=False
 #     )
 
-# @app.route('/user_image/<int:user_id>', methods=['GET'])
-# def user_image(user_id):
-#     # Retrieve the user data from the database
-#     user = User.query.filter_by(id=user_id).first()
-#     if not user or not user.image_file:
-#         return jsonify({'message': 'Image not found'}),400
+@app.route('/user_image/<int:user_id>', methods=['GET'])
+def user_image(user_id):
+    # Retrieve the user data from the database
+    user = User.query.filter_by(id=user_id).first()
+    if not user or not user.image_file:
+        return jsonify({'message': 'Image not found'}),400
     
-#     # Decode the bytea image data
-#     image_data = user.image_file
+    # Decode the bytea image data
+    image_data = user.image_file
     
-#     image_file = base64.b64decode(image_data)
+    image_file = base64.b64decode(image_data)
     
-#     # Send the file as a response
-#     return send_file(
-#         io.BytesIO(image_file),
-#          mimetype = 'image/jpeg',
-#         as_attachment=False
-#     )
+    # Send the file as a response
+    return send_file(
+        io.BytesIO(image_file),
+         mimetype = 'image/jpeg',
+        as_attachment=False
+    )
 
 
 
