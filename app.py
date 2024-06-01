@@ -1072,9 +1072,9 @@ def dashboard():
     else:
         response_data = {"message": "User ID or User Type missing"}
 
-    # Convert date objects to string representations before returning the response
-    for job in response_data.get('jobs', []):
-        job['date_created'] = job['date_created'].isoformat()
+    # # Convert date objects to string representations before returning the response
+    # for job in response_data.get('jobs', []):
+    #     job['date_created'] = job['date_created'].isoformat()
 
     return Response(json.dumps(response_data, default=str), content_type='application/json')
 
