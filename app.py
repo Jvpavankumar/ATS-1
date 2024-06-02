@@ -4668,7 +4668,8 @@ def edit_job_post(job_post_id):
                 if recruiters:
                     # Ensure recruiters are unique
                     unique_recruiters = list(set(recruiters))
-                    job_post.recruiter = unique_recruiters
+                    # job_post.recruiter = unique_recruiters
+                    job_post.recruiter = ','.join(unique_recruiters)
 
                 # Update data_updated_date and data_updated_time
                 current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
