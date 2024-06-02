@@ -4630,6 +4630,7 @@ def re_send_notification(recruiter_email, job_id):
     msg.body = f'Hello,\n\nThe job post with ID {job_id} has been updated.\n\nPlease check your dashboard for more details.'
     mail.send(msg)
 
+
 @app.route('/edit_job_post/<int:job_post_id>', methods=['POST'])
 def edit_job_post(job_post_id):
     try:
@@ -4662,7 +4663,12 @@ def edit_job_post(job_post_id):
                 job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
                 job_post.skills = data.get('skills', job_post.skills)
                 job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
+                
                 recruiters = data.get('recruiter', job_post.recruiter)
+                if recruiters:
+                    # Ensure recruiters are unique
+                    unique_recruiters = list(set(recruiters))
+                    job_post.recruiter = unique_recruiters
 
                 # Update data_updated_date and data_updated_time
                 current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
@@ -4673,7 +4679,7 @@ def edit_job_post(job_post_id):
                 db.session.commit()
                 
                 # Iterate over recruiters and create notification records for each
-                for recruiter in recruiters:
+                for recruiter in unique_recruiters:
                     # Check if a notification exists for the job post and recruiter combination
                     notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=recruiter).first()
                     if notification:
@@ -4681,9 +4687,8 @@ def edit_job_post(job_post_id):
                         notification.num_notification += 1
                     else:
                         # If notification does not exist, create a new record with num_notification set to 1
-                        new_notification = Notification(job_post_id=job_post_id, recruiter_name=job_post.recruiter)
+                        new_notification = Notification(job_post_id=job_post_id, recruiter_name=recruiter)
                         db.session.add(new_notification)
-                        db.session.commit()
                         new_notification.num_notification = 1
                 
                 db.session.commit()
@@ -4696,6 +4701,74 @@ def edit_job_post(job_post_id):
             return jsonify({"error": "Unauthorized"}), 401
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# @app.route('/edit_job_post/<int:job_post_id>', methods=['POST'])
+# def edit_job_post(job_post_id):
+#     try:
+#         # Accessing the JSON data from the request
+#         data = request.json
+#         user_id = data.get('user_id')
+        
+#         # Retrieve the user
+#         user = User.query.filter_by(id=user_id).first()
+        
+#         # Check if the user exists and has the right permissions
+#         if user and user.user_type == 'management':
+#             # Retrieve the job post to be edited
+#             job_post = JobPost.query.get(job_post_id)
+            
+#             if job_post:
+#                 # Update job post fields
+#                 job_post.client = data.get('client', job_post.client)
+#                 job_post.experience_min = data.get('experience_min', job_post.experience_min)
+#                 job_post.experience_max = data.get('experience_max', job_post.experience_max)
+#                 job_post.budget_min = data.get('budget_min', job_post.budget_min)
+#                 job_post.budget_max = data.get('budget_max', job_post.budget_max)
+#                 job_post.location = data.get('location', job_post.location)
+#                 job_post.shift_timings = data.get('shift_timings', job_post.shift_timings)
+#                 job_post.notice_period = data.get('notice_period', job_post.notice_period)
+#                 job_post.role = data.get('role', job_post.role)
+#                 job_post.detailed_jd = data.get('detailed_jd', job_post.detailed_jd)
+#                 job_post.mode = data.get('mode', job_post.mode)
+#                 job_post.job_status = data.get('job_status', job_post.job_status)
+#                 job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
+#                 job_post.skills = data.get('skills', job_post.skills)
+#                 job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
+#                 recruiters = data.get('recruiter', job_post.recruiter)
+
+#                 # Update data_updated_date and data_updated_time
+#                 current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
+#                 job_post.data_updated_date = current_datetime.date()
+#                 job_post.data_updated_time = current_datetime.time()
+                
+#                 # Update job post in the database
+#                 db.session.commit()
+                
+#                 # Iterate over recruiters and create notification records for each
+#                 for recruiter in recruiters:
+#                     # Check if a notification exists for the job post and recruiter combination
+#                     notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=recruiter).first()
+#                     if notification:
+#                         # If notification exists, increment num_notification by 1
+#                         notification.num_notification += 1
+#                     else:
+#                         # If notification does not exist, create a new record with num_notification set to 1
+#                         new_notification = Notification(job_post_id=job_post_id, recruiter_name=job_post.recruiter)
+#                         db.session.add(new_notification)
+#                         db.session.commit()
+#                         new_notification.num_notification = 1
+                
+#                 db.session.commit()
+                
+#                 # Return success message
+#                 return jsonify({"message": "Job post updated successfully"}), 200
+#             else:
+#                 return jsonify({"error": "Job post not found"}), 404
+#         else:
+#             return jsonify({"error": "Unauthorized"}), 401
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 
 # @app.route('/edit_job_post/<int:job_post_id>', methods=['POST'])
