@@ -60,7 +60,7 @@ app.config['SECRET_KEY'] = secrets.token_hex(16)
 # Specify the folder where uploaded resumes will be stored
 UPLOAD_FOLDER = 'C:/Users/Makonis/PycharmProjects/login/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-cors = CORS(app)
+# cors = CORS(app)
 # Specify the allowed resume file extensions
 ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx'}
 db = SQLAlchemy(app)
