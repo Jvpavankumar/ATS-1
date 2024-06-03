@@ -3245,13 +3245,13 @@ def view_all_jobs():
     # Define case statements for conditional ordering
     conditional_order_date = case(
         (JobPost.data_updated_date != None, JobPost.data_updated_date),
-        (JobPost.created_date != None, JobPost.date_created),
+        (JobPost.date_created != None, JobPost.date_created),
         else_=JobPost.date_created
     )
 
     conditional_order_time = case(
         (JobPost.data_updated_time != None, JobPost.data_updated_time),
-        (JobPost.created_time != None, JobPost.time_created),
+        (JobPost.time_created != None, JobPost.time_created),
         else_=JobPost.time_created
     )
 
