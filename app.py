@@ -3261,8 +3261,8 @@ def view_all_jobs():
                 "shift_timings": job_post.shift_timings,
                 "notice_period": job_post.notice_period,
                 "detailed_jd": job_post.detailed_jd,
-                # "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
-                "jd_pdf":job_post.jd_pdf,
+                "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
+                # "jd_pdf": job_post.jd_pdf ,
                 "mode": job_post.mode,
                 "recruiter": job_post.recruiter,
                 "management": job_post.management,
@@ -3290,8 +3290,8 @@ def view_all_jobs():
                 "shift_timings": job_post.shift_timings,
                 "notice_period": job_post.notice_period,
                 "detailed_jd": job_post.detailed_jd,
-                # "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
-                "jd_pdf":job_post.jd_pdf,
+                "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
+                # "jd_pdf": job_post.jd_pdf ,
                 "mode": job_post.mode,
                 "recruiter": job_post.recruiter,
                 "management": job_post.management,
@@ -3310,7 +3310,6 @@ def view_all_jobs():
 
     # Return JSON response
     return jsonify(response_data)
-
 
 # @app.route('/view_all_jobs', methods=['POST'])
 # def view_all_jobs():
