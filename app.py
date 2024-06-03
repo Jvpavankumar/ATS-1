@@ -3244,12 +3244,12 @@ def view_all_jobs():
 
     # Define case statements for conditional ordering
     conditional_order_date = case(
-        [(JobPost.data_updated_date != None, JobPost.data_updated_date)],
+        (JobPost.data_updated_date != None, JobPost.data_updated_date),
         else_=JobPost.date_created
     )
 
     conditional_order_time = case(
-        [(JobPost.data_updated_time != None, JobPost.data_updated_time)],
+        (JobPost.data_updated_time != None, JobPost.data_updated_time),
         else_=JobPost.time_created
     )
 
@@ -3323,7 +3323,6 @@ def view_all_jobs():
 
     # Return JSON response
     return jsonify(response_data)
-
 
 # @app.route('/view_all_jobs', methods=['POST'])
 # def view_all_jobs():
