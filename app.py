@@ -37,6 +37,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 import pytz 
+from sqlalchemy import case, desc
+from sqlalchemy.orm import aliased
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -2739,7 +2741,7 @@ def post_job():
                 job_type = data.get('job_type')
                 skills = data.get('skills')
                 jd_pdf = data.get('jd_pdf')
-                jd_binary = base64.b64decode(jd_pdf)
+                # jd_binary = base64.b64decode(jd_pdf)
                 # Job_Type_details=data.get('Job_Type_details')
 
                 if job_type == 'Contract':
@@ -2766,7 +2768,7 @@ def post_job():
                     job_status=job_status,
                     job_type=job_type,
                     skills=skills,
-                    jd_pdf=jd_binary
+                    jd_pdf=jd_pdf
                 )
 
                 new_job_post.notification = 'no'
@@ -3237,15 +3239,28 @@ import base64
 
 @app.route('/view_all_jobs', methods=['POST'])
 def view_all_jobs():
-    # Get data from JSON request
     data = request.json
-
-    # Extract any parameters you need from the JSON data
     user_name = data['username']
 
-    # Retrieve all job posts from the database
-    job_posts_active = JobPost.query.filter_by(job_status='Active').order_by(JobPost.id).all()
-    job_posts_hold = JobPost.query.filter_by(job_status='Hold').order_by(JobPost.id).all()
+    # Define case statements for conditional ordering
+    conditional_order_date = case(
+        [(JobPost.data_updated_date != None, JobPost.data_updated_date)],
+        else_=JobPost.date_created
+    )
+
+    conditional_order_time = case(
+        [(JobPost.data_updated_time != None, JobPost.data_updated_time)],
+        else_=JobPost.time_created
+    )
+
+    # Retrieve all job posts with conditional ordering
+    job_posts_active = JobPost.query.filter_by(job_status='Active')\
+        .order_by(desc(conditional_order_date), desc(conditional_order_time), desc(JobPost.id))\
+        .all()
+
+    job_posts_hold = JobPost.query.filter_by(job_status='Hold')\
+        .order_by(desc(conditional_order_date), desc(conditional_order_time), desc(JobPost.id))\
+        .all()
 
     # Construct JSON response
     response_data = {
@@ -3264,7 +3279,6 @@ def view_all_jobs():
                 "notice_period": job_post.notice_period,
                 "detailed_jd": job_post.detailed_jd,
                 "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
-                # "jd_pdf": job_post.jd_pdf ,
                 "mode": job_post.mode,
                 "recruiter": job_post.recruiter,
                 "management": job_post.management,
@@ -3273,9 +3287,8 @@ def view_all_jobs():
                 "skills": job_post.skills,
                 "date_created": str(job_post.date_created),
                 "time_created": str(job_post.time_created),
-                "data_updated_date":str(job_post.data_updated_date),
-                "data_updated_time":str(job_post.data_updated_time)
-                # Include other attributes as needed
+                "data_updated_date": str(job_post.data_updated_date) if job_post.data_updated_date else None,
+                "data_updated_time": str(job_post.data_updated_time) if job_post.data_updated_time else None
             }
             for job_post in job_posts_active
         ],
@@ -3293,7 +3306,6 @@ def view_all_jobs():
                 "notice_period": job_post.notice_period,
                 "detailed_jd": job_post.detailed_jd,
                 "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
-                # "jd_pdf": job_post.jd_pdf ,
                 "mode": job_post.mode,
                 "recruiter": job_post.recruiter,
                 "management": job_post.management,
@@ -3302,9 +3314,8 @@ def view_all_jobs():
                 "skills": job_post.skills,
                 "date_created": str(job_post.date_created),
                 "time_created": str(job_post.time_created),
-                "data_updated_date":str(job_post.data_updated_date),
-                "data_updated_time":str(job_post.data_updated_time)
-                # Include other attributes as needed
+                "data_updated_date": str(job_post.data_updated_date) if job_post.data_updated_date else None,
+                "data_updated_time": str(job_post.data_updated_time) if job_post.data_updated_time else None
             }
             for job_post in job_posts_hold
         ]
@@ -3312,6 +3323,7 @@ def view_all_jobs():
 
     # Return JSON response
     return jsonify(response_data)
+
 
 # @app.route('/view_all_jobs', methods=['POST'])
 # def view_all_jobs():
@@ -3342,6 +3354,7 @@ def view_all_jobs():
 #                 "notice_period": job_post.notice_period,
 #                 "detailed_jd": job_post.detailed_jd,
 #                 "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
+#                 # "jd_pdf": job_post.jd_pdf ,
 #                 "mode": job_post.mode,
 #                 "recruiter": job_post.recruiter,
 #                 "management": job_post.management,
@@ -3351,7 +3364,7 @@ def view_all_jobs():
 #                 "date_created": str(job_post.date_created),
 #                 "time_created": str(job_post.time_created),
 #                 "data_updated_date":str(job_post.data_updated_date),
-#                 "data_updated_time":str(jobs_post.data_updated_time)
+#                 "data_updated_time":str(job_post.data_updated_time)
 #                 # Include other attributes as needed
 #             }
 #             for job_post in job_posts_active
@@ -3370,6 +3383,7 @@ def view_all_jobs():
 #                 "notice_period": job_post.notice_period,
 #                 "detailed_jd": job_post.detailed_jd,
 #                 "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
+#                 # "jd_pdf": job_post.jd_pdf ,
 #                 "mode": job_post.mode,
 #                 "recruiter": job_post.recruiter,
 #                 "management": job_post.management,
@@ -3379,7 +3393,7 @@ def view_all_jobs():
 #                 "date_created": str(job_post.date_created),
 #                 "time_created": str(job_post.time_created),
 #                 "data_updated_date":str(job_post.data_updated_date),
-#                 "data_updated_time":str(jobs_post.data_updated_time)
+#                 "data_updated_time":str(job_post.data_updated_time)
 #                 # Include other attributes as needed
 #             }
 #             for job_post in job_posts_hold
@@ -3388,6 +3402,8 @@ def view_all_jobs():
 
 #     # Return JSON response
 #     return jsonify(response_data)
+
+
 
 def send_notification(recruiter_email):
     msg = Message('New Job Posted', sender='ganesh.s@makonissoft.com', recipients=[recruiter_email])
