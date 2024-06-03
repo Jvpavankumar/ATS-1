@@ -1900,7 +1900,7 @@ def add_candidate():
         notice_period = data.get('notice_period')
         holding_offer = data.get('holding_offer')
         resume = data.get('resume')
-        resume_binary = base64.b64decode(resume_base64)
+        resume_binary = base64.b64decode(resume)
         print("Resume : ",type(resume_binary))
 
 
