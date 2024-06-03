@@ -1900,7 +1900,8 @@ def add_candidate():
         notice_period = data.get('notice_period')
         holding_offer = data.get('holding_offer')
         resume = data.get('resume')
-        print("Resume : ",type(resume))
+        resume_binary = base64.b64decode(resume_base64)
+        print("Resume : ",type(resume_binary))
 
 
         
@@ -1950,7 +1951,7 @@ def add_candidate():
                 status='None',
                 remarks=data.get('remarks'),
                 skills=skills,
-                resume=resume,
+                resume=resume_binary,
                 period_of_notice=data.get('months') if notice_period == 'no' else None,
                 last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
                 buyout='buyout' in data
