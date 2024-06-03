@@ -3237,102 +3237,6 @@ def update_job_status(job_id):
 
 import base64
 
-# @app.route('/view_all_jobs', methods=['POST'])
-# def view_all_jobs():
-#     data = request.json
-#     user_name = data['username']
-
-#     # Define case statements for conditional ordering
-#     conditional_order_date = case(
-#         (JobPost.data_updated_date != None, JobPost.data_updated_date),
-#         (JobPost.created_date != None, JobPost.created_date),
-#         else_=JobPost.date_created
-#     )
-
-#     conditional_order_time = case(
-#         (JobPost.data_updated_time != None, JobPost.data_updated_time),
-#         (JobPost.created_time != None, JobPost.created_time),
-#         else_=JobPost.time_created
-#     )
-
-#     # Retrieve all job posts with conditional ordering
-#     job_posts_active = JobPost.query.filter_by(job_status='Active')\
-#         .order_by(desc(conditional_order_date),
-#                   desc(conditional_order_time),
-#                   desc(JobPost.date_created),  # Ensure newer posts appear first
-#                   desc(JobPost.time_created),
-#                   desc(JobPost.id))\
-#         .all()
-
-#     job_posts_hold = JobPost.query.filter_by(job_status='Hold')\
-#         .order_by(desc(conditional_order_date),
-#                   desc(conditional_order_time),
-#                   desc(JobPost.date_created),  # Ensure newer posts appear first
-#                   desc(JobPost.time_created),
-#                   desc(JobPost.id))\
-#         .all()
-#     # Construct JSON response
-#     response_data = {
-#         "user_name": user_name,
-#         "job_posts_active": [
-#             {
-#                 "id": job_post.id,
-#                 "client": job_post.client,
-#                 "role": job_post.role,
-#                 "experience_min": job_post.experience_min,
-#                 "experience_max": job_post.experience_max,
-#                 "budget_min": job_post.budget_min,
-#                 "budget_max": job_post.budget_max,
-#                 "location": job_post.location,
-#                 "shift_timings": job_post.shift_timings,
-#                 "notice_period": job_post.notice_period,
-#                 "detailed_jd": job_post.detailed_jd,
-#                 "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
-#                 "mode": job_post.mode,
-#                 "recruiter": job_post.recruiter,
-#                 "management": job_post.management,
-#                 "job_status": job_post.job_status,
-#                 "job_type": job_post.job_type,
-#                 "skills": job_post.skills,
-#                 "date_created": str(job_post.date_created),
-#                 "time_created": str(job_post.time_created),
-#                 "data_updated_date": str(job_post.data_updated_date) if job_post.data_updated_date else None,
-#                 "data_updated_time": str(job_post.data_updated_time) if job_post.data_updated_time else None
-#             }
-#             for job_post in job_posts_active
-#         ],
-#         "job_posts_hold": [
-#             {
-#                 "id": job_post.id,
-#                 "client": job_post.client,
-#                 "role": job_post.role,
-#                 "experience_min": job_post.experience_min,
-#                 "experience_max": job_post.experience_max,
-#                 "budget_min": job_post.budget_min,
-#                 "budget_max": job_post.budget_max,
-#                 "location": job_post.location,
-#                 "shift_timings": job_post.shift_timings,
-#                 "notice_period": job_post.notice_period,
-#                 "detailed_jd": job_post.detailed_jd,
-#                 "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
-#                 "mode": job_post.mode,
-#                 "recruiter": job_post.recruiter,
-#                 "management": job_post.management,
-#                 "job_status": job_post.job_status,
-#                 "job_type": job_post.job_type,
-#                 "skills": job_post.skills,
-#                 "date_created": str(job_post.date_created),
-#                 "time_created": str(job_post.time_created),
-#                 "data_updated_date": str(job_post.data_updated_date) if job_post.data_updated_date else None,
-#                 "data_updated_time": str(job_post.data_updated_time) if job_post.data_updated_time else None
-#             }
-#             for job_post in job_posts_hold
-#         ]
-#     }
-
-#     # Return JSON response
-#     return jsonify(response_data)
-
 @app.route('/view_all_jobs', methods=['POST'])
 def view_all_jobs():
     data = request.json
@@ -3341,23 +3245,32 @@ def view_all_jobs():
     # Define case statements for conditional ordering
     conditional_order_date = case(
         (JobPost.data_updated_date != None, JobPost.data_updated_date),
+        (JobPost.created_date != None, JobPost.created_date),
         else_=JobPost.date_created
     )
 
     conditional_order_time = case(
         (JobPost.data_updated_time != None, JobPost.data_updated_time),
+        (JobPost.created_time != None, JobPost.created_time),
         else_=JobPost.time_created
     )
 
     # Retrieve all job posts with conditional ordering
     job_posts_active = JobPost.query.filter_by(job_status='Active')\
-        .order_by(desc(conditional_order_date), desc(conditional_order_time), desc(JobPost.id))\
+        .order_by(desc(conditional_order_date),
+                  desc(conditional_order_time),
+                  desc(JobPost.date_created),  # Ensure newer posts appear first
+                  desc(JobPost.time_created),
+                  desc(JobPost.id))\
         .all()
 
     job_posts_hold = JobPost.query.filter_by(job_status='Hold')\
-        .order_by(desc(conditional_order_date), desc(conditional_order_time), desc(JobPost.id))\
+        .order_by(desc(conditional_order_date),
+                  desc(conditional_order_time),
+                  desc(JobPost.date_created),  # Ensure newer posts appear first
+                  desc(JobPost.time_created),
+                  desc(JobPost.id))\
         .all()
-
     # Construct JSON response
     response_data = {
         "user_name": user_name,
@@ -3419,6 +3332,93 @@ def view_all_jobs():
 
     # Return JSON response
     return jsonify(response_data)
+
+# @app.route('/view_all_jobs', methods=['POST'])
+# def view_all_jobs():
+#     data = request.json
+#     user_name = data['username']
+
+#     # Define case statements for conditional ordering
+#     conditional_order_date = case(
+#         (JobPost.data_updated_date != None, JobPost.data_updated_date),
+#         else_=JobPost.date_created
+#     )
+
+#     conditional_order_time = case(
+#         (JobPost.data_updated_time != None, JobPost.data_updated_time),
+#         else_=JobPost.time_created
+#     )
+
+#     # Retrieve all job posts with conditional ordering
+#     job_posts_active = JobPost.query.filter_by(job_status='Active')\
+#         .order_by(desc(conditional_order_date), desc(conditional_order_time), desc(JobPost.id))\
+#         .all()
+
+#     job_posts_hold = JobPost.query.filter_by(job_status='Hold')\
+#         .order_by(desc(conditional_order_date), desc(conditional_order_time), desc(JobPost.id))\
+#         .all()
+
+#     # Construct JSON response
+#     response_data = {
+#         "user_name": user_name,
+#         "job_posts_active": [
+#             {
+#                 "id": job_post.id,
+#                 "client": job_post.client,
+#                 "role": job_post.role,
+#                 "experience_min": job_post.experience_min,
+#                 "experience_max": job_post.experience_max,
+#                 "budget_min": job_post.budget_min,
+#                 "budget_max": job_post.budget_max,
+#                 "location": job_post.location,
+#                 "shift_timings": job_post.shift_timings,
+#                 "notice_period": job_post.notice_period,
+#                 "detailed_jd": job_post.detailed_jd,
+#                 "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
+#                 "mode": job_post.mode,
+#                 "recruiter": job_post.recruiter,
+#                 "management": job_post.management,
+#                 "job_status": job_post.job_status,
+#                 "job_type": job_post.job_type,
+#                 "skills": job_post.skills,
+#                 "date_created": str(job_post.date_created),
+#                 "time_created": str(job_post.time_created),
+#                 "data_updated_date": str(job_post.data_updated_date) if job_post.data_updated_date else None,
+#                 "data_updated_time": str(job_post.data_updated_time) if job_post.data_updated_time else None
+#             }
+#             for job_post in job_posts_active
+#         ],
+#         "job_posts_hold": [
+#             {
+#                 "id": job_post.id,
+#                 "client": job_post.client,
+#                 "role": job_post.role,
+#                 "experience_min": job_post.experience_min,
+#                 "experience_max": job_post.experience_max,
+#                 "budget_min": job_post.budget_min,
+#                 "budget_max": job_post.budget_max,
+#                 "location": job_post.location,
+#                 "shift_timings": job_post.shift_timings,
+#                 "notice_period": job_post.notice_period,
+#                 "detailed_jd": job_post.detailed_jd,
+#                 "jd_pdf": base64.b64encode(job_post.jd_pdf).decode('utf-8') if job_post.jd_pdf else None,
+#                 "mode": job_post.mode,
+#                 "recruiter": job_post.recruiter,
+#                 "management": job_post.management,
+#                 "job_status": job_post.job_status,
+#                 "job_type": job_post.job_type,
+#                 "skills": job_post.skills,
+#                 "date_created": str(job_post.date_created),
+#                 "time_created": str(job_post.time_created),
+#                 "data_updated_date": str(job_post.data_updated_date) if job_post.data_updated_date else None,
+#                 "data_updated_time": str(job_post.data_updated_time) if job_post.data_updated_time else None
+#             }
+#             for job_post in job_posts_hold
+#         ]
+#     }
+
+#     # Return JSON response
+#     return jsonify(response_data)
 
 # @app.route('/view_all_jobs', methods=['POST'])
 # def view_all_jobs():
