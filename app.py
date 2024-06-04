@@ -858,16 +858,16 @@ def dashboard():
 
     # Define case statements for conditional ordering
     conditional_order_date = case(
-      Candidate.data_updated_date != None,  # Use != instead of = for comparison
-      Candidate.data_updated_date,
-      else_=Candidate.date_created
-  )
+    Candidate.data_updated_date != None,  # Use != instead of = for comparison
+    Candidate.data_updated_date,
+    else_=Candidate.date_created
+    )
 
-  conditional_order_time = case(
-      Candidate.data_updated_time != None,  # Use != instead of = for comparison
-      Candidate.data_updated_time,
-      else_=Candidate.time_created
-  )
+    conditional_order_time = case(
+    Candidate.data_updated_time != None,  # Use != instead of = for comparison
+    Candidate.data_updated_time,
+    else_=Candidate.time_created
+    )
 
     if user_type == 'recruiter':
         recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
