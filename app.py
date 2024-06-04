@@ -826,299 +826,10 @@ from datetime import date
 import json
 from sqlalchemy import and_
 
-def date_handler(obj):
-    if isinstance(obj, (datetime, date)):
-        return obj.isoformat()
-    return obj
-
-@app.route('/dashboard', methods=['POST'])
-def dashboard():
-    data = request.json
-    print(data)  # Just to verify if data is received properly
-    edit_candidate_message = data.get('edit_candidate_message')
-    page_no = data.get('page_no')
-    candidate_message = data.get('candidate_message')
-    signup_message = data.get('signup_message')
-    job_message = data.get('job_message')
-    update_candidate_message = data.get('update_candidate_message')
-    delete_message = data.get("delete_message")
-    
-    user_id = data.get('user_id')
-    if user_id is None:
-        return jsonify({"message": "User ID missing"}), 400
-    
-    user = User.query.filter_by(id=user_id).first()
-    if user is None:
-        return jsonify({"message": "User not found"}), 404
-    
-    user_type = user.user_type
-    user_name = user.username
-    
-    response_data = {}
-
-    # Define case statements for conditional ordering
-    conditional_order_date = case(
-    Candidate.data_updated_date != None,  # Use != instead of = for comparison
-    Candidate.data_updated_date,
-    else_=Candidate.date_created
-    )
-
-    conditional_order_time = case(
-    Candidate.data_updated_time != None,  # Use != instead of = for comparison
-    Candidate.data_updated_time,
-    else_=Candidate.time_created
-    )
-
-    if user_type == 'recruiter':
-        recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
-        if recruiter is None:
-            return jsonify({"message": "Recruiter not found"}), 404
-        
-        candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None)))\
-            .order_by(
-                desc(conditional_order_date),
-                desc(conditional_order_time),
-                desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
-            )\
-            .all()
-
-        jobs = JobPost.query.filter_by(recruiter=user_name).all()
-        
-        response_data = {
-            'user': {
-                'id': recruiter.id,
-                'name': recruiter.name,
-                'user_type': recruiter.user_type,
-                'email': recruiter.email
-                # Add more attributes as needed
-            },
-            'user_type': user_type,
-            'user_name': user_name,
-            'candidates': [{
-                'id': candidate.id,
-                'job_id': candidate.job_id,
-                'name': candidate.name,
-                'mobile': candidate.mobile,
-                'email': candidate.email,
-                'client': candidate.client,
-                'current_company': candidate.current_company,
-                'position': candidate.position,
-                'profile': candidate.profile,
-                'current_job_location': candidate.current_job_location,
-                'preferred_job_location': candidate.preferred_job_location,
-                'qualifications': candidate.qualifications,
-                'experience': candidate.experience,
-                'relevant_experience': candidate.relevant_experience,
-                'current_ctc': candidate.current_ctc,
-                'expected_ctc': candidate.expected_ctc,
-                'notice_period': candidate.notice_period,
-                'linkedin_url': candidate.linkedin_url,
-                'holding_offer': candidate.holding_offer,
-                'recruiter': candidate.recruiter,
-                'management': candidate.management,
-                'status': candidate.status,
-                'remarks': candidate.remarks,
-                'skills': candidate.skills,
-                'resume': candidate.resume if candidate.resume is not None else "",
-                'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
-                'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
-                'buyout': candidate.buyout,
-                'date_created': candidate.date_created,
-                'time_created': candidate.time_created,
-                'data_updated_date': candidate.data_updated_date,
-                'data_updated_time': candidate.data_updated_time
-                # Add more attributes as needed
-            } for candidate in candidates],
-            'jobs': [{
-                'id': job.id,
-                'client': job.client,
-                'experience_min': job.experience_min,
-                'experience_max': job.experience_max,
-                'budget_min': job.budget_min,
-                'budget_max': job.budget_max,
-                'location': job.location,
-                'shift_timings': job.shift_timings,
-                'notice_period': job.notice_period,
-                'role': job.role,
-                'detailed_jd': job.detailed_jd,
-                'jd_pdf': job.jd_pdf,
-                'mode': job.mode,
-                'recruiter': job.recruiter,
-                'management': job.management,
-                'date_created': job.date_created,
-                'time_created': job.time_created,
-                'job_status': job.job_status,
-                'job_type': job.job_type,
-                'skills': job.skills,
-                'notification': job.notification,
-                'date_created': job.date_created,
-                'time_created': job.time_created,
-                'data_updated_date': job.data_updated_date,
-                'data_updated_time': job.data_updated_time
-                # Add more attributes as needed
-            } for job in jobs],
-            'edit_candidate_message': edit_candidate_message,
-            'page_no': page_no,
-        }
-        
-    elif user_type == 'management':
-        users = User.query.all()
-        candidates = Candidate.query.filter(Candidate.reference.is_(None))\
-            .order_by(
-                desc(conditional_order_date),
-                desc(conditional_order_time),
-                desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
-            )\
-            .all()
-
-        jobs = JobPost.query.all()
-        
-        response_data = {
-            'users': [{
-                'id': user.id,
-                'name': user.name,
-                'user_type': user.user_type,
-                'email': user.email
-                # Add more attributes as needed
-            } for user in users],
-            'user_type': user_type,
-            'user_name': user_name,
-            'candidates': [{
-                'id': candidate.id,
-                'job_id': candidate.job_id,
-                'name': candidate.name,
-                'mobile': candidate.mobile,
-                'email': candidate.email,
-                'client': candidate.client,
-                'current_company': candidate.current_company,
-                'position': candidate.position,
-                'profile': candidate.profile,
-                'current_job_location': candidate.current_job_location,
-                'preferred_job_location': candidate.preferred_job_location,
-                'qualifications': candidate.qualifications,
-                'experience': candidate.experience,
-                'relevant_experience': candidate.relevant_experience,
-                'current_ctc': candidate.current_ctc,
-                'expected_ctc': candidate.expected_ctc,
-                'notice_period': candidate.notice_period,
-                'linkedin_url': candidate.linkedin_url,
-                'holding_offer': candidate.holding_offer,
-                'recruiter': candidate.recruiter,
-                'management': candidate.management,
-                'status': candidate.status,
-                'remarks': candidate.remarks,
-                'skills': candidate.skills,
-                'resume': candidate.resume if candidate.resume is not None else "",
-                'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
-                'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
-                'buyout': candidate.buyout,
-                'date_created': candidate.date_created,
-                'time_created': candidate.time_created,
-                'data_updated_date': candidate.data_updated_date,
-                'data_updated_time': candidate.data_updated_time
-                # Add more attributes as needed
-            } for candidate in candidates],
-            'jobs': [{
-                'id': job.id,
-                'client': job.client,
-                'experience_min': job.experience_min,
-                'experience_max': job.experience_max,
-                'budget_min': job.budget_min,
-                'budget_max': job.budget_max,
-                'location': job.location,
-                'shift_timings': job.shift_timings,
-                'notice_period': job.notice_period,
-                'role': job.role,
-                'detailed_jd': job.detailed_jd,
-                'jd_pdf': job.jd_pdf,
-                'mode': job.mode,
-                'recruiter': job.recruiter,
-                'management': job.management,
-                'date_created': job.date_created,
-                'time_created': job.time_created,
-                'job_status': job.job_status,
-                'job_type': job.job_type,
-                'skills': job.skills,
-                'notification': job.notification,
-                'date_created': job.date_created,
-                'time_created': job.time_created,
-                'data_updated_date': job.data_updated_date,
-                'data_updated_time': job.data_updated_time
-                # Add more attributes as needed
-            } for job in jobs],
-            'signup_message': signup_message,
-            'job_message': job_message,
-            'page_no': page_no,
-            'edit_candidate_message': edit_candidate_message
-        }
-        
-    else:
-        candidates = Candidate.query.filter_by(recruiter=user.name)\
-            .order_by(
-                desc(conditional_order_date),
-                desc(conditional_order_time),
-                desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
-            )\
-            .all()
-        
-        response_data = {
-            'user': {
-                'id': user.id,
-                'name': user.name,
-                'user_type': user.user_type,
-                'email': user.email
-                # Add more attributes as needed
-            },
-            'user_type': user_type,
-            'user_name': user_name,
-            'candidates': [{
-                'id': candidate.id,
-                'job_id': candidate.job_id,
-                'name': candidate.name,
-                'mobile': candidate.mobile,
-                'email': candidate.email,
-                'client': candidate.client,
-                'current_company': candidate.current_company,
-                'position': candidate.position,
-                'profile': candidate.profile,
-                'current_job_location': candidate.current_job_location,
-                'preferred_job_location': candidate.preferred_job_location,
-                'qualifications': candidate.qualifications,
-                'experience': candidate.experience,
-                'relevant_experience': candidate.relevant_experience,
-                'current_ctc': candidate.current_ctc,
-                'expected_ctc': candidate.expected_ctc,
-                'notice_period': candidate.notice_period,
-                'linkedin_url': candidate.linkedin_url,
-                'holding_offer': candidate.holding_offer,
-                'recruiter': candidate.recruiter,
-                'management': candidate.management,
-                'status': candidate.status,
-                'remarks': candidate.remarks,
-                'skills': candidate.skills,
-                'resume': candidate.resume if candidate.resume is not None else "",
-                'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
-                'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
-                'buyout': candidate.buyout,
-                'date_created': candidate.date_created,
-                'time_created': candidate.time_created,
-                'data_updated_date': candidate.data_updated_date,
-                'data_updated_time': candidate.data_updated_time
-                # Add more attributes as needed
-            } for candidate in candidates],
-        }
-        
-    # Convert response_data to JSON string
-    response_json = json.dumps(response_data, default=date_handler)
-
-    # Create the response
-    return response_json
-
 # def date_handler(obj):
-#     if isinstance(obj, date):
+#     if isinstance(obj, (datetime, date)):
 #         return obj.isoformat()
-#     else:
-#         return None
+#     return obj
 
 # @app.route('/dashboard', methods=['POST'])
 # def dashboard():
@@ -1147,15 +858,15 @@ def dashboard():
 
 #     # Define case statements for conditional ordering
 #     conditional_order_date = case(
-#         (Candidate.data_updated_date != None, Candidate.data_updated_date),
-#         (Candidate.date_created != None, Candidate.date_created),
-#         else_=Candidate.date_created
+#     Candidate.data_updated_date != None,  # Use != instead of = for comparison
+#     Candidate.data_updated_date,
+#     else_=Candidate.date_created
 #     )
 
 #     conditional_order_time = case(
-#         (Candidate.data_updated_time != None, Candidate.data_updated_time),
-#         (Candidate.time_created != None, Candidate.time_created),
-#         else_=Candidate.time_created
+#     Candidate.data_updated_time != None,  # Use != instead of = for comparison
+#     Candidate.data_updated_time,
+#     else_=Candidate.time_created
 #     )
 
 #     if user_type == 'recruiter':
@@ -1402,6 +1113,295 @@ def dashboard():
 
 #     # Create the response
 #     return response_json
+
+def date_handler(obj):
+    if isinstance(obj, date):
+        return obj.isoformat()
+    else:
+        return None
+
+@app.route('/dashboard', methods=['POST'])
+def dashboard():
+    data = request.json
+    print(data)  # Just to verify if data is received properly
+    edit_candidate_message = data.get('edit_candidate_message')
+    page_no = data.get('page_no')
+    candidate_message = data.get('candidate_message')
+    signup_message = data.get('signup_message')
+    job_message = data.get('job_message')
+    update_candidate_message = data.get('update_candidate_message')
+    delete_message = data.get("delete_message")
+    
+    user_id = data.get('user_id')
+    if user_id is None:
+        return jsonify({"message": "User ID missing"}), 400
+    
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        return jsonify({"message": "User not found"}), 404
+    
+    user_type = user.user_type
+    user_name = user.username
+    
+    response_data = {}
+
+    # Define case statements for conditional ordering
+    conditional_order_date = case(
+        (Candidate.data_updated_date != None, Candidate.data_updated_date),
+        (Candidate.date_created != None, Candidate.date_created),
+        else_=Candidate.date_created
+    )
+
+    conditional_order_time = case(
+        (Candidate.data_updated_time != None, Candidate.data_updated_time),
+        (Candidate.time_created != None, Candidate.time_created),
+        else_=Candidate.time_created
+    )
+
+    if user_type == 'recruiter':
+        recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
+        if recruiter is None:
+            return jsonify({"message": "Recruiter not found"}), 404
+        
+        candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None)))\
+            .order_by(
+                desc(conditional_order_date),
+                desc(conditional_order_time),
+                desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
+            )\
+            .all()
+
+        jobs = JobPost.query.filter_by(recruiter=user_name).all()
+        
+        response_data = {
+            'user': {
+                'id': recruiter.id,
+                'name': recruiter.name,
+                'user_type': recruiter.user_type,
+                'email': recruiter.email
+                # Add more attributes as needed
+            },
+            'user_type': user_type,
+            'user_name': user_name,
+            'candidates': [{
+                'id': candidate.id,
+                'job_id': candidate.job_id,
+                'name': candidate.name,
+                'mobile': candidate.mobile,
+                'email': candidate.email,
+                'client': candidate.client,
+                'current_company': candidate.current_company,
+                'position': candidate.position,
+                'profile': candidate.profile,
+                'current_job_location': candidate.current_job_location,
+                'preferred_job_location': candidate.preferred_job_location,
+                'qualifications': candidate.qualifications,
+                'experience': candidate.experience,
+                'relevant_experience': candidate.relevant_experience,
+                'current_ctc': candidate.current_ctc,
+                'expected_ctc': candidate.expected_ctc,
+                'notice_period': candidate.notice_period,
+                'linkedin_url': candidate.linkedin_url,
+                'holding_offer': candidate.holding_offer,
+                'recruiter': candidate.recruiter,
+                'management': candidate.management,
+                'status': candidate.status,
+                'remarks': candidate.remarks,
+                'skills': candidate.skills,
+                'resume': candidate.resume if candidate.resume is not None else "",
+                'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+                'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                'buyout': candidate.buyout,
+                'date_created': candidate.date_created,
+                'time_created': candidate.time_created,
+                'data_updated_date': candidate.data_updated_date,
+                'data_updated_time': candidate.data_updated_time
+                # Add more attributes as needed
+            } for candidate in candidates],
+            'jobs': [{
+                'id': job.id,
+                'client': job.client,
+                'experience_min': job.experience_min,
+                'experience_max': job.experience_max,
+                'budget_min': job.budget_min,
+                'budget_max': job.budget_max,
+                'location': job.location,
+                'shift_timings': job.shift_timings,
+                'notice_period': job.notice_period,
+                'role': job.role,
+                'detailed_jd': job.detailed_jd,
+                'jd_pdf': job.jd_pdf,
+                'mode': job.mode,
+                'recruiter': job.recruiter,
+                'management': job.management,
+                'date_created': job.date_created,
+                'time_created': job.time_created,
+                'job_status': job.job_status,
+                'job_type': job.job_type,
+                'skills': job.skills,
+                'notification': job.notification,
+                'date_created': job.date_created,
+                'time_created': job.time_created,
+                'data_updated_date': job.data_updated_date,
+                'data_updated_time': job.data_updated_time
+                # Add more attributes as needed
+            } for job in jobs],
+            'edit_candidate_message': edit_candidate_message,
+            'page_no': page_no,
+        }
+        
+    elif user_type == 'management':
+        users = User.query.all()
+        candidates = Candidate.query.filter(Candidate.reference.is_(None))\
+            .order_by(
+                desc(conditional_order_date),
+                desc(conditional_order_time),
+                desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
+            )\
+            .all()
+
+        jobs = JobPost.query.all()
+        
+        response_data = {
+            'users': [{
+                'id': user.id,
+                'name': user.name,
+                'user_type': user.user_type,
+                'email': user.email
+                # Add more attributes as needed
+            } for user in users],
+            'user_type': user_type,
+            'user_name': user_name,
+            'candidates': [{
+                'id': candidate.id,
+                'job_id': candidate.job_id,
+                'name': candidate.name,
+                'mobile': candidate.mobile,
+                'email': candidate.email,
+                'client': candidate.client,
+                'current_company': candidate.current_company,
+                'position': candidate.position,
+                'profile': candidate.profile,
+                'current_job_location': candidate.current_job_location,
+                'preferred_job_location': candidate.preferred_job_location,
+                'qualifications': candidate.qualifications,
+                'experience': candidate.experience,
+                'relevant_experience': candidate.relevant_experience,
+                'current_ctc': candidate.current_ctc,
+                'expected_ctc': candidate.expected_ctc,
+                'notice_period': candidate.notice_period,
+                'linkedin_url': candidate.linkedin_url,
+                'holding_offer': candidate.holding_offer,
+                'recruiter': candidate.recruiter,
+                'management': candidate.management,
+                'status': candidate.status,
+                'remarks': candidate.remarks,
+                'skills': candidate.skills,
+                'resume': candidate.resume if candidate.resume is not None else "",
+                'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+                'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                'buyout': candidate.buyout,
+                'date_created': candidate.date_created,
+                'time_created': candidate.time_created,
+                'data_updated_date': candidate.data_updated_date,
+                'data_updated_time': candidate.data_updated_time
+                # Add more attributes as needed
+            } for candidate in candidates],
+            'jobs': [{
+                'id': job.id,
+                'client': job.client,
+                'experience_min': job.experience_min,
+                'experience_max': job.experience_max,
+                'budget_min': job.budget_min,
+                'budget_max': job.budget_max,
+                'location': job.location,
+                'shift_timings': job.shift_timings,
+                'notice_period': job.notice_period,
+                'role': job.role,
+                'detailed_jd': job.detailed_jd,
+                'jd_pdf': job.jd_pdf,
+                'mode': job.mode,
+                'recruiter': job.recruiter,
+                'management': job.management,
+                'date_created': job.date_created,
+                'time_created': job.time_created,
+                'job_status': job.job_status,
+                'job_type': job.job_type,
+                'skills': job.skills,
+                'notification': job.notification,
+                'date_created': job.date_created,
+                'time_created': job.time_created,
+                'data_updated_date': job.data_updated_date,
+                'data_updated_time': job.data_updated_time
+                # Add more attributes as needed
+            } for job in jobs],
+            'signup_message': signup_message,
+            'job_message': job_message,
+            'page_no': page_no,
+            'edit_candidate_message': edit_candidate_message
+        }
+        
+    else:
+        candidates = Candidate.query.filter_by(recruiter=user.name)\
+            .order_by(
+                desc(conditional_order_date),
+                desc(conditional_order_time),
+                desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
+            )\
+            .all()
+        
+        response_data = {
+            'user': {
+                'id': user.id,
+                'name': user.name,
+                'user_type': user.user_type,
+                'email': user.email
+                # Add more attributes as needed
+            },
+            'user_type': user_type,
+            'user_name': user_name,
+            'candidates': [{
+                'id': candidate.id,
+                'job_id': candidate.job_id,
+                'name': candidate.name,
+                'mobile': candidate.mobile,
+                'email': candidate.email,
+                'client': candidate.client,
+                'current_company': candidate.current_company,
+                'position': candidate.position,
+                'profile': candidate.profile,
+                'current_job_location': candidate.current_job_location,
+                'preferred_job_location': candidate.preferred_job_location,
+                'qualifications': candidate.qualifications,
+                'experience': candidate.experience,
+                'relevant_experience': candidate.relevant_experience,
+                'current_ctc': candidate.current_ctc,
+                'expected_ctc': candidate.expected_ctc,
+                'notice_period': candidate.notice_period,
+                'linkedin_url': candidate.linkedin_url,
+                'holding_offer': candidate.holding_offer,
+                'recruiter': candidate.recruiter,
+                'management': candidate.management,
+                'status': candidate.status,
+                'remarks': candidate.remarks,
+                'skills': candidate.skills,
+                'resume': candidate.resume if candidate.resume is not None else "",
+                'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+                'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                'buyout': candidate.buyout,
+                'date_created': candidate.date_created,
+                'time_created': candidate.time_created,
+                'data_updated_date': candidate.data_updated_date,
+                'data_updated_time': candidate.data_updated_time
+                # Add more attributes as needed
+            } for candidate in candidates],
+        }
+        
+    # Convert response_data to JSON string
+    response_json = json.dumps(response_data, default=date_handler)
+
+    # Create the response
+    return response_json
 ############################################
 
 # def date_handler(obj):
