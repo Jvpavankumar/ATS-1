@@ -3298,6 +3298,9 @@ def edit_candidate(candidate_id):
             candidate.preferred_job_location = data.get('preferred_job_location')
             candidate.qualifications = data.get('qualifications')
             candidate.experience = data.get('experience')
+            candidate.relevant_experience=data.get('relevant_experience')
+            candidate.current_ctc=data.get('current_ctc')
+            candidate.expected_ctc=data.get('expected_ctc')
             candidate.notice_period = data.get('notice_period')
             candidate.reason_for_job_change = data.get('reason_for_job_change')
             candidate.linkedin_url = data.get('linkedin')
@@ -3306,7 +3309,9 @@ def edit_candidate(candidate_id):
             candidate.holding_offer = data.get('holding_offer')
             candidate.total = data.get('total')
             candidate.package_in_lpa = data.get('package_in_lpa')
-            candidate.period_of_notice = data.get('period_of_notice')
+            candidate.notice_period=data.get('
+            candidate.notice_period = data.get('notice_period')
+            candidate.resume=data.get('resume')
 
             # Update data_updated_date and data_updated_time
             current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
