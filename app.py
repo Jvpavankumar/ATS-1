@@ -3309,7 +3309,6 @@ def edit_candidate(candidate_id):
             candidate.holding_offer = data.get('holding_offer')
             candidate.total = data.get('total')
             candidate.package_in_lpa = data.get('package_in_lpa')
-            candidate.notice_period=data.get('
             candidate.notice_period = data.get('notice_period')
             candidate.resume=data.get('resume')
 
