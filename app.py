@@ -827,10 +827,9 @@ import json
 from sqlalchemy import and_
 
 def date_handler(obj):
-    if isinstance(obj, date):
+    if isinstance(obj, (datetime, date)):
         return obj.isoformat()
-    else:
-        return None
+    return obj
 
 @app.route('/dashboard', methods=['POST'])
 def dashboard():
@@ -859,14 +858,12 @@ def dashboard():
 
     # Define case statements for conditional ordering
     conditional_order_date = case(
-        (Candidate.data_updated_date != None, Candidate.data_updated_date),
-        (Candidate.date_created != None, Candidate.date_created),
+        [(Candidate.data_updated_date != None, Candidate.data_updated_date)],
         else_=Candidate.date_created
     )
 
     conditional_order_time = case(
-        (Candidate.data_updated_time != None, Candidate.data_updated_time),
-        (Candidate.time_created != None, Candidate.time_created),
+        [(Candidate.data_updated_time != None, Candidate.data_updated_time)],
         else_=Candidate.time_created
     )
 
@@ -1114,6 +1111,296 @@ def dashboard():
 
     # Create the response
     return response_json
+
+# def date_handler(obj):
+#     if isinstance(obj, date):
+#         return obj.isoformat()
+#     else:
+#         return None
+
+# @app.route('/dashboard', methods=['POST'])
+# def dashboard():
+#     data = request.json
+#     print(data)  # Just to verify if data is received properly
+#     edit_candidate_message = data.get('edit_candidate_message')
+#     page_no = data.get('page_no')
+#     candidate_message = data.get('candidate_message')
+#     signup_message = data.get('signup_message')
+#     job_message = data.get('job_message')
+#     update_candidate_message = data.get('update_candidate_message')
+#     delete_message = data.get("delete_message")
+    
+#     user_id = data.get('user_id')
+#     if user_id is None:
+#         return jsonify({"message": "User ID missing"}), 400
+    
+#     user = User.query.filter_by(id=user_id).first()
+#     if user is None:
+#         return jsonify({"message": "User not found"}), 404
+    
+#     user_type = user.user_type
+#     user_name = user.username
+    
+#     response_data = {}
+
+#     # Define case statements for conditional ordering
+#     conditional_order_date = case(
+#         (Candidate.data_updated_date != None, Candidate.data_updated_date),
+#         (Candidate.date_created != None, Candidate.date_created),
+#         else_=Candidate.date_created
+#     )
+
+#     conditional_order_time = case(
+#         (Candidate.data_updated_time != None, Candidate.data_updated_time),
+#         (Candidate.time_created != None, Candidate.time_created),
+#         else_=Candidate.time_created
+#     )
+
+#     if user_type == 'recruiter':
+#         recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
+#         if recruiter is None:
+#             return jsonify({"message": "Recruiter not found"}), 404
+        
+#         candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None)))\
+#             .order_by(
+#                 desc(conditional_order_date),
+#                 desc(conditional_order_time),
+#                 desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
+#             )\
+#             .all()
+
+#         jobs = JobPost.query.filter_by(recruiter=user_name).all()
+        
+#         response_data = {
+#             'user': {
+#                 'id': recruiter.id,
+#                 'name': recruiter.name,
+#                 'user_type': recruiter.user_type,
+#                 'email': recruiter.email
+#                 # Add more attributes as needed
+#             },
+#             'user_type': user_type,
+#             'user_name': user_name,
+#             'candidates': [{
+#                 'id': candidate.id,
+#                 'job_id': candidate.job_id,
+#                 'name': candidate.name,
+#                 'mobile': candidate.mobile,
+#                 'email': candidate.email,
+#                 'client': candidate.client,
+#                 'current_company': candidate.current_company,
+#                 'position': candidate.position,
+#                 'profile': candidate.profile,
+#                 'current_job_location': candidate.current_job_location,
+#                 'preferred_job_location': candidate.preferred_job_location,
+#                 'qualifications': candidate.qualifications,
+#                 'experience': candidate.experience,
+#                 'relevant_experience': candidate.relevant_experience,
+#                 'current_ctc': candidate.current_ctc,
+#                 'expected_ctc': candidate.expected_ctc,
+#                 'notice_period': candidate.notice_period,
+#                 'linkedin_url': candidate.linkedin_url,
+#                 'holding_offer': candidate.holding_offer,
+#                 'recruiter': candidate.recruiter,
+#                 'management': candidate.management,
+#                 'status': candidate.status,
+#                 'remarks': candidate.remarks,
+#                 'skills': candidate.skills,
+#                 'resume': candidate.resume if candidate.resume is not None else "",
+#                 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+#                 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+#                 'buyout': candidate.buyout,
+#                 'date_created': candidate.date_created,
+#                 'time_created': candidate.time_created,
+#                 'data_updated_date': candidate.data_updated_date,
+#                 'data_updated_time': candidate.data_updated_time
+#                 # Add more attributes as needed
+#             } for candidate in candidates],
+#             'jobs': [{
+#                 'id': job.id,
+#                 'client': job.client,
+#                 'experience_min': job.experience_min,
+#                 'experience_max': job.experience_max,
+#                 'budget_min': job.budget_min,
+#                 'budget_max': job.budget_max,
+#                 'location': job.location,
+#                 'shift_timings': job.shift_timings,
+#                 'notice_period': job.notice_period,
+#                 'role': job.role,
+#                 'detailed_jd': job.detailed_jd,
+#                 'jd_pdf': job.jd_pdf,
+#                 'mode': job.mode,
+#                 'recruiter': job.recruiter,
+#                 'management': job.management,
+#                 'date_created': job.date_created,
+#                 'time_created': job.time_created,
+#                 'job_status': job.job_status,
+#                 'job_type': job.job_type,
+#                 'skills': job.skills,
+#                 'notification': job.notification,
+#                 'date_created': job.date_created,
+#                 'time_created': job.time_created,
+#                 'data_updated_date': job.data_updated_date,
+#                 'data_updated_time': job.data_updated_time
+#                 # Add more attributes as needed
+#             } for job in jobs],
+#             'edit_candidate_message': edit_candidate_message,
+#             'page_no': page_no,
+#         }
+        
+#     elif user_type == 'management':
+#         users = User.query.all()
+#         candidates = Candidate.query.filter(Candidate.reference.is_(None))\
+#             .order_by(
+#                 desc(conditional_order_date),
+#                 desc(conditional_order_time),
+#                 desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
+#             )\
+#             .all()
+
+#         jobs = JobPost.query.all()
+        
+#         response_data = {
+#             'users': [{
+#                 'id': user.id,
+#                 'name': user.name,
+#                 'user_type': user.user_type,
+#                 'email': user.email
+#                 # Add more attributes as needed
+#             } for user in users],
+#             'user_type': user_type,
+#             'user_name': user_name,
+#             'candidates': [{
+#                 'id': candidate.id,
+#                 'job_id': candidate.job_id,
+#                 'name': candidate.name,
+#                 'mobile': candidate.mobile,
+#                 'email': candidate.email,
+#                 'client': candidate.client,
+#                 'current_company': candidate.current_company,
+#                 'position': candidate.position,
+#                 'profile': candidate.profile,
+#                 'current_job_location': candidate.current_job_location,
+#                 'preferred_job_location': candidate.preferred_job_location,
+#                 'qualifications': candidate.qualifications,
+#                 'experience': candidate.experience,
+#                 'relevant_experience': candidate.relevant_experience,
+#                 'current_ctc': candidate.current_ctc,
+#                 'expected_ctc': candidate.expected_ctc,
+#                 'notice_period': candidate.notice_period,
+#                 'linkedin_url': candidate.linkedin_url,
+#                 'holding_offer': candidate.holding_offer,
+#                 'recruiter': candidate.recruiter,
+#                 'management': candidate.management,
+#                 'status': candidate.status,
+#                 'remarks': candidate.remarks,
+#                 'skills': candidate.skills,
+#                 'resume': candidate.resume if candidate.resume is not None else "",
+#                 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+#                 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+#                 'buyout': candidate.buyout,
+#                 'date_created': candidate.date_created,
+#                 'time_created': candidate.time_created,
+#                 'data_updated_date': candidate.data_updated_date,
+#                 'data_updated_time': candidate.data_updated_time
+#                 # Add more attributes as needed
+#             } for candidate in candidates],
+#             'jobs': [{
+#                 'id': job.id,
+#                 'client': job.client,
+#                 'experience_min': job.experience_min,
+#                 'experience_max': job.experience_max,
+#                 'budget_min': job.budget_min,
+#                 'budget_max': job.budget_max,
+#                 'location': job.location,
+#                 'shift_timings': job.shift_timings,
+#                 'notice_period': job.notice_period,
+#                 'role': job.role,
+#                 'detailed_jd': job.detailed_jd,
+#                 'jd_pdf': job.jd_pdf,
+#                 'mode': job.mode,
+#                 'recruiter': job.recruiter,
+#                 'management': job.management,
+#                 'date_created': job.date_created,
+#                 'time_created': job.time_created,
+#                 'job_status': job.job_status,
+#                 'job_type': job.job_type,
+#                 'skills': job.skills,
+#                 'notification': job.notification,
+#                 'date_created': job.date_created,
+#                 'time_created': job.time_created,
+#                 'data_updated_date': job.data_updated_date,
+#                 'data_updated_time': job.data_updated_time
+#                 # Add more attributes as needed
+#             } for job in jobs],
+#             'signup_message': signup_message,
+#             'job_message': job_message,
+#             'page_no': page_no,
+#             'edit_candidate_message': edit_candidate_message
+#         }
+        
+#     else:
+#         candidates = Candidate.query.filter_by(recruiter=user.name)\
+#             .order_by(
+#                 desc(conditional_order_date),
+#                 desc(conditional_order_time),
+#                 desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
+#             )\
+#             .all()
+        
+#         response_data = {
+#             'user': {
+#                 'id': user.id,
+#                 'name': user.name,
+#                 'user_type': user.user_type,
+#                 'email': user.email
+#                 # Add more attributes as needed
+#             },
+#             'user_type': user_type,
+#             'user_name': user_name,
+#             'candidates': [{
+#                 'id': candidate.id,
+#                 'job_id': candidate.job_id,
+#                 'name': candidate.name,
+#                 'mobile': candidate.mobile,
+#                 'email': candidate.email,
+#                 'client': candidate.client,
+#                 'current_company': candidate.current_company,
+#                 'position': candidate.position,
+#                 'profile': candidate.profile,
+#                 'current_job_location': candidate.current_job_location,
+#                 'preferred_job_location': candidate.preferred_job_location,
+#                 'qualifications': candidate.qualifications,
+#                 'experience': candidate.experience,
+#                 'relevant_experience': candidate.relevant_experience,
+#                 'current_ctc': candidate.current_ctc,
+#                 'expected_ctc': candidate.expected_ctc,
+#                 'notice_period': candidate.notice_period,
+#                 'linkedin_url': candidate.linkedin_url,
+#                 'holding_offer': candidate.holding_offer,
+#                 'recruiter': candidate.recruiter,
+#                 'management': candidate.management,
+#                 'status': candidate.status,
+#                 'remarks': candidate.remarks,
+#                 'skills': candidate.skills,
+#                 'resume': candidate.resume if candidate.resume is not None else "",
+#                 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+#                 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+#                 'buyout': candidate.buyout,
+#                 'date_created': candidate.date_created,
+#                 'time_created': candidate.time_created,
+#                 'data_updated_date': candidate.data_updated_date,
+#                 'data_updated_time': candidate.data_updated_time
+#                 # Add more attributes as needed
+#             } for candidate in candidates],
+#         }
+        
+#     # Convert response_data to JSON string
+#     response_json = json.dumps(response_data, default=date_handler)
+
+#     # Create the response
+#     return response_json
+############################################
 
 # def date_handler(obj):
 #     if isinstance(obj, date):
@@ -2487,71 +2774,77 @@ def update_candidate(candidate_id):
     career_count_notification_no = Career_notification.query.filter(
         Career_notification.notification_status == 'false',
         Career_notification.recruiter_name == user_name).count()
-    if request.method == 'POST':
-        if user_type == 'recruiter':
-            recruiter = User.query.get(user_id).name
-            management = None
-        elif user_type == 'management':
-            recruiter = None
-            management = User.query.get(user_id).name
+    
+    if user_type == 'recruiter':
+        recruiter = User.query.get(user_id).name
+        management = None
+    elif user_type == 'management':
+        recruiter = None
+        management = User.query.get(user_id).name
+    else:
+        recruiter = None
+        management = None
+
+    if user_type == 'recruiter':
+        user_email = User.query.get(user_id).email
+        management_email = None
+    elif user_type == 'management':
+        user_email = None
+        management_email = User.query.get(user_id).email
+    else:
+        user_email = None
+        management_email = None
+
+    candidate = Candidate.query.filter_by(id=candidate_id).first()
+    if not candidate:
+        return jsonify({"error_message": "Candidate not found"}), 500
+    
+    previous_status = candidate.status
+
+    candidate_status = request.json.get('candidate_status')
+    candidate_comment = request.json.get('comments')
+
+    candidate.status = candidate_status
+    candidate.comments = candidate_comment
+
+    # Update data_updated_date and data_updated_time
+    current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+    candidate.data_updated_date = current_datetime.date()
+    candidate.data_updated_time = current_datetime.time()
+
+    db.session.commit()
+
+    if candidate_status in [
+            "SCREENING", "SCREEN REJECTED", "NO SHOW", "DROP", "CANDIDATE HOLD", "OFFERED - DECLINED", "DUPLICATE", "SCREENING SELECTED",
+            "L1-SCHEDULE", "L1-FEEDBACK", "L1-SELECTED", "L1-REJECTED", "CANDIDATE RESCHEDULE", "PANEL RESCHEDULE", "L2-SCHEDULE", 
+            "L2-FEEDBACK", "L2-SELECTED", "L2-REJECTED", "HR-ROUND", "MANAGERIAL ROUND", "NEGOTIATION", "SELECTED", "OFFER-REJECTED",
+            "OFFER-DECLINED", "ON-BOARDED", "HOLD", "CANDIDATE NO-SHOW"
+            ]:
+        candidate_name = candidate.name
+        candidate_position = candidate.position
+        candidate_email = candidate.email
+
+        if candidate_position:
+            candidate_position = candidate_position.upper()
         else:
-            recruiter = None
-            management = None
-
-        if user_type == 'recruiter':
-            user_email = User.query.get(user_id).email
-            management_email = None
-        elif user_type == 'management':
-            user_email = None
-            management_email = User.query.get(user_id).email
-        else:
-            user_email = None
-            management_email = None
-
-        candidate = Candidate.query.filter_by(id=candidate_id).first()
-        print(candidate)
-        
-        previous_status = candidate.status
-
-        candidate_status = request.json.get('candidate_status')
-        candidate_comment = request.json.get('comments')
-
-        candidate.status = candidate_status
-        candidate.comments = candidate_comment
-
-        db.session.commit()
-
-        if candidate_status in [
-                "SCREENING", "SCREEN REJECTED", "NO SHOW", "DROP", "CANDIDATE HOLD", "OFFERED - DECLINED", "DUPLICATE", "SCREENING SELECTED",
-                "L1-SCHEDULE", "L1-FEEDBACK", "L1-SELECTED", "L1-REJECTED", "CANDIDATE RESCHEDULE", "PANEL RESCHEDULE", "L2-SCHEDULE", 
-                "L2-FEEDBACK", "L2-SELECTED", "L2-REJECTED", "HR-ROUND", "MANAGERIAL ROUND", "NEGOTIATION", "SELECTED", "OFFER-REJECTED",
-                "OFFER-DECLINED", "ON-BOARDED", "HOLD", "CANDIDATE NO-SHOW"
-                ]:
-            candidate_name = candidate.name
-            candidate_position = candidate.position
-            candidate_email = candidate.email
-
-            if candidate_position:
-                candidate_position = candidate_position.upper()
-            else:
-                candidate_position = ""
-
-            if candidate.client:
-                client = candidate.client.upper()
-            else:
-                client = ""
-
-            if candidate_status in ["SCREENING", "SCREEN REJECTED"]:
-                message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
-            else:
-                message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Previous Status : "{previous_status}"\n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
-        else:
-            message = ""
-            candidate_name = ""
             candidate_position = ""
-            candidate_email = ""
 
-        return jsonify({
+        if candidate.client:
+            client = candidate.client.upper()
+        else:
+            client = ""
+
+        if candidate_status in ["SCREENING", "SCREEN REJECTED"]:
+            message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
+        else:
+            message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Previous Status : "{previous_status}"\n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
+    else:
+        message = ""
+        candidate_name = ""
+        candidate_position = ""
+        candidate_email = ""
+
+    return jsonify({
         "message": "Candidate Status Updated Successfully",
         "user_id": user_id,
         "user_type": user_type,
@@ -2565,9 +2858,203 @@ def update_candidate(candidate_id):
         "candidate_name": candidate_name,
         "candidate_position": candidate_position,
         "candidate_email": candidate_email,
-        # "message": message
         "message_body": message 
     })
+
+# @app.route('/update_candidate/<int:candidate_id>', methods=['POST'])
+# def update_candidate(candidate_id):
+#     data = request.json
+
+#     user_id = data['user_id']
+#     user = User.query.filter_by(id=user_id).first()
+#     user_type = user.user_type
+#     user_name = user.username
+#     count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
+#                                                       Notification.recruiter_name == user_name).count()
+#     career_count_notification_no = Career_notification.query.filter(
+#         Career_notification.notification_status == 'false',
+#         Career_notification.recruiter_name == user_name).count()
+    
+#     if user_type == 'recruiter':
+#         recruiter = User.query.get(user_id).name
+#         management = None
+#     elif user_type == 'management':
+#         recruiter = None
+#         management = User.query.get(user_id).name
+#     else:
+#         recruiter = None
+#         management = None
+
+#     if user_type == 'recruiter':
+#         user_email = User.query.get(user_id).email
+#         management_email = None
+#     elif user_type == 'management':
+#         user_email = None
+#         management_email = User.query.get(user_id).email
+#     else:
+#         user_email = None
+#         management_email = None
+
+#     candidate = Candidate.query.filter_by(id=candidate_id).first()
+#     if not candidate:
+#         return jsonify({"error_message": "Candidate not found"}), 500
+    
+#     previous_status = candidate.status
+
+#     candidate_status = request.json.get('candidate_status')
+#     candidate_comment = request.json.get('comments')
+
+#     candidate.status = candidate_status
+#     candidate.comments = candidate_comment
+
+#     # Update data_updated_date and data_updated_time
+#     current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+#     candidate.data_updated_date = current_datetime.date()
+#     candidate.data_updated_time = current_datetime.time()
+
+#     db.session.commit()
+
+#     if candidate_status in [
+#             "SCREENING", "SCREEN REJECTED", "NO SHOW", "DROP", "CANDIDATE HOLD", "OFFERED - DECLINED", "DUPLICATE", "SCREENING SELECTED",
+#             "L1-SCHEDULE", "L1-FEEDBACK", "L1-SELECTED", "L1-REJECTED", "CANDIDATE RESCHEDULE", "PANEL RESCHEDULE", "L2-SCHEDULE", 
+#             "L2-FEEDBACK", "L2-SELECTED", "L2-REJECTED", "HR-ROUND", "MANAGERIAL ROUND", "NEGOTIATION", "SELECTED", "OFFER-REJECTED",
+#             "OFFER-DECLINED", "ON-BOARDED", "HOLD", "CANDIDATE NO-SHOW"
+#             ]:
+#         candidate_name = candidate.name
+#         candidate_position = candidate.position
+#         candidate_email = candidate.email
+
+#         if candidate_position:
+#             candidate_position = candidate_position.upper()
+#         else:
+#             candidate_position = ""
+
+#         if candidate.client:
+#             client = candidate.client.upper()
+#         else:
+#             client = ""
+
+#         if candidate_status in ["SCREENING", "SCREEN REJECTED"]:
+#             message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
+#         else:
+#             message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Previous Status : "{previous_status}"\n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
+#     else:
+#         message = ""
+#         candidate_name = ""
+#         candidate_position = ""
+#         candidate_email = ""
+
+#     return jsonify({
+#         "message": "Candidate Status Updated Successfully",
+#         "user_id": user_id,
+#         "user_type": user_type,
+#         "user_name": user_name,
+#         "count_notification_no": count_notification_no,
+#         "career_count_notification_no": career_count_notification_no,
+#         "recruiter": recruiter,
+#         "management": management,
+#         "recruiter_email": user_email,
+#         "management_email": management_email,
+#         "candidate_name": candidate_name,
+#         "candidate_position": candidate_position,
+#         "candidate_email": candidate_email,
+#         "message_body": message 
+#     })
+
+# @app.route('/update_candidate/<int:candidate_id>', methods=['POST'])
+# def update_candidate(candidate_id):
+#     data = request.json
+
+#     user_id = data['user_id']
+#     user = User.query.filter_by(id=user_id).first()
+#     user_type = user.user_type
+#     user_name = user.username
+#     count_notification_no = Notification.query.filter(Notification.notification_status == 'false',
+#                                                       Notification.recruiter_name == user_name).count()
+#     career_count_notification_no = Career_notification.query.filter(
+#         Career_notification.notification_status == 'false',
+#         Career_notification.recruiter_name == user_name).count()
+#     if request.method == 'POST':
+#         if user_type == 'recruiter':
+#             recruiter = User.query.get(user_id).name
+#             management = None
+#         elif user_type == 'management':
+#             recruiter = None
+#             management = User.query.get(user_id).name
+#         else:
+#             recruiter = None
+#             management = None
+
+#         if user_type == 'recruiter':
+#             user_email = User.query.get(user_id).email
+#             management_email = None
+#         elif user_type == 'management':
+#             user_email = None
+#             management_email = User.query.get(user_id).email
+#         else:
+#             user_email = None
+#             management_email = None
+
+#         candidate = Candidate.query.filter_by(id=candidate_id).first()
+#         print(candidate)
+        
+#         previous_status = candidate.status
+
+#         candidate_status = request.json.get('candidate_status')
+#         candidate_comment = request.json.get('comments')
+
+#         candidate.status = candidate_status
+#         candidate.comments = candidate_comment
+
+#         db.session.commit()
+
+#         if candidate_status in [
+#                 "SCREENING", "SCREEN REJECTED", "NO SHOW", "DROP", "CANDIDATE HOLD", "OFFERED - DECLINED", "DUPLICATE", "SCREENING SELECTED",
+#                 "L1-SCHEDULE", "L1-FEEDBACK", "L1-SELECTED", "L1-REJECTED", "CANDIDATE RESCHEDULE", "PANEL RESCHEDULE", "L2-SCHEDULE", 
+#                 "L2-FEEDBACK", "L2-SELECTED", "L2-REJECTED", "HR-ROUND", "MANAGERIAL ROUND", "NEGOTIATION", "SELECTED", "OFFER-REJECTED",
+#                 "OFFER-DECLINED", "ON-BOARDED", "HOLD", "CANDIDATE NO-SHOW"
+#                 ]:
+#             candidate_name = candidate.name
+#             candidate_position = candidate.position
+#             candidate_email = candidate.email
+
+#             if candidate_position:
+#                 candidate_position = candidate_position.upper()
+#             else:
+#                 candidate_position = ""
+
+#             if candidate.client:
+#                 client = candidate.client.upper()
+#             else:
+#                 client = ""
+
+#             if candidate_status in ["SCREENING", "SCREEN REJECTED"]:
+#                 message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
+#             else:
+#                 message = f'Dear {candidate_name}, \n\nGreetings! \n\nWe hope this email finds you well. We wanted to extend our thanks for showing your interest in the {candidate_position} position and participating in the recruitment process. \n\nWe are writing to inform you about the latest update we received from our client {client} regarding your interview. \n\n        Previous Status : "{previous_status}"\n\n        Current Status :  "{candidate_status}"\n\nThank you once again for considering this opportunity with us. We wish you all the best in your future endeavors. \n\nIf you have any questions or need further information, please feel free to reach out to us. \n\nThanks,\n'
+#         else:
+#             message = ""
+#             candidate_name = ""
+#             candidate_position = ""
+#             candidate_email = ""
+
+#         return jsonify({
+#         "message": "Candidate Status Updated Successfully",
+#         "user_id": user_id,
+#         "user_type": user_type,
+#         "user_name": user_name,
+#         "count_notification_no": count_notification_no,
+#         "career_count_notification_no": career_count_notification_no,
+#         "recruiter": recruiter,
+#         "management": management,
+#         "recruiter_email": user_email,
+#         "management_email": management_email,
+#         "candidate_name": candidate_name,
+#         "candidate_position": candidate_position,
+#         "candidate_email": candidate_email,
+#         # "message": message
+#         "message_body": message 
+#     })
 
 @app.route('/update_candidate_careers/<int:candidate_id>/<page_no>/<search_string>', methods=['GET', 'POST'])
 @app.route('/update_candidate_careers/<int:candidate_id>/<page_no>', methods=['GET', 'POST'])
@@ -4754,6 +5241,12 @@ def assign_job(job_id):
         # Join the recruiter names into a single string
         joined_recruiters = ', '.join(updated_recruiter_names)
         job_post.recruiter = joined_recruiters
+        
+        # Update data_updated_date and data_updated_time
+        current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+        job_post.data_updated_date = current_datetime.date()
+        job_post.data_updated_time = current_datetime.time()
+
         db.session.commit()
 
         # Send notification emails to the newly assigned recruiters
@@ -4790,6 +5283,70 @@ def assign_job(job_id):
         "current_recruiters": current_recruiters,
         "recruiters": recruiter_names
     })
+
+# @app.route('/assign_job/<int:job_id>', methods=['POST'])
+# def assign_job(job_id):
+#     data = request.json
+#     user_id = data['user_id']
+#     user = User.query.filter_by(id=user_id).first()
+
+#     if not user:
+#         return jsonify({"error_message": "User not found"}), 404
+
+#     user_type = user.user_type
+#     username = user.username
+#     job_post = JobPost.query.get(job_id)  # Retrieve the job post by its ID
+
+#     if not job_post:
+#         return jsonify({"error_message": "Job not found"}), 404
+
+#     current_recruiters = job_post.recruiter.split(', ') if job_post.recruiter else []
+
+#     if request.method == 'POST':
+#         new_recruiter_names = data.get('recruiters', [])
+        
+#         # Modification: Remove duplicate recruiters by combining lists and converting to a set
+#         updated_recruiter_names = list(set(current_recruiters + new_recruiter_names))
+        
+#         # Join the recruiter names into a single string
+#         joined_recruiters = ', '.join(updated_recruiter_names)
+#         job_post.recruiter = joined_recruiters
+#         db.session.commit()
+
+#         # Send notification emails to the newly assigned recruiters
+#         new_recruiter_emails = [recruiter.email for recruiter in
+#                                 User.query.filter(User.name.in_(new_recruiter_names),
+#                                                   User.user_type == 'recruiter')]
+#         for email in new_recruiter_emails:
+#             send_notification(email)
+
+#         # Define an empty list to hold Notification instances
+#         notifications = []
+
+#         for recruiter_name in updated_recruiter_names:
+#             if recruiter_name.strip() in new_recruiter_names:
+#                 notification_status = False  # Set the initial status
+#                 notification = Notification(
+#                     job_post_id=job_post.id,
+#                     recruiter_name=recruiter_name.strip(),
+#                     notification_status=notification_status
+#                 )
+#                 # Append each Notification instance to the notifications list
+#                 notifications.append(notification)
+
+#         # Commit the notifications to the database session
+#         db.session.add_all(notifications)
+#         db.session.commit()
+
+#         return jsonify({"message": "Job re-assigned successfully"}), 200
+
+#     recruiter_names = [recruiter.name for recruiter in User.query.filter_by(user_type='recruiter')]
+#     return jsonify({
+#         "user_name": username,
+#         "job_post": job_post.serialize(),
+#         "current_recruiters": current_recruiters,
+#         "recruiters": recruiter_names
+#     })
 
 
 # @app.route('/assign_job/<int:job_id>', methods=['POST'])
