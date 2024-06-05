@@ -2538,9 +2538,15 @@ def add_candidate():
                 buyout=buyout
                 # buyout='buyout' in data
             )
+            
+            # new_candidate.date_created = date.today()
+            # new_candidate.time_created = datetime.now().time()
+    
+            # Created data and time
+            current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+            new_candidate.date_created = current_datetime.date()
+            new_candidate.time_created = current_datetime.time()
 
-            new_candidate.date_created = date.today()
-            new_candidate.time_created = datetime.now().time()
 
             db.session.add(new_candidate)
             db.session.commit()
@@ -3621,8 +3627,13 @@ def post_job():
                 )
 
                 new_job_post.notification = 'no'
-                new_job_post.date_created = date.today()
-                new_job_post.time_created = datetime.now().time()
+                # new_job_post.date_created = date.today()
+                # new_job_post.time_created = datetime.now().time()
+            
+                # Created data and time
+                current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+                new_job_post.date_created = current_datetime.date()
+                new_job_post.time_created  = current_datetime.time()
 
                 # Add the new_job_post to the session and commit to generate the job_post_id
                 db.session.add(new_job_post)
