@@ -3365,74 +3365,146 @@ def logout():
 
 
 from datetime import datetime
-
 @app.route('/edit_candidate/<int:candidate_id>', methods=['POST'])
 def edit_candidate(candidate_id):
-    data = request.json
-    user_id = data['user_id']
-    user = User.query.filter_by(id=user_id).first()
-    user_name = user.username
-    count_notification_no = Notification.query.filter(
-        Notification.notification_status == 'false',
-        Notification.recruiter_name == user_name
-    ).count()
-    career_count_notification_no = Career_notification.query.filter(
-        Career_notification.notification_status == 'false',
-        Career_notification.recruiter_name == user_name
-    ).count()
-
-    if request.method == 'POST':
-        # Retrieve the form data for the candidate from JSON payload
+    try:
         data = request.json
+
+        user_id = data.get('user_id')
+        if not user_id:
+            return jsonify({"error_message": "User ID is required"}), 400
+
+        user = User.query.filter_by(id=user_id).first()
+        if not user:
+            return jsonify({"error_message": "User not found"}), 404
+
+        user_name = user.username
+        count_notification_no = Notification.query.filter(
+            Notification.notification_status == 'false',
+            Notification.recruiter_name == user_name
+        ).count()
+        career_count_notification_no = Career_notification.query.filter(
+            Career_notification.notification_status == 'false',
+            Career_notification.recruiter_name == user_name
+        ).count()
 
         # Retrieve the candidate object
         candidate = Candidate.query.get(candidate_id)
-        if candidate:
-            # Update the candidate fields with the new data
-            candidate.name = data.get('name')
-            candidate.mobile = data.get('mobile')
-            candidate.email = data.get('email')
-            candidate.client = data.get('client')
-            candidate.current_company = data.get('current_company')
-            candidate.position = data.get('position')
-            candidate.profile = data.get('profile')
-            candidate.current_job_location = data.get('current_job_location')
-            candidate.preferred_job_location = data.get('preferred_job_location')
-            candidate.qualifications = data.get('qualifications')
-            candidate.experience = data.get('experience')
-            candidate.relevant_experience=data.get('relevant_experience')
-            candidate.current_ctc=data.get('current_ctc')
-            candidate.expected_ctc=data.get('expected_ctc')
-            candidate.notice_period = data.get('notice_period')
-            candidate.reason_for_job_change = data.get('reason_for_job_change')
-            candidate.linkedin_url = data.get('linkedin')
-            candidate.remarks = data.get('remarks')
-            candidate.skills = data.get('skills')
-            candidate.holding_offer = data.get('holding_offer')
-            candidate.total = data.get('total')
-            candidate.package_in_lpa = data.get('package_in_lpa')
-            candidate.buyout=data.get('buyout')
-            # candidate.resume=data.get('resume')
+        if not candidate:
+            return jsonify({"error_message": "Candidate not found"}), 404
+
+        # Update the candidate fields with the new data
+        candidate.name = data.get('name')
+        candidate.mobile = data.get('mobile')
+        candidate.email = data.get('email')
+        candidate.client = data.get('client')
+        candidate.current_company = data.get('current_company')
+        candidate.position = data.get('position')
+        candidate.profile = data.get('profile')
+        candidate.current_job_location = data.get('current_job_location')
+        candidate.preferred_job_location = data.get('preferred_job_location')
+        candidate.qualifications = data.get('qualifications')
+        candidate.experience = data.get('experience')
+        candidate.relevant_experience = data.get('relevant_experience')
+        candidate.current_ctc = data.get('current_ctc')
+        candidate.expected_ctc = data.get('expected_ctc')
+        candidate.notice_period = data.get('notice_period')
+        candidate.reason_for_job_change = data.get('reason_for_job_change')
+        candidate.linkedin_url = data.get('linkedin')
+        candidate.remarks = data.get('remarks')
+        candidate.skills = data.get('skills')
+        candidate.holding_offer = data.get('holding_offer')
+        candidate.total = data.get('total')
+        candidate.package_in_lpa = data.get('package_in_lpa')
+        candidate.buyout = data.get('buyout')
+        
+        # Handle resume decoding
+        resume_data = data.get('resume')
+        if resume_data:
+            try:
+                resume_binary = base64.b64decode(resume_data)
+                candidate.resume = resume_binary
+            except (base64.binascii.Error, TypeError) as e:
+                return jsonify({"error_message": "Invalid resume format"}), 400
+
+        # Update data_updated_date and data_updated_time
+        current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+        candidate.data_updated_date = current_datetime.date()
+        candidate.data_updated_time = current_datetime.time()
+
+        db.session.commit()
+        return jsonify({"message": "Candidate Details Edited Successfully"})
+
+    except Exception as e:
+        return jsonify({"error_message": str(e)}), 500
+
+# @app.route('/edit_candidate/<int:candidate_id>', methods=['POST'])
+# def edit_candidate(candidate_id):
+#     data = request.json
+#     user_id = data['user_id']
+#     user = User.query.filter_by(id=user_id).first()
+#     user_name = user.username
+#     count_notification_no = Notification.query.filter(
+#         Notification.notification_status == 'false',
+#         Notification.recruiter_name == user_name
+#     ).count()
+#     career_count_notification_no = Career_notification.query.filter(
+#         Career_notification.notification_status == 'false',
+#         Career_notification.recruiter_name == user_name
+#     ).count()
+
+#     if request.method == 'POST':
+#         # Retrieve the form data for the candidate from JSON payload
+#         data = request.json
+
+#         # Retrieve the candidate object
+#         candidate = Candidate.query.get(candidate_id)
+#         if candidate:
+#             # Update the candidate fields with the new data
+#             candidate.name = data.get('name')
+#             candidate.mobile = data.get('mobile')
+#             candidate.email = data.get('email')
+#             candidate.client = data.get('client')
+#             candidate.current_company = data.get('current_company')
+#             candidate.position = data.get('position')
+#             candidate.profile = data.get('profile')
+#             candidate.current_job_location = data.get('current_job_location')
+#             candidate.preferred_job_location = data.get('preferred_job_location')
+#             candidate.qualifications = data.get('qualifications')
+#             candidate.experience = data.get('experience')
+#             candidate.relevant_experience=data.get('relevant_experience')
+#             candidate.current_ctc=data.get('current_ctc')
+#             candidate.expected_ctc=data.get('expected_ctc')
+#             candidate.notice_period = data.get('notice_period')
+#             candidate.reason_for_job_change = data.get('reason_for_job_change')
+#             candidate.linkedin_url = data.get('linkedin')
+#             candidate.remarks = data.get('remarks')
+#             candidate.skills = data.get('skills')
+#             candidate.holding_offer = data.get('holding_offer')
+#             candidate.total = data.get('total')
+#             candidate.package_in_lpa = data.get('package_in_lpa')
+#             candidate.buyout=data.get('buyout')
+#             # candidate.resume=data.get('resume')
             
-            # Handle resume decoding
-            resume_data =data.get('resume')
-            if resume_data:
-                try:
-                    resume_binary = base64.b64decode(resume_data)
-                    candidate.resume = resume_binary
-                except base64.binascii.Error as e:
-                    return jsonify({"error_message": "Invalid resume format"}), 400
+#             # Handle resume decoding
+#             resume_data =data.get('resume')
+#             if resume_data:
+#                 try:
+#                     resume_binary = base64.b64decode(resume_data)
+#                     candidate.resume = resume_binary
+#                 except base64.binascii.Error as e:
+#                     return jsonify({"error_message": "Invalid resume format"}), 400
             
 
-            # Update data_updated_date and data_updated_time
-            current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
-            candidate.data_updated_date = current_datetime.date()
-            candidate.data_updated_time = current_datetime.time()
+#             # Update data_updated_date and data_updated_time
+#             current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+#             candidate.data_updated_date = current_datetime.date()
+#             candidate.data_updated_time = current_datetime.time()
 
-            db.session.commit()
-            return jsonify({"message": "Candidate Details Edited Successfully"})
-        else:
-            return jsonify({"error_message": "Candidate not found"}), 500
+#             db.session.commit()
+#             return jsonify({"message": "Candidate Details Edited Successfully"})
+#         else:
+#             return jsonify({"error_message": "Candidate not found"}), 500
 
 # # Search String Changed
 # # @app.route('/edit_candidate/<int:candidate_id>/<int:page_no>/<search_string>', methods=['GET', 'POST'])
