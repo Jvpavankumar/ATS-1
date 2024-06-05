@@ -261,7 +261,8 @@ class JobPost(db.Model):
     notice_period = db.Column(db.String(100))
     role = db.Column(db.String(100))
     detailed_jd = db.Column(db.Text)
-    jd_pdf =  db.Column(db.String(1000))
+    # jd_pdf =  db.Column(db.String(1000))
+    jd_pdf =  db.Column(db.LargeBinary)
     mode = db.Column(db.String(100))
     recruiter = db.Column(db.String(1000))
     management = db.Column(db.String(100))
@@ -5833,7 +5834,7 @@ def deactivate_user():
 
             if recruiter_user:
                 # Change active status for the recruiter user
-                recruiter_user.is_verified = user_status
+                recruiter_user.is_active = user_status
                 db.session.commit()
 
                 # Get all user records
