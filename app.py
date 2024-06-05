@@ -171,7 +171,8 @@ class Candidate(db.Model):
     reference_information = db.Column(db.String(200))
     data_updated_date = db.Column(db.Date)
     data_updated_time = db.Column(db.Time)
-
+    # resume_present = db.Column(db.Boolean, default=False)
+    resume_present = db.Column(db.Boolean, default=True)
     def serialize(self):
         return {
             'id': self.id,
@@ -272,7 +273,8 @@ class JobPost(db.Model):
     notification = db.Column(db.String(20))
     data_updated_date = db.Column(db.Date)
     data_updated_time = db.Column(db.Time)
-
+    # jd_pdf_present = db.Column(db.Boolean, default=False)
+    jd_pdf_present = db.Column(db.Boolean, default=True)
     def __init__(self, client, experience_min, experience_max, budget_min, budget_max, location, shift_timings,
                  notice_period, role, detailed_jd,jd_pdf, mode, recruiter, management,job_status,job_type,skills):
         self.client = client
@@ -1257,11 +1259,16 @@ from sqlalchemy import and_
 #     # Create the response
 #     return response_json
 
-def date_handler(obj):
-    if isinstance(obj, date):
+
+
+def datetime_handler(obj):
+    if isinstance(obj, (date, datetime)):
         return obj.isoformat()
-    else:
-        return None
+# def date_handler(obj):
+#     if isinstance(obj, date):
+#         return obj.isoformat()
+#     else:
+#         return None
 
 @app.route('/dashboard', methods=['POST'])
 def dashboard():
