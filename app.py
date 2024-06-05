@@ -3316,10 +3316,10 @@ def edit_candidate(candidate_id):
             # candidate.resume=data.get('resume')
             
             # Handle resume decoding
-            candidate.resume=data.get('resume')
-            if resume:
+            resume_data =data.get('resume')
+            if resume_data:
                 try:
-                    resume_binary = base64.b64decode(resume)
+                    resume_binary = base64.b64decode(resume_data)
                     candidate.resume = resume_binary
                 except base64.binascii.Error as e:
                     return jsonify({"error_message": "Invalid resume format"}), 400
