@@ -780,13 +780,12 @@ def recruiter_candidate_list():
 #         return jsonify({'error': 'Recruiter not found'})
 
 
-@app.route('/assign_candidate_new_recuriter', methods=['POST']) 
+@app.route('/assign_candidate_new_recuriter', methods=['POST'])
 def assign_candidate_to_a_new_recruiter():
     data = request.json
 
     try:
         candidates_data = []
-        current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
 
         for candidate_data in data['candidates']:
             candidate_id = candidate_data.get('candidate_id')
@@ -811,6 +810,7 @@ def assign_candidate_to_a_new_recruiter():
                 return jsonify({"error": "New recruiter not found or not a recruiter"}), 404
 
             # Update the candidate record to point to the new recruiter and set the updated date/time
+            current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
             candidate.recruiter = new_recruiter_username
             candidate.data_updated_date = current_datetime.date()
             candidate.data_updated_time = current_datetime.time()
@@ -827,6 +827,55 @@ def assign_candidate_to_a_new_recruiter():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
+
+
+# @app.route('/assign_candidate_new_recuriter', methods=['POST']) 
+# def assign_candidate_to_a_new_recruiter():
+#     data = request.json
+
+#     try:
+#         candidates_data = []
+#         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+
+#         for candidate_data in data['candidates']:
+#             candidate_id = candidate_data.get('candidate_id')
+#             new_recruiter_username = candidate_data.get('new_recruiter')
+#             current_recruiter_username = candidate_data.get('current_recruiter')
+
+#             if not candidate_id or not new_recruiter_username or not current_recruiter_username:
+#                 return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
+
+#             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
+#             candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
+#             current_recruiter = User.query.filter_by(username=current_recruiter_username, user_type='recruiter').first()
+#             new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
+
+#             if candidate is None:
+#                 return jsonify({"error": "Candidate not found or not assigned to current recruiter"}), 404
+
+#             if current_recruiter is None:
+#                 return jsonify({"error": "Current recruiter not found or not a recruiter"}), 404
+
+#             if new_recruiter is None:
+#                 return jsonify({"error": "New recruiter not found or not a recruiter"}), 404
+
+#             # Update the candidate record to point to the new recruiter and set the updated date/time
+#             candidate.recruiter = new_recruiter_username
+#             candidate.data_updated_date = current_datetime.date()
+#             candidate.data_updated_time = current_datetime.time()
+
+#             candidates_data.append({'id': candidate.id, 'name': candidate.name})
+
+#         # Commit all updates in a single transaction
+#         db.session.commit()
+
+#         return jsonify({
+#             "message": "Candidates assigned successfully.",
+#             "candidates": candidates_data
+#         })
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
 
 # @app.route('/assign_candidate_new_recuriter', methods=['POST']) 
 # def assign_candidate_to_a_new_recruiter():
