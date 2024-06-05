@@ -1262,14 +1262,14 @@ from sqlalchemy import and_
 
 
 
-def datetime_handler(obj):
-    if isinstance(obj, (date, datetime)):
-        return obj.isoformat()
-# def date_handler(obj):
-#     if isinstance(obj, date):
+# def datetime_handler(obj):
+#     if isinstance(obj, (date, datetime)):
 #         return obj.isoformat()
-#     else:
-#         return None
+def date_handler(obj):
+    if isinstance(obj, date):
+        return obj.isoformat()
+    else:
+        return None
 
 @app.route('/dashboard', methods=['POST'])
 def dashboard():
