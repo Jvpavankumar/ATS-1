@@ -571,52 +571,6 @@ def signup_onetime():
 
     return jsonify({'message': 'Invalid request method.'}),400
 
-@app.route('/login/recruiter', methods=['POST'])
-def recruiter_login():
-    verification_msg = request.args.get('verification_msg')
-    reset_message = request.args.get('reset_message')
-    session_timeout_msg = request.args.get("session_timeout_msg")
-    password_message = request.args.get('password_message')
-
-    if request.method == 'POST':
-        username = request.json.get('username')
-        password = request.json.get('password')
-
-        # Hash the entered password
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-
-        # Check if the user exists and the password is correct
-        user = User.query.filter_by(username=username, password=hashed_password, user_type='recruiter').first()
-
-        if user:
-            if user.is_active:  # Check if the user is active
-                if user.is_verified:
-                    # Set the user session variables
-                    session['user_id'] = user.id
-                    session['user_type'] = user.user_type
-                    session['username'] = user.username
-                    session['user_name'] = user.name
-                    session['JWT Token'] = secrets.token_hex(16)
-                    return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id': user.id})
-                else:
-                    error = 'Your account is not verified yet. Please check your email for the verification link.'
-            else:
-                error = 'Your account is not active. Please contact the administrator.'
-        else:
-            error = 'Invalid username or password'
-
-        return jsonify({'status': 'error', 'error': error})
-
-    # For GET requests, return necessary data
-    return jsonify({
-        'status': 'success',
-        'verification_msg': verification_msg,
-        'reset_message': reset_message,
-        'session_timeout_msg': session_timeout_msg,
-        'password_message': password_message
-    })
-
-
 # @app.route('/login/recruiter', methods=['POST'])
 # def recruiter_login():
 #     verification_msg = request.args.get('verification_msg')
@@ -645,13 +599,13 @@ def recruiter_login():
 #                     session['JWT Token'] = secrets.token_hex(16)
 #                     return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id': user.id})
 #                 else:
-#                     message = 'Your account is not verified yet. Please check your email for the verification link.'
+#                     error = 'Your account is not verified yet. Please check your email for the verification link.'
 #             else:
-#                 message = 'Your account is not active. Please contact the administrator.'
+#                 error = 'Your account is not active. Please contact the administrator.'
 #         else:
-#             message= 'Invalid username or password'
+#             error = 'Invalid username or password'
 
-#         return jsonify({'status': 'error', 'message': message})
+#         return jsonify({'status': 'error', 'error': error})
 
 #     # For GET requests, return necessary data
 #     return jsonify({
@@ -663,9 +617,56 @@ def recruiter_login():
 #     })
 
 
+@app.route('/login/recruiter', methods=['POST'])
+def recruiter_login():
+    verification_msg = request.args.get('verification_msg')
+    reset_message = request.args.get('reset_message')
+    session_timeout_msg = request.args.get("session_timeout_msg")
+    password_message = request.args.get('password_message')
+
+    if request.method == 'POST':
+        username = request.json.get('username')
+        password = request.json.get('password')
+
+        # Hash the entered password
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+
+        # Check if the user exists and the password is correct
+        user = User.query.filter_by(username=username, password=hashed_password, user_type='recruiter').first()
+
+        if user:
+            if user.is_active:  # Check if the user is active
+                if user.is_verified:
+                    # Set the user session variables
+                    session['user_id'] = user.id
+                    session['user_type'] = user.user_type
+                    session['username'] = user.username
+                    session['user_name'] = user.name
+                    session['JWT Token'] = secrets.token_hex(16)
+                    return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id': user.id})
+                else:
+                    message = 'Your account is not verified yet. Please check your email for the verification link.'
+            else:
+                message = 'Your account is not active. Please contact the administrator.'
+        else:
+            message= 'Invalid username or password'
+
+        return jsonify({'status': 'error', 'message': message})
+
+    # For GET requests, return necessary data
+    return jsonify({
+        'status': 'success',
+        'verification_msg': verification_msg,
+        'reset_message': reset_message,
+        'session_timeout_msg': session_timeout_msg,
+        'password_message': password_message
+    })
+
+
 import hashlib
 
 import hashlib
+
 @app.route('/login/management', methods=['POST'])
 def management_login():
     username = request.json.get('username')
@@ -691,51 +692,15 @@ def management_login():
                     session['JWT Token'] = secrets.token_hex(16)
                     return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id':user.id})
                 else:
-                    error_message = 'Your account is not verified yet. Please check your email for the verification link.'
+                    message = 'Your account is not verified yet. Please check your email for the verification link.'
             else:
-                error_message = 'Your account is not active. Please contact the administrator.'
+                message = 'Your account is not active. Please contact the administrator.'
         else:
-            error_message = 'Invalid username or password'
+            message = 'Invalid username or password'
     else:
-        error_message = 'Invalid username or password'
+        message = 'Invalid username or password'
 
-    return jsonify({'status': 'error', 'error': error_message, 'verification_msg_manager': verification_msg_manager})
-
-
-# @app.route('/login/management', methods=['POST'])
-# def management_login():
-#     username = request.json.get('username')
-#     password = request.json.get('password')
-#     verification_msg_manager = request.args.get('verification_msg_manager')
-    
-#     # Check if the user exists
-#     user = User.query.filter_by(username=username, user_type='management').first()
-    
-#     if user:
-#         # Hash the provided password using the same hash function and parameters used to hash the passwords in the database
-#         hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        
-#         # Compare the hashed password with the hashed password stored in the database
-#         if hashed_password == user.password:
-#             if user.is_active:  # Check if the user is active
-#                 if user.is_verified:
-#                     # Set the user session variables
-#                     session['user_id'] = user.id
-#                     session['user_type'] = user.user_type
-#                     session['username'] = user.username
-#                     session['user_name'] = user.name
-#                     session['JWT Token'] = secrets.token_hex(16)
-#                     return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id':user.id})
-#                 else:
-#                     message = 'Your account is not verified yet. Please check your email for the verification link.'
-#             else:
-#                 message = 'Your account is not active. Please contact the administrator.'
-#         else:
-#             message = 'Invalid username or password'
-#     else:
-#         message = 'Invalid username or password'
-
-#     return jsonify({'status': 'error', 'message': message, 'verification_msg_manager': verification_msg_manager})
+    return jsonify({'status': 'error', 'message': message, 'verification_msg_manager': verification_msg_manager})
 
 # @app.route('/get_recruiters', methods=['GET'])   
 # def get_recruiters_list():
