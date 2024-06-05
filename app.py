@@ -4385,7 +4385,8 @@ def view_all_jobs():
                 "date_created": str(job_post.date_created),
                 "time_created": str(job_post.time_created),
                 "data_updated_date": str(job_post.data_updated_date) if job_post.data_updated_date else None,
-                "data_updated_time": str(job_post.data_updated_time) if job_post.data_updated_time else None
+                "data_updated_time": str(job_post.data_updated_time) if job_post.data_updated_time else None,
+                "jd_pdf_present": job_post.jd_pdf_present  # Added line
             }
             for job_post in job_posts_active
         ],
@@ -4412,7 +4413,8 @@ def view_all_jobs():
                 "date_created": str(job_post.date_created),
                 "time_created": str(job_post.time_created),
                 "data_updated_date": str(job_post.data_updated_date) if job_post.data_updated_date else None,
-                "data_updated_time": str(job_post.data_updated_time) if job_post.data_updated_time else None
+                "data_updated_time": str(job_post.data_updated_time) if job_post.data_updated_time else None,
+                "jd_pdf_present": job_post.jd_pdf_present  # Added line
             }
             for job_post in job_posts_hold
         ]
