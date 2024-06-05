@@ -6281,7 +6281,7 @@ def edit_job_post(job_post_id):
                 job_post.skills = data.get('skills', job_post.skills)
                 # job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
         
-                Handle resume decoding
+                # Handle resume decoding
                 jd_pdf_data = data.get('jd_pdf')
                 if jd_pdf_data:
                     try:
