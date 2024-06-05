@@ -599,11 +599,11 @@ def recruiter_login():
                     session['JWT Token'] = secrets.token_hex(16)
                     return jsonify({'status': 'success', 'redirect': url_for('dashboard'),'user_id': user.id})
                 else:
-                    message = 'Your account is not verified yet. Please check your email for the verification link.'
+                    error = 'Your account is not verified yet. Please check your email for the verification link.'
             else:
-                message = 'Your account is not active. Please contact the administrator.'
+                error = 'Your account is not active. Please contact the administrator.'
         else:
-            message = 'Invalid username or password'
+            error= 'Invalid username or password'
 
         return jsonify({'status': 'error', 'message': message})
 
