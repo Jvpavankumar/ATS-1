@@ -2479,6 +2479,7 @@ def add_candidate():
         linkedin = data.get('linkedin')
         notice_period = data.get('notice_period')
         holding_offer = data.get('holding_offer')
+        buyout=data.get('buyout')
         resume = data.get('resume')
         resume_binary = base64.b64decode(resume)
         print("Resume : ",type(resume_binary))
@@ -2534,7 +2535,8 @@ def add_candidate():
                 resume=resume_binary,
                 period_of_notice=data.get('months') if notice_period == 'no' else None,
                 last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
-                buyout='buyout' in data
+                buyout=buyout
+                # buyout='buyout' in data
             )
 
             new_candidate.date_created = date.today()
@@ -3310,7 +3312,18 @@ def edit_candidate(candidate_id):
             candidate.total = data.get('total')
             candidate.package_in_lpa = data.get('package_in_lpa')
             candidate.notice_period = data.get('notice_period')
+            candidate.buyout=data.get('buyout')
+            # candidate.resume=data.get('resume')
+            
+            # Handle resume decoding
             candidate.resume=data.get('resume')
+            if resume:
+                try:
+                    resume_binary = base64.b64decode(resume)
+                    candidate.resume = resume_binary
+                except base64.binascii.Error as e:
+                    return jsonify({"error_message": "Invalid resume format"}), 400
+            
 
             # Update data_updated_date and data_updated_time
             current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
