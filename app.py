@@ -1366,7 +1366,8 @@ def dashboard():
                 'date_created': candidate.date_created,
                 'time_created': candidate.time_created,
                 'data_updated_date': candidate.data_updated_date,
-                'data_updated_time': candidate.data_updated_time
+                'data_updated_time': candidate.data_updated_time,
+                'resume_present':candidate.resume_present
                 # Add more attributes as needed
             } for candidate in candidates],
             'jobs': [{
@@ -1394,7 +1395,8 @@ def dashboard():
                 'date_created': job.date_created,
                 'time_created': job.time_created,
                 'data_updated_date': job.data_updated_date,
-                'data_updated_time': job.data_updated_time
+                'data_updated_time': job.data_updated_time,
+                'jd_pdf_present':job.jd_pdf_present
                 # Add more attributes as needed
             } for job in jobs],
             'edit_candidate_message': edit_candidate_message,
@@ -1455,7 +1457,8 @@ def dashboard():
                 'date_created': candidate.date_created,
                 'time_created': candidate.time_created,
                 'data_updated_date': candidate.data_updated_date,
-                'data_updated_time': candidate.data_updated_time
+                'data_updated_time': candidate.data_updated_time,
+                'resume_present':candidate.resume_present
                 # Add more attributes as needed
             } for candidate in candidates],
             'jobs': [{
@@ -1483,7 +1486,8 @@ def dashboard():
                 'date_created': job.date_created,
                 'time_created': job.time_created,
                 'data_updated_date': job.data_updated_date,
-                'data_updated_time': job.data_updated_time
+                'data_updated_time': job.data_updated_time,
+                'jd_pdf_present':job.jd_pdf_present
                 # Add more attributes as needed
             } for job in jobs],
             'signup_message': signup_message,
@@ -1543,7 +1547,8 @@ def dashboard():
                 'date_created': candidate.date_created,
                 'time_created': candidate.time_created,
                 'data_updated_date': candidate.data_updated_date,
-                'data_updated_time': candidate.data_updated_time
+                'data_updated_time': candidate.data_updated_time,
+                'resume_present':candidate.resume_present
                 # Add more attributes as needed
             } for candidate in candidates],
         }
