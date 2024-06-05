@@ -261,8 +261,8 @@ class JobPost(db.Model):
     notice_period = db.Column(db.String(100))
     role = db.Column(db.String(100))
     detailed_jd = db.Column(db.Text)
-    # jd_pdf =  db.Column(db.String(1000))
-    jd_pdf =  db.Column(db.LargeBinary)
+    jd_pdf =  db.Column(db.String(1000))
+    # jd_pdf =  db.Column(db.LargeBinary)
     mode = db.Column(db.String(100))
     recruiter = db.Column(db.String(1000))
     management = db.Column(db.String(100))
@@ -6279,16 +6279,16 @@ def edit_job_post(job_post_id):
                 job_post.job_status = data.get('job_status', job_post.job_status)
                 job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
                 job_post.skills = data.get('skills', job_post.skills)
-                # job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
+                job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
         
                 # Handle resume decoding
-                jd_pdf_data = data.get('jd_pdf')
-                if jd_pdf_data:
-                    try:
-                        jd_pdf_binary = base64.b64decode(jd_pdf_data)
-                        job_post.jd_pdf = jd_pdf_binary
-                    except (base64.binascii.Error, TypeError) as e:
-                        return jsonify({"error_message": "Invalid jd_pdf format"}), 400
+                # jd_pdf_data = data.get('jd_pdf')
+                # if jd_pdf_data:
+                #     try:
+                #         jd_pdf_binary = base64.b64decode(jd_pdf_data)
+                #         job_post.jd_pdf = jd_pdf_binary
+                #     except (base64.binascii.Error, TypeError) as e:
+                #         return jsonify({"error_message": "Invalid jd_pdf format"}), 400
                 
                 recruiters = data.get('recruiter', job_post.recruiter)
                 if recruiters:
