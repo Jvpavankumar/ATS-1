@@ -2642,6 +2642,7 @@ def add_candidate():
         notice_period = data.get('notice_period')
         holding_offer = data.get('holding_offer')
         buyout=data.get('buyout')
+        last_working_date=data.get('last_working_date')
         resume = data.get('resume')
         resume_binary = base64.b64decode(resume)
         print("Resume : ",type(resume_binary))
@@ -2652,7 +2653,7 @@ def add_candidate():
         else:
             resume_present = False
 
-
+        
         
 
         # # Check if the user is logged in
@@ -2702,7 +2703,8 @@ def add_candidate():
                 skills=skills,
                 resume=resume_binary,
                 period_of_notice=data.get('months') if notice_period == 'no' else None,
-                last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
+                # last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
+                last_working_date=last_working_date
                 buyout=buyout,
                 resume_present=resume_present
                 # buyout='buyout' in data
