@@ -276,8 +276,7 @@ class JobPost(db.Model):
     data_updated_time = db.Column(db.Time)
     jd_pdf_present = db.Column(db.Boolean, default=False)
     # jd_pdf_present = db.Column(db.Boolean, default=True)
-    def __init__(self, client, experience_min, experience_max, budget_min, budget_max, location, shift_timings,
-                 notice_period, role, detailed_jd,jd_pdf, mode, recruiter, management,job_status,job_type,skills,jd_pdf,jd_pdf_present):
+    def __init__(self, client, experience_min, experience_max, budget_min, budget_max, location, shift_timings, notice_period, role, detailed_jd, mode, recruiter, management, job_status, job_type, skills, jd_pdf, jd_pdf_present):
         self.client = client
         self.experience_min = experience_min
         self.experience_max = experience_max
@@ -288,7 +287,6 @@ class JobPost(db.Model):
         self.notice_period = notice_period
         self.role = role
         self.detailed_jd = detailed_jd
-        self.jd_pdf = jd_pdf
         self.mode = mode
         self.recruiter = recruiter
         self.management = management
