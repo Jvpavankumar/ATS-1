@@ -3858,6 +3858,9 @@ def post_job():
                         jd_pdf_present = bool(jd_binary)  # If jd_binary is not None, set jd_pdf_present to True
                     except Exception as e:
                         return jsonify({"error": "Error decoding base64 PDF file", "details": str(e)}), 400
+                        
+                recruiter_names = data.get('recruiter', [])
+                joined_recruiters = ', '.join(recruiter_names)
 
                 # Create a new job post instance
                 new_job_post = JobPost(
@@ -3871,6 +3874,8 @@ def post_job():
                     notice_period=notice_period,
                     role=role,
                     detailed_jd=detailed_jd,
+                    recruiter=joined_recruiters,
+                    management=user.username,
                     mode=mode,
                     job_status=job_status,
                     job_type=job_type,
@@ -3878,7 +3883,7 @@ def post_job():
                     jd_pdf=jd_binary,  # Store the binary data in the database
                     jd_pdf_present=jd_pdf_present  # Store whether PDF is present
                 )
-
+                       
                 # Add the new job post to the session and commit
                 db.session.add(new_job_post)
                 db.session.commit()
@@ -3965,8 +3970,8 @@ def post_job():
 #                     Job_Type_details = data.get('Job_Type_details')
 #                     job_type = job_type + '(' + Job_Type_details + ' Months )'
 
-#                 recruiter_names = data.get('recruiter', [])
-#                 joined_recruiters = ', '.join(recruiter_names)
+                # recruiter_names = data.get('recruiter', [])
+                # joined_recruiters = ', '.join(recruiter_names)
 
 #                 new_job_post = JobPost(
 #                     client=client,
@@ -4092,25 +4097,25 @@ def post_job():
 #                 recruiter_names = data.get('recruiter', [])
 #                 joined_recruiters = ', '.join(recruiter_names)
 
-#                 new_job_post = JobPost(
-#                     client=client,
-#                     experience_min=experience_min,
-#                     experience_max=experience_max,
-#                     budget_min=budget_min,
-#                     budget_max=budget_max,
-#                     location=location,
-#                     shift_timings=shift_timings,
-#                     notice_period=notice_period,
-#                     role=role,
-#                     detailed_jd=detailed_jd,
-#                     mode=mode,
-#                     recruiter=joined_recruiters,
-#                     management=user.username,
-#                     job_status=job_status,
-#                     job_type=job_type,
-#                     skills=skills,
-#                     jd_pdf=jd_pdf
-#                 )
+                # new_job_post = JobPost(
+                #     client=client,
+                #     experience_min=experience_min,
+                #     experience_max=experience_max,
+                #     budget_min=budget_min,
+                #     budget_max=budget_max,
+                #     location=location,
+                #     shift_timings=shift_timings,
+                #     notice_period=notice_period,
+                #     role=role,
+                #     detailed_jd=detailed_jd,
+                #     mode=mode,
+                #     recruiter=joined_recruiters,
+                #     management=user.username,
+                #     job_status=job_status,
+                #     job_type=job_type,
+                #     skills=skills,
+                #     jd_pdf=jd_pdf
+                # )
 
 #                 new_job_post.notification = 'no'
 #                 new_job_post.date_created = date.today()
