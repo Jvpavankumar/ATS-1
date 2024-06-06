@@ -2636,6 +2636,7 @@ def add_candidate():
         notice_period = data.get('notice_period')
         holding_offer = data.get('holding_offer')
         buyout=data.get('buyout')
+        last_working_date=data.get('last_working_date')
         resume = data.get('resume')
         resume_binary = base64.b64decode(resume)
         print("Resume : ",type(resume_binary))
@@ -2698,6 +2699,7 @@ def add_candidate():
                 period_of_notice=data.get('months') if notice_period == 'no' else None,
                 last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
                 buyout=buyout,
+                last_working_date=last_working_date,
                 resume_present=resume_present
                 # buyout='buyout' in data
             )
@@ -3486,6 +3488,7 @@ def edit_candidate(candidate_id):
         candidate.total = data.get('total')
         candidate.package_in_lpa = data.get('package_in_lpa')
         candidate.buyout = data.get('buyout')
+        candidate.last_working_date=data.get('last_working_date')
         
         # # Handle resume decoding
         # resume_data = data.get('resume')
