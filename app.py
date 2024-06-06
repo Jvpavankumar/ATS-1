@@ -6506,23 +6506,19 @@ def edit_job_post(job_post_id):
                 job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
                 job_post.skills = data.get('skills', job_post.skills)
                 # job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
+                
+                # Handle jd_pdf field
                 jd_pdf = data.get('jd_pdf')
                 if jd_pdf is not None:
-                    jd_pdf_present = True
+                    # Decode the base64 encoded PDF file
+                    jd_binary = base64.b64decode(jd_pdf)
+                    # Update job_post with the decoded binary data
+                    job_post.jd_pdf = jd_binary
+                    # Set jd_pdf_present to True since PDF is present
+                    job_post.jd_pdf_present = True
                 else:
-                    jd_pdf_present = False
-                    
-                
-                
-                recruiters = data.get('recruiter', job_post.recruiter)
-                if recruiters:
-                    # Ensure recruiters are unique
-                    unique_recruiters = list(set(recruiters))
-                    # job_post.recruiter = unique_recruiters
-                    job_post.recruiter = ', '.join(unique_recruiters)
-                    
-                # Update jd_pdf_present status
-                job_post.jd_pdf_present = jd_pdf_present
+                    # If jd_pdf is None, set jd_pdf_present to False
+                    job_post.jd_pdf_present = False
                 
                 # Update data_updated_date and data_updated_time
                 current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
@@ -6533,17 +6529,20 @@ def edit_job_post(job_post_id):
                 db.session.commit()
                 
                 # Iterate over recruiters and create notification records for each
-                for recruiter in unique_recruiters:
-                    # Check if a notification exists for the job post and recruiter combination
-                    notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=recruiter).first()
-                    if notification:
-                        # If notification exists, increment num_notification by 1
-                        notification.num_notification += 1
-                    else:
-                        # If notification does not exist, create a new record with num_notification set to 1
-                        new_notification = Notification(job_post_id=job_post_id, recruiter_name=recruiter)
-                        db.session.add(new_notification)
-                        new_notification.num_notification = 1
+                recruiters = data.get('recruiter', job_post.recruiter)
+                if recruiters:
+                    unique_recruiters = list(set(recruiters))
+                    for recruiter in unique_recruiters:
+                        # Check if a notification exists for the job post and recruiter combination
+                        notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=recruiter).first()
+                        if notification:
+                            # If notification exists, increment num_notification by 1
+                            notification.num_notification += 1
+                        else:
+                            # If notification does not exist, create a new record with num_notification set to 1
+                            new_notification = Notification(job_post_id=job_post_id, recruiter_name=recruiter)
+                            db.session.add(new_notification)
+                            new_notification.num_notification = 1
                 
                 db.session.commit()
                 
@@ -6555,6 +6554,7 @@ def edit_job_post(job_post_id):
             return jsonify({"error": "Unauthorized"}), 401
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
 
 
 # @app.route('/edit_job_post/<int:job_post_id>', methods=['POST'])
