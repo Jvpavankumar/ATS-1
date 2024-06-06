@@ -4441,7 +4441,12 @@ def update_job_status(job_id):
 
             # Update the job status
             job_post.job_status = new_job_status
-
+            
+            # Update data_updated_date and data_updated_time
+            current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
+            job_post.data_updated_date = current_datetime.date()
+            job_post.data_updated_time = current_datetime.time()
+            
             # Commit the changes to the database
             db.session.commit()
 
