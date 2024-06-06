@@ -3849,14 +3849,18 @@ def post_job():
                 job_type = data.get('job_type')
                 skills = data.get('skills')
                 jd_pdf = data.get('jd_pdf')
-
+                jd_binary = base64.b64decode(jd_pdf)
                 # Set jd_pdf_present based on the presence of jd_pdf
-                if jd_pdf is not None:
-                    jd_pdf_present = True
-                else:
-                    jd_pdf_present = False
+                jd_pdf_present = bool(jd_binary)  # If jd_binary is not None, set jd_pdf_present to True
+
+                
+                # # Set jd_pdf_present based on the presence of jd_pdf
+                # if jd_binary is not None:
+                #     jd_pdf_present = True
+                # else:
+                #     jd_pdf_present = False
                     
-                # jd_binary = base64.b64decode(jd_pdf)
+                
                 # Job_Type_details=data.get('Job_Type_details')
 
                 if job_type == 'Contract':
