@@ -2640,6 +2640,12 @@ def add_candidate():
         resume_binary = base64.b64decode(resume)
         print("Resume : ",type(resume_binary))
 
+        # Set jd_pdf_present based on the presence of jd_pdf
+        if resume_binary is not None:
+            resume_present = True
+        else:
+            resume_present = False
+
 
         
 
@@ -2691,7 +2697,8 @@ def add_candidate():
                 resume=resume_binary,
                 period_of_notice=data.get('months') if notice_period == 'no' else None,
                 last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
-                buyout=buyout
+                buyout=buyout,
+                resume_present=resume_present
                 # buyout='buyout' in data
             )
             
@@ -3823,6 +3830,13 @@ def post_job():
                 job_type = data.get('job_type')
                 skills = data.get('skills')
                 jd_pdf = data.get('jd_pdf')
+
+                # Set jd_pdf_present based on the presence of jd_pdf
+                if jd_pdf is not None:
+                    jd_pdf_present = True
+                else:
+                    jd_pdf_present = False
+                    
                 # jd_binary = base64.b64decode(jd_pdf)
                 # Job_Type_details=data.get('Job_Type_details')
 
@@ -3850,7 +3864,8 @@ def post_job():
                     job_status=job_status,
                     job_type=job_type,
                     skills=skills,
-                    jd_pdf=jd_pdf
+                    jd_pdf=jd_pdf,
+                    jd_pdf_present=jd_pdf_present
                 )
 
                 new_job_post.notification = 'no'
@@ -5829,37 +5844,89 @@ def deactivate_user():
     data = request.json
     management_user_id = data.get('user_id')
     recruiter_username = data.get('user_name')
+    management_username = data.get('management_user_name')
     user_status = data.get('user_status')
 
-    if management_user_id and recruiter_username:  
+    if management_user_id:
         # Find the management user
         management_user = User.query.get(management_user_id)
 
         if management_user and management_user.user_type == 'management':
-            # Find the recruiter user by username
-            recruiter_user = User.query.filter_by(username=recruiter_username, user_type='recruiter').first()
+            messages = []
 
-            if recruiter_user:
-                # Change active status for the recruiter user
-                recruiter_user.is_active = user_status
-                db.session.commit()
+            if management_username:
+                # Find the target management user by username
+                target_management_user = User.query.filter_by(username=management_username, user_type='management').first()
 
+                if target_management_user:
+                    # Change active status for the management user
+                    target_management_user.is_active = user_status
+                    db.session.commit()
+                    messages.append(f'Management account {management_username} has been successfully {"activated" if user_status else "deactivated"}.')
+                else:
+                    messages.append('Management user not found.')
+
+            if recruiter_username:
+                # Find the recruiter user by username
+                recruiter_user = User.query.filter_by(username=recruiter_username, user_type='recruiter').first()
+
+                if recruiter_user:
+                    # Change active status for the recruiter user
+                    recruiter_user.is_active = user_status
+                    db.session.commit()
+                    messages.append(f'Recruiter account {recruiter_username} has been successfully {"activated" if user_status else "deactivated"}.')
+                else:
+                    messages.append('Recruiter user not found or not a recruiter user.')
+
+            if messages:
                 # Get all user records
                 all_users = User.query.all()
-                
-                # Construct response data
                 user_data = [{'id': user.id, 'username': user.username, 'is_active': user.is_verified} for user in all_users]
-
-                if user_status:
-                    return jsonify({'message': f'Recruiter account {recruiter_username} has been successfully activated.', 'users': user_data})
-                else:
-                    return jsonify({'message': f'Recruiter account {recruiter_username} has been successfully deactivated.', 'users': user_data})
+                return jsonify({'messages': messages, 'users': user_data})
             else:
-                return jsonify({'message': 'Recruiter user not found or not a recruiter user'})
+                return jsonify({'message': 'No valid management or recruiter username provided.'})
         else:
-            return jsonify({'message': 'Management user not found or not a management user'})
+            return jsonify({'message': 'Management user not found or not a management user.'})
     else:
-        return jsonify({'message': 'Both management_user_id and recruiter_username are required'})
+        return jsonify({'message': 'Management user_id is required.'})
+
+
+# @app.route('/deactivate_user', methods=['POST'])
+# def deactivate_user():
+#     data = request.json
+#     management_user_id = data.get('user_id')
+#     recruiter_username = data.get('user_name')
+#     user_status = data.get('user_status')
+
+#     if management_user_id and recruiter_username:  
+#         # Find the management user
+#         management_user = User.query.get(management_user_id)
+
+#         if management_user and management_user.user_type == 'management':
+#             # Find the recruiter user by username
+#             recruiter_user = User.query.filter_by(username=recruiter_username, user_type='recruiter').first()
+
+#             if recruiter_user:
+#                 # Change active status for the recruiter user
+#                 recruiter_user.is_active = user_status
+#                 db.session.commit()
+
+#                 # Get all user records
+#                 all_users = User.query.all()
+                
+#                 # Construct response data
+#                 user_data = [{'id': user.id, 'username': user.username, 'is_active': user.is_verified} for user in all_users]
+
+#                 if user_status:
+#                     return jsonify({'message': f'Recruiter account {recruiter_username} has been successfully activated.', 'users': user_data})
+#                 else:
+#                     return jsonify({'message': f'Recruiter account {recruiter_username} has been successfully deactivated.', 'users': user_data})
+#             else:
+#                 return jsonify({'message': 'Recruiter user not found or not a recruiter user'})
+#         else:
+#             return jsonify({'message': 'Management user not found or not a management user'})
+#     else:
+#         return jsonify({'message': 'Both management_user_id and recruiter_username are required'})
 
 
         
