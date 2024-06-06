@@ -5969,9 +5969,7 @@ from flask import jsonify
 def deactivate_user():
     data = request.json
     management_user_id = data.get('user_id')
-    recruiter_username = data.get('user_name')
-    management_username = data.get('management_user_name')
-    user_status = data.get('user_status')
+    username = data.get('user_name')
 
     if management_user_id:
         # Find the management user
@@ -5980,42 +5978,37 @@ def deactivate_user():
         if management_user and management_user.user_type == 'management':
             messages = []
 
-            if management_username:
-                # Find the target management user by username
-                target_management_user = User.query.filter_by(username=management_username, user_type='management').first()
+            if username:
+                # Find the target user by username
+                target_user = User.query.filter_by(username=username).first()
 
-                if target_management_user:
-                    # Change active status for the management user
-                    target_management_user.is_active = user_status
-                    db.session.commit()
-                    messages.append(f'Management account {management_username} has been successfully {"activated" if user_status else "deactivated"}.')
+                if target_user:
+                    if target_user.user_type == 'management':
+                        # Deactivate management account
+                        target_user.is_active = False
+                        db.session.commit()
+                        messages.append(f'Management account {username} has been successfully deactivated.')
+                    elif target_user.user_type == 'recruiter':
+                        # Deactivate recruiter account
+                        target_user.is_active = False
+                        db.session.commit()
+                        messages.append(f'Recruiter account {username} has been successfully deactivated.')
+                    else:
+                        messages.append('User is neither a management nor a recruiter account.')
                 else:
-                    messages.append('Management user not found.')
-
-            if recruiter_username:
-                # Find the recruiter user by username
-                recruiter_user = User.query.filter_by(username=recruiter_username, user_type='recruiter').first()
-
-                if recruiter_user:
-                    # Change active status for the recruiter user
-                    recruiter_user.is_active = user_status
-                    db.session.commit()
-                    messages.append(f'Recruiter account {recruiter_username} has been successfully {"activated" if user_status else "deactivated"}.')
-                else:
-                    messages.append('Recruiter user not found or not a recruiter user.')
+                    messages.append('User not found.')
 
             if messages:
                 # Get all user records
                 all_users = User.query.all()
-                user_data = [{'id': user.id, 'username': user.username, 'is_active': user.is_verified} for user in all_users]
+                user_data = [{'id': user.id, 'username': user.username, 'is_active': user.is_active} for user in all_users]
                 return jsonify({'messages': messages, 'users': user_data})
             else:
-                return jsonify({'message': 'No valid management or recruiter username provided.'})
+                return jsonify({'message': 'No valid username provided.'})
         else:
             return jsonify({'message': 'Management user not found or not a management user.'})
     else:
         return jsonify({'message': 'Management user_id is required.'})
-
 
 # @app.route('/deactivate_user', methods=['POST'])
 # def deactivate_user():
