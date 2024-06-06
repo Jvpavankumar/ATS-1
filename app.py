@@ -6512,7 +6512,13 @@ def edit_job_post(job_post_id):
                 else:
                     # If jd_pdf is None, set jd_pdf_present to False
                     job_post.jd_pdf_present = False
-                
+                    
+                recruiters = data.get('recruiter', job_post.recruiter)
+                if recruiters:
+                    # Ensure recruiters are unique
+                    unique_recruiters = list(set(recruiters))
+                    job_post.recruiter = ', '.join(unique_recruiters)
+                    
                 # Update data_updated_date and data_updated_time
                 current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
                 job_post.data_updated_date = current_datetime.date()
