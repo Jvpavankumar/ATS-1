@@ -171,8 +171,8 @@ class Candidate(db.Model):
     reference_information = db.Column(db.String(200))
     data_updated_date = db.Column(db.Date)
     data_updated_time = db.Column(db.Time)
-    # resume_present = db.Column(db.Boolean, default=False)
-    resume_present = db.Column(db.Boolean, default=True)
+    resume_present = db.Column(db.Boolean, default=False)
+    # resume_present = db.Column(db.Boolean, default=True)
     def serialize(self):
         return {
             'id': self.id,
@@ -274,8 +274,8 @@ class JobPost(db.Model):
     notification = db.Column(db.String(20))
     data_updated_date = db.Column(db.Date)
     data_updated_time = db.Column(db.Time)
-    # jd_pdf_present = db.Column(db.Boolean, default=False)
-    jd_pdf_present = db.Column(db.Boolean, default=True)
+    jd_pdf_present = db.Column(db.Boolean, default=False)
+    # jd_pdf_present = db.Column(db.Boolean, default=True)
     def __init__(self, client, experience_min, experience_max, budget_min, budget_max, location, shift_timings,
                  notice_period, role, detailed_jd,jd_pdf, mode, recruiter, management,job_status,job_type,skills):
         self.client = client
@@ -3487,15 +3487,34 @@ def edit_candidate(candidate_id):
         candidate.package_in_lpa = data.get('package_in_lpa')
         candidate.buyout = data.get('buyout')
         
-        # Handle resume decoding
+        # # Handle resume decoding
+        # resume_data = data.get('resume')
+        # if resume_data:
+        #     try:
+        #         resume_binary = base64.b64decode(resume_data)
+        #         candidate.resume = resume_binary
+        #     except (base64.binascii.Error, TypeError) as e:
+        #         return jsonify({"error_message": "Invalid resume format"}), 400
+                
+        # if resume_binary is not None:
+        #     resume_present = True
+        # else:
+        #     resume_present = False
+
         resume_data = data.get('resume')
+        resume_binary = None  # Initialize resume_binary
+        resume_present = False  # Initialize resume_present
         if resume_data:
             try:
                 resume_binary = base64.b64decode(resume_data)
+                resume_present = True if resume_binary is not None else False
                 candidate.resume = resume_binary
-            except (base64.binascii.Error, TypeError) as e:
+            except (binascii.Error, TypeError) as e:
                 return jsonify({"error_message": "Invalid resume format"}), 400
-
+                
+        # Update resume_present status
+        candidate.resume_present = resume_present
+            
         # Update data_updated_date and data_updated_time
         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
         candidate.data_updated_date = current_datetime.date()
@@ -6346,16 +6365,14 @@ def edit_job_post(job_post_id):
                 job_post.job_status = data.get('job_status', job_post.job_status)
                 job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
                 job_post.skills = data.get('skills', job_post.skills)
-                job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
-        
-                # Handle resume decoding
-                # jd_pdf_data = data.get('jd_pdf')
-                # if jd_pdf_data:
-                #     try:
-                #         jd_pdf_binary = base64.b64decode(jd_pdf_data)
-                #         job_post.jd_pdf = jd_pdf_binary
-                #     except (base64.binascii.Error, TypeError) as e:
-                #         return jsonify({"error_message": "Invalid jd_pdf format"}), 400
+                # job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
+                jd_pdf = data.get('jd_pdf')
+                if jd_pdf is not None:
+                    jd_pdf_present = True
+                else:
+                    jd_pdf_present = False
+                    
+                
                 
                 recruiters = data.get('recruiter', job_post.recruiter)
                 if recruiters:
@@ -6363,7 +6380,10 @@ def edit_job_post(job_post_id):
                     unique_recruiters = list(set(recruiters))
                     # job_post.recruiter = unique_recruiters
                     job_post.recruiter = ', '.join(unique_recruiters)
-
+                    
+                # Update jd_pdf_present status
+                job_post.jd_pdf_present = jd_pdf_present
+                
                 # Update data_updated_date and data_updated_time
                 current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
                 job_post.data_updated_date = current_datetime.date()
