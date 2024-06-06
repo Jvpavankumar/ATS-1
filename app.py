@@ -1360,8 +1360,10 @@ def dashboard():
                 'remarks': candidate.remarks,
                 'skills': candidate.skills,
                 'resume': candidate.resume if candidate.resume is not None else "",
-                'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
-                'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+                # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                'period_of_notice': candidate.period_of_notice,
+                'last_working_date': candidate.last_working_date,
                 'buyout': candidate.buyout,
                 'date_created': candidate.date_created,
                 'time_created': candidate.time_created,
@@ -1451,8 +1453,10 @@ def dashboard():
                 'remarks': candidate.remarks,
                 'skills': candidate.skills,
                 'resume': candidate.resume if candidate.resume is not None else "",
-                'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
-                'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+                # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                'period_of_notice': candidate.period_of_notice,
+                'last_working_date': candidate.last_working_date,
                 'buyout': candidate.buyout,
                 'date_created': candidate.date_created,
                 'time_created': candidate.time_created,
@@ -1541,8 +1545,10 @@ def dashboard():
                 'remarks': candidate.remarks,
                 'skills': candidate.skills,
                 'resume': candidate.resume if candidate.resume is not None else "",
-                'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
-                'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
+                # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                'period_of_notice': candidate.period_of_notice,
+                'last_working_date': candidate.last_working_date,
                 'buyout': candidate.buyout,
                 'date_created': candidate.date_created,
                 'time_created': candidate.time_created,
@@ -6127,17 +6133,43 @@ def delete_job_post_message(job_id):
     role = job_post.role
     return redirect(url_for('view_all_jobs',client=client,role=role,id=id))
 
+
 @app.route('/delete_job_post/<int:job_id>', methods=['POST'])
 def delete_job_post(job_id):
-    # data=request.json
-    # job_id=data['job_id']
+    # Fetch the job post
     job_post = JobPost.query.get(job_id)
-    if job_post:
-        JobPost.query.filter_by(id=job_id).delete()
-        db.session.commit()
-        return jsonify({"message": "Job Post Deleted Successfully"}), 200
-    else:
+    
+    if not job_post:
         return jsonify({"error": "Job Post not found"}), 404
+
+    # Fetch all notifications related to the job post
+    notifications = Notification.query.filter_by(job_post_id=job_id).all()
+
+    if notifications:
+        # Delete the job post and all associated notifications
+        db.session.delete(job_post)
+        for notification in notifications:
+            db.session.delete(notification)
+        db.session.commit()
+        return jsonify({"message": "Job Post and Notifications Deleted Successfully"}), 200
+    else:
+        # No notifications found for the job post
+        # Delete only the job post
+        db.session.delete(job_post)
+        db.session.commit()
+        return jsonify({"message": "Job Post Deleted Successfully. No associated notifications found."}), 200
+
+# @app.route('/delete_job_post/<int:job_id>', methods=['POST'])
+# def delete_job_post(job_id):
+#     # data=request.json
+#     # job_id=data['job_id']
+#     job_post = JobPost.query.get(job_id)
+#     if job_post:
+#         JobPost.query.filter_by(id=job_id).delete()
+#         db.session.commit()
+#         return jsonify({"message": "Job Post Deleted Successfully"}), 200
+#     else:
+#         return jsonify({"error": "Job Post not found"}), 404
 
 @app.route('/download_jd/<int:job_id>')
 def download_jd(job_id):
