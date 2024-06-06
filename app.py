@@ -6146,18 +6146,53 @@ def delete_job_post(job_id):
     notifications = Notification.query.filter_by(job_post_id=job_id).all()
 
     if notifications:
-        # Delete the job post and all associated notifications
-        db.session.delete(job_post)
-        for notification in notifications:
-            db.session.delete(notification)
-        db.session.commit()
-        return jsonify({"message": "Job Post and Notifications Deleted Successfully"}), 200
+        try:
+            # Delete all associated notifications first
+            for notification in notifications:
+                db.session.delete(notification)
+            db.session.commit()
+            
+            # Now delete the job post
+            db.session.delete(job_post)
+            db.session.commit()
+            
+            return jsonify({"message": "Job Post and Notifications Deleted Successfully"}), 200
+        except Exception as e:
+            # Handle any potential exceptions
+            db.session.rollback()
+            return jsonify({"error": "An error occurred while deleting job post and notifications"}), 500
     else:
         # No notifications found for the job post
         # Delete only the job post
         db.session.delete(job_post)
         db.session.commit()
         return jsonify({"message": "Job Post Deleted Successfully. No associated notifications found."}), 200
+
+
+# @app.route('/delete_job_post/<int:job_id>', methods=['POST'])
+# def delete_job_post(job_id):
+#     # Fetch the job post
+#     job_post = JobPost.query.get(job_id)
+    
+#     if not job_post:
+#         return jsonify({"error": "Job Post not found"}), 404
+
+#     # Fetch all notifications related to the job post
+#     notifications = Notification.query.filter_by(job_post_id=job_id).all()
+
+#     if notifications:
+#         # Delete the job post and all associated notifications
+#         db.session.delete(job_post)
+#         for notification in notifications:
+#             db.session.delete(notification)
+#         db.session.commit()
+#         return jsonify({"message": "Job Post and Notifications Deleted Successfully"}), 200
+#     else:
+#         # No notifications found for the job post
+#         # Delete only the job post
+#         db.session.delete(job_post)
+#         db.session.commit()
+#         return jsonify({"message": "Job Post Deleted Successfully. No associated notifications found."}), 200
 
 # @app.route('/delete_job_post/<int:job_id>', methods=['POST'])
 # def delete_job_post(job_id):
