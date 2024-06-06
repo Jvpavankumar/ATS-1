@@ -2699,7 +2699,6 @@ def add_candidate():
                 period_of_notice=data.get('months') if notice_period == 'no' else None,
                 last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
                 buyout=buyout,
-                last_working_date=last_working_date,
                 resume_present=resume_present
                 # buyout='buyout' in data
             )
