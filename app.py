@@ -327,46 +327,83 @@ class Notification(db.Model):
         self.notification_status = notification_status
         self.num_notification = 0  # Default value for num_notification
 
+
 @app.route('/check_candidate', methods=['POST'])
 def check_candidate():
-    clients = []
-    profiles = []
-    dates=[]
-    job_ids=[]
-    status=[]
-    field = request.json['field']
-    value = request.json['value']
+    try:
+        fields = request.json['fields']
+        value = request.json['value']
+    except KeyError:
+        return jsonify({'message': 'Invalid input, fields and value are required.'}), 400
 
-    # Query the database to check for an existing candidate with the provided mobile or email
-    existing_candidate = Candidate.query.filter(or_(Candidate.mobile == value, Candidate.email == value)).all()
-    for i in existing_candidate:
-        clients.append(" " + i.client + " ")
-        profiles.append(" " + i.profile + " " )
-        dates.append(i.date_created.strftime('%Y-%m-%d'))
-        job_ids.append(i.job_id)
-        status.append(i.status)
-
-    # candidate = Candidate.query.filter_by(mobile=existing_candidate.mobile).first()
-    if existing_candidate:
+    existing_candidates = []
+    for field in fields:
+        candidates = Candidate.query.filter(or_(getattr(Candidate, field) == value for field in fields)).all()
+        existing_candidates.extend(candidates)
+    
+    if existing_candidates:
         response = {
-            'message' : f"Candidate with this {field} already exists.",
-            'client' : clients,
-            'profile' : profiles,
-            'dates':dates,
-            'jobId':job_ids,
-            'status':status
+            'message': f"Candidate with this {', '.join(fields)} already exists.",
+            'candidates': [
+                {
+                    'client': candidate.client,
+                    'profile': candidate.profile,
+                    'date': candidate.date_created.strftime('%Y-%m-%d'),
+                    'jobId': candidate.job_id,
+                    'status': candidate.status
+                }
+                for candidate in existing_candidates
+            ]
         }
-
     else:
         response = {
-            'message': f"{field.capitalize()} is available.",
-            'client': None,
-            'profile': None,
-            'dates':None,
-            'jobId':None,
-            'status':None
+            'message': f"{', '.join(fields).capitalize()} is available.",
+            'candidates': []
         }
-    return json.dumps(response)
+
+    return jsonify(response)
+
+
+# @app.route('/check_candidate', methods=['POST'])
+# def check_candidate():
+#     clients = []
+#     profiles = []
+#     dates=[]
+#     job_ids=[]
+#     status=[]
+#     field = request.json['field']
+#     value = request.json['value']
+
+#     # Query the database to check for an existing candidate with the provided mobile or email
+#     existing_candidate = Candidate.query.filter(or_(Candidate.mobile == value, Candidate.email == value)).all()
+#     for i in existing_candidate:
+#         clients.append(" " + i.client + " ")
+#         profiles.append(" " + i.profile + " " )
+#         dates.append(i.date_created.strftime('%Y-%m-%d'))
+#         job_ids.append(i.job_id)
+#         status.append(i.status)
+
+#     # candidate = Candidate.query.filter_by(mobile=existing_candidate.mobile).first()
+#     if existing_candidate:
+#         response = {
+#             'message' : f"Candidate with this {field} already exists.",
+#             'client' : clients,
+#             'profile' : profiles,
+#             'dates':dates,
+#             'jobId':job_ids,
+#             'status':status
+#         }
+
+#     else:
+#         response = {
+#             'message': f"{field.capitalize()} is available.",
+#             'client': None,
+#             'profile': None,
+#             'dates':None,
+#             'jobId':None,
+#             'status':None
+#         }
+#     return json.dumps(response)
 
 @app.route('/recruiter')
 def recruiter_index():
@@ -2702,7 +2739,7 @@ def add_candidate():
                 remarks=data.get('remarks'),
                 skills=skills,
                 resume=resume_binary,
-                period_of_notice=data.get('months') if notice_period == 'no' else None,
+                period_of_notice=data.get('months'),
                 # last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
                 last_working_date=last_working_date,
                 buyout=buyout,
