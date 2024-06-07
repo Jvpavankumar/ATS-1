@@ -2749,7 +2749,7 @@ def add_candidate():
                 remarks=data.get('remarks'),
                 skills=skills,
                 resume=resume_binary,
-                period_of_notice=data.get('months'),
+                period_of_notice=notice_period,
                 # last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
                 last_working_date=last_working_date,
                 buyout=buyout,
