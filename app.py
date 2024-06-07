@@ -330,35 +330,43 @@ class Notification(db.Model):
 
 @app.route('/check_candidate', methods=['POST'])
 def check_candidate():
-    try:
-        fields = request.json['fields']
-        value = request.json['value']
-    except KeyError:
-        return jsonify({'message': 'Invalid input, fields and value are required.'}), 400
+    data = request.json
+    clients = []
+    profiles = []
+    dates = []
+    job_ids = []
+    status = []
 
-    existing_candidates = []
-    for field in fields:
-        candidates = Candidate.query.filter(or_(getattr(Candidate, field) == value for field in fields)).all()
-        existing_candidates.extend(candidates)
+    email = data.get('email')
+    mobile = data.get('mobile')
+
+    # Query the database to check for an existing candidate with the provided mobile or email
+    existing_candidates = Candidate.query.filter(or_(Candidate.mobile == mobile, Candidate.email == email)).all()
     
+    for candidate in existing_candidates:
+        clients.append(candidate.client)
+        profiles.append(candidate.profile)
+        dates.append(candidate.date_created.strftime('%Y-%m-%d'))
+        job_ids.append(candidate.job_id)
+        status.append(candidate.status)
+
     if existing_candidates:
         response = {
-            'message': f"Candidate with this {', '.join(fields)} already exists.",
-            'candidates': [
-                {
-                    'client': candidate.client,
-                    'profile': candidate.profile,
-                    'date': candidate.date_created.strftime('%Y-%m-%d'),
-                    'jobId': candidate.job_id,
-                    'status': candidate.status
-                }
-                for candidate in existing_candidates
-            ]
+            'message': "Candidate with this mobile or email already exists.",
+            'clients': clients,
+            'profiles': profiles,
+            'dates': dates,
+            'jobIds': job_ids,
+            'status': status
         }
     else:
         response = {
-            'message': f"{', '.join(fields).capitalize()} is available.",
-            'candidates': []
+            'message': "Mobile and email are available.",
+            'clients': None,
+            'profiles': None,
+            'dates': None,
+            'jobIds': None,
+            'status': None
         }
 
     return jsonify(response)
