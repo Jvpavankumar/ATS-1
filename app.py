@@ -478,13 +478,13 @@ def reset_password():
                 msg.body = f'Hello {user.name},\n\nYour password has been successfully changed. Here are your updated credentials:\n\nUsername: {user.username}\nPassword: {new_password}'
                 mail.send(msg)
 
-                return jsonify({ 'message': 'Password changed successfully.'})
+                return jsonify({'status': 'success', 'message': 'Password changed successfully.'})
             else:
-                return jsonify({ 'message': 'New password is the same as the old password'})
+                return jsonify({'status': 'error', 'message': 'New password is the same as the old password'})
         else:
-            return jsonify({ 'message': 'Invalid OTP or password confirmation. Please try again.'})
+            return jsonify({'status': 'error', 'message': 'Invalid OTP or password confirmation. Please try again.'})
 
-    return jsonify({ 'message': 'Invalid request method.'})
+    return jsonify({'status': 'error', 'message': 'Invalid request method.'})
 
     
 
@@ -6293,19 +6293,20 @@ def change_password():
                         mail.send(msg)
 
                         if user_type == 'management':
-                            return jsonify({"message": "Password changed successfully for management user."})
+                            return jsonify({'status': 'success',"message": "Password changed successfully for management user."})
                         else:
-                            return jsonify({"message": "Password changed successfully for regular user."})
+                            return jsonify({'status': 'success',"message": "Password changed successfully for recruiter user."})
                     else:
-                        return jsonify({"message": "New password and confirm password do not match."}) 
+                        return jsonify({'status': 'error',"message": "New password and confirm password do not match."}) 
                 else:
-                    return jsonify({"message": "Invalid old password."})
+                    return jsonify({'status': 'error',"message": "Invalid old password."})
             else:
-                return jsonify({"message": "Logged in user does not match the provided username."})
+                # return jsonify({'status': 'error',"message": "Logged in user does not match the provided username."})
+                 return jsonify({'status': 'error',"message": "User not found."})
         else:
-            return jsonify({"message": "User not found."})
+            return jsonify({'status': 'error',"message": "User not found."})
     else:
-        return jsonify({"message": "No JSON data provided."})
+        return jsonify({'status': 'error',"message": "No JSON data provided."})
 
     # return jsonify({"error": "Unauthorized: You must log in to access this page"})
 
