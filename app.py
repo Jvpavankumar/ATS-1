@@ -5984,6 +5984,7 @@ def deactivate_user():
     data = request.json
     management_user_id = data.get('user_id')
     username = data.get('user_name')
+    user_status=data.get('user_status')
 
     if management_user_id:
         # Find the management user
@@ -5999,12 +6000,12 @@ def deactivate_user():
                 if target_user:
                     if target_user.user_type == 'management':
                         # Deactivate management account
-                        target_user.is_active = False
+                        target_user.is_active = user_status
                         db.session.commit()
                         messages.append(f'Management account {username} has been successfully deactivated.')
                     elif target_user.user_type == 'recruiter':
                         # Deactivate recruiter account
-                        target_user.is_active = False
+                        target_user.is_active = user_status
                         db.session.commit()
                         messages.append(f'Recruiter account {username} has been successfully deactivated.')
                     else:
