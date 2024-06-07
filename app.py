@@ -3892,6 +3892,12 @@ def post_job():
                     jd_pdf=jd_binary,  # Store the binary data in the database
                     jd_pdf_present=jd_pdf_present  # Store whether PDF is present
                 )
+
+                # Created data and time
+                current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+                new_job_post.date_created = current_datetime.date()
+                new_job_post.time_created  = current_datetime.time()
+
                        
                 # Add the new job post to the session and commit
                 db.session.add(new_job_post)
@@ -4007,10 +4013,10 @@ def post_job():
 #                 # new_job_post.date_created = date.today()
 #                 # new_job_post.time_created = datetime.now().time()
             
-#                 # Created data and time
-#                 current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
-#                 new_job_post.date_created = current_datetime.date()
-#                 new_job_post.time_created  = current_datetime.time()
+                # # Created data and time
+                # current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+                # new_job_post.date_created = current_datetime.date()
+                # new_job_post.time_created  = current_datetime.time()
 
 #                 # Add the new_job_post to the session and commit to generate the job_post_id
 #                 db.session.add(new_job_post)
@@ -5984,7 +5990,7 @@ def deactivate_user():
     data = request.json
     management_user_id = data.get('user_id')
     username = data.get('user_name')
-    user_status=data.get('user_status')
+    user_status = data.get('user_status')
 
     if management_user_id:
         # Find the management user
@@ -5998,16 +6004,16 @@ def deactivate_user():
                 target_user = User.query.filter_by(username=username).first()
 
                 if target_user:
-                    if target_user.user_type == 'management':
-                        # Deactivate management account
+                    if target_user.user_type == 'management' or target_user.user_type == 'recruiter':
+                        # Update user account status
                         target_user.is_active = user_status
                         db.session.commit()
-                        messages.append(f'Management account {username} has been successfully deactivated.')
-                    elif target_user.user_type == 'recruiter':
-                        # Deactivate recruiter account
-                        target_user.is_active = user_status
-                        db.session.commit()
-                        messages.append(f'Recruiter account {username} has been successfully deactivated.')
+
+                        # Determine the message based on user_status
+                        if user_status:
+                            messages.append(f'{target_user.user_type.capitalize()} account {username} has been successfully activated.')
+                        else:
+                            messages.append(f'{target_user.user_type.capitalize()} account {username} has been successfully deactivated.')
                     else:
                         messages.append('User is neither a management nor a recruiter account.')
                 else:
@@ -6024,6 +6030,53 @@ def deactivate_user():
             return jsonify({'message': 'Management user not found or not a management user.'})
     else:
         return jsonify({'message': 'Management user_id is required.'})
+
+
+# @app.route('/deactivate_user', methods=['POST'])
+# def deactivate_user():
+#     data = request.json
+#     management_user_id = data.get('user_id')
+#     username = data.get('user_name')
+#     user_status=data.get('user_status')
+
+#     if management_user_id:
+#         # Find the management user
+#         management_user = User.query.get(management_user_id)
+
+#         if management_user and management_user.user_type == 'management':
+#             messages = []
+
+#             if username:
+#                 # Find the target user by username
+#                 target_user = User.query.filter_by(username=username).first()
+
+#                 if target_user:
+#                     if target_user.user_type == 'management':
+#                         # Deactivate management account
+#                         target_user.is_active = user_status
+#                         db.session.commit()
+#                         messages.append(f'Management account {username} has been successfully deactivated.')
+#                     elif target_user.user_type == 'recruiter':
+#                         # Deactivate recruiter account
+#                         target_user.is_active = user_status
+#                         db.session.commit()
+#                         messages.append(f'Recruiter account {username} has been successfully deactivated.')
+#                     else:
+#                         messages.append('User is neither a management nor a recruiter account.')
+#                 else:
+#                     messages.append('User not found.')
+
+#             if messages:
+#                 # Get all user records
+#                 all_users = User.query.all()
+#                 user_data = [{'id': user.id, 'username': user.username, 'is_active': user.is_active} for user in all_users]
+#                 return jsonify({'messages': messages, 'users': user_data})
+#             else:
+#                 return jsonify({'message': 'No valid username provided.'})
+#         else:
+#             return jsonify({'message': 'Management user not found or not a management user.'})
+#     else:
+#         return jsonify({'message': 'Management user_id is required.'})
 
 # @app.route('/deactivate_user', methods=['POST'])
 # def deactivate_user():
