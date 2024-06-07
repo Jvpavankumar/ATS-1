@@ -361,7 +361,7 @@ def check_candidate():
         }
     else:
         response = {
-            'message': "Mobile and email are available.",
+            'message': "Mobile and email not available.",
             'clients': None,
             'profiles': None,
             'dates': None,
