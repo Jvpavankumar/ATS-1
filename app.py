@@ -2746,7 +2746,7 @@ def add_candidate():
                 last_working_date=last_working_date,
                 buyout=buyout,
                 highest_package_lpa=highest_package_lpa,
-                total=total_offers
+                total=total_offers,
                 resume_present=resume_present
                 # buyout='buyout' in data
             )
