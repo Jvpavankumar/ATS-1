@@ -2899,12 +2899,8 @@ def add_candidate():
         else:
             resume_present = False
 
-        
-        
-
         # # Check if the user is logged in
         if request.method == 'POST':
-              
             # Retrieve the recruiter and management names based on user type
             if user_type == 'recruiter':
                 # recruiter = User.query.get(user_id).name
@@ -2959,6 +2955,8 @@ def add_candidate():
                 resume_present=resume_present
                 # buyout='buyout' in data
             )
+
+            print("Hello !!")
             
             # new_candidate.date_created = date.today()
             # new_candidate.time_created = datetime.now().time()
