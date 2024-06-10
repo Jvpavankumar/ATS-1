@@ -908,7 +908,9 @@ def assign_candidate_to_a_new_recruiter():
             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
             candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
             current_recruiter = User.query.filter((User.username == current_recruiter_username) & (User.user_type.in_(['recruiter', 'management']))).first()
-            new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
+            # new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
+            new_recruiter = User.query.filter_by(username=new_recruiter_username).first()
+
 
             if candidate is None:
                 return jsonify({"error": "Candidate not found or not assigned to current recruiter"}), 404
