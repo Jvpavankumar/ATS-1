@@ -992,60 +992,14 @@ def get_recruiters_candidate():
 #         return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
 
 
-# @app.route('/assign_candidate_new_recuriter', methods=['POST']) 
-# def assign_candidate_to_a_new_recruiter():
-#     data = request.json
-
-#     try:
-#         candidates_data = []
-#         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
-
-#         for candidate_data in data['candidates']:
-#             candidate_id = candidate_data.get('candidate_id')
-#             new_recruiter_username = candidate_data.get('new_recruiter')
-#             current_recruiter_username = candidate_data.get('current_recruiter')
-
-#             if not candidate_id or not new_recruiter_username or not current_recruiter_username:
-#                 return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
-
-#             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
-#             candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
-#             current_recruiter = User.query.filter_by(username=current_recruiter_username, user_type='recruiter').first()
-#             new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
-
-#             if candidate is None:
-#                 return jsonify({"error": "Candidate not found or not assigned to current recruiter"}), 404
-
-#             if current_recruiter is None:
-#                 return jsonify({"error": "Current recruiter not found or not a recruiter"}), 404
-
-#             if new_recruiter is None:
-#                 return jsonify({"error": "New recruiter not found or not a recruiter"}), 404
-
-#             # Update the candidate record to point to the new recruiter and set the updated date/time
-#             candidate.recruiter = new_recruiter_username
-#             candidate.data_updated_date = current_datetime.date()
-#             candidate.data_updated_time = current_datetime.time()
-
-#             candidates_data.append({'id': candidate.id, 'name': candidate.name})
-
-#         # Commit all updates in a single transaction
-#         db.session.commit()
-
-#         return jsonify({
-#             "message": "Candidates assigned successfully.",
-#             "candidates": candidates_data
-#         })
-#     except Exception as e:
-#         db.session.rollback()
-#         return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
-
 @app.route('/assign_candidate_new_recuriter', methods=['POST']) 
 def assign_candidate_to_a_new_recruiter():
     data = request.json
 
     try:
         candidates_data = []
+        current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+
         for candidate_data in data['candidates']:
             candidate_id = candidate_data.get('candidate_id')
             new_recruiter_username = candidate_data.get('new_recruiter')
@@ -1056,10 +1010,6 @@ def assign_candidate_to_a_new_recruiter():
 
             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
             candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
-            # if candidate.profile_transfered != None:
-            #     candidate.profile_transfered = "YES" 
-            # else:
-            #     candidate.profile_transfered = None
             current_recruiter = User.query.filter_by(username=current_recruiter_username, user_type='recruiter').first()
             new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
 
@@ -1067,16 +1017,20 @@ def assign_candidate_to_a_new_recruiter():
                 return jsonify({"error": "Candidate not found or not assigned to current recruiter"}), 404
 
             if current_recruiter is None:
-                return jsonify({"error": "Current recruiter not found or not a recruiter"})
+                return jsonify({"error": "Current recruiter not found or not a recruiter"}), 404
 
             if new_recruiter is None:
-                return jsonify({"error": "New recruiter not found or not a recruiter"})
+                return jsonify({"error": "New recruiter not found or not a recruiter"}), 404
 
-            # Update the candidate record to point to the new recruiter
+            # Update the candidate record to point to the new recruiter and set the updated date/time
             candidate.recruiter = new_recruiter_username
-            db.session.commit()
+            candidate.data_updated_date = current_datetime.date()
+            candidate.data_updated_time = current_datetime.time()
 
             candidates_data.append({'id': candidate.id, 'name': candidate.name})
+
+        # Commit all updates in a single transaction
+        db.session.commit()
 
         return jsonify({
             "message": "Candidates assigned successfully.",
@@ -1084,7 +1038,53 @@ def assign_candidate_to_a_new_recruiter():
         })
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "Error assigning candidates: " }), 500
+        return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
+
+# @app.route('/assign_candidate_new_recuriter', methods=['POST']) 
+# def assign_candidate_to_a_new_recruiter():
+#     data = request.json
+
+#     try:
+#         candidates_data = []
+#         for candidate_data in data['candidates']:
+#             candidate_id = candidate_data.get('candidate_id')
+#             new_recruiter_username = candidate_data.get('new_recruiter')
+#             current_recruiter_username = candidate_data.get('current_recruiter')
+
+#             if not candidate_id or not new_recruiter_username or not current_recruiter_username:
+#                 return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
+
+#             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
+#             candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
+#             # if candidate.profile_transfered != None:
+#             #     candidate.profile_transfered = "YES" 
+#             # else:
+#             #     candidate.profile_transfered = None
+#             current_recruiter = User.query.filter_by(username=current_recruiter_username, user_type='recruiter').first()
+#             new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
+
+#             if candidate is None:
+#                 return jsonify({"error": "Candidate not found or not assigned to current recruiter"}), 404
+
+#             if current_recruiter is None:
+#                 return jsonify({"error": "Current recruiter not found or not a recruiter"})
+
+#             if new_recruiter is None:
+#                 return jsonify({"error": "New recruiter not found or not a recruiter"})
+
+#             # Update the candidate record to point to the new recruiter
+#             candidate.recruiter = new_recruiter_username
+#             db.session.commit()
+
+#             candidates_data.append({'id': candidate.id, 'name': candidate.name})
+
+#         return jsonify({
+#             "message": "Candidates assigned successfully.",
+#             "candidates": candidates_data
+#         })
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({"error": "Error assigning candidates: " }), 500
 
 
 from flask import jsonify
@@ -2777,121 +2777,6 @@ import binascii
 
 import binascii  
 
-
-# @app.route('/add_candidate', methods=['POST'])
-# def add_candidate():
-#     try:
-#         # Retrieve request data from JSON
-#         data = request.json
-#         user_id = data['user_id']
-#         user = User.query.filter_by(id=user_id).first()
-        
-#         if not user:
-#             return jsonify({'status': 'error', 'message': 'User not found'})
-        
-#         user_type = user.user_type
-#         user_name = user.username
-
-#         job_id = data.get('job_id')
-#         client = data.get('client')
-#         name = data.get('name')
-#         mobile = data.get('mobile')
-#         email = data.get('email')
-#         profile = data.get('profile')
-#         skills = data.get('skills')
-#         current_company = data.get('current_company')
-#         position = data.get('position')
-#         current_job_location = data.get('current_job_location')
-#         preferred_job_location = data.get('preferred_job_location')
-#         qualifications = data.get('qualifications')
-#         experience = data.get('experience')
-#         experience_months = data.get('experience_months')
-#         relevant_experience = data.get('relevant_experience')
-#         relevant_experience_months = data.get('relevant_experience_months')
-#         reason_for_job_change = data.get('reason_for_job_change')
-#         current_ctc = data.get('current_ctc')
-#         expected_ctc = data.get('expected_ctc')
-#         linkedin = data.get('linkedin')
-#         serving_notice_period = data.get('serving_notice_period')
-#         notice_period = data.get('notice_period')
-#         holding_offer = data.get('holding_offer')
-#         buyout = data.get('buyout')
-#         last_working_date = data.get('last_working_date')
-#         total_offers = data.get('total_offers')
-#         highest_package_lpa = data.get('highest_package')
-#         resume = data.get('resume')
-
-#         if resume:
-#             resume_binary = base64.b64decode(resume)
-#             resume_present = True
-#         else:
-#             resume_binary = None
-#             resume_present = False
-
-#         # Retrieve the recruiter and management names based on user type
-#         if user_type == 'recruiter':
-#             recruiter = user_name
-#             management = None
-#         elif user_type == 'management':
-#             recruiter = None
-#             management = user_name
-#         else:
-#             recruiter = None
-#             management = None
-
-#         # Check if the job_id is provided and job is active
-#         matching_job_post = JobPost.query.filter(and_(JobPost.id == job_id, JobPost.job_status == 'Active')).first()
-#         if not matching_job_post:
-#             return jsonify({'status': 'error', 'message': 'Job on hold'})
-
-#         # Create new candidate object
-#         new_candidate = Candidate(
-#             user_id=user_id,
-#             job_id=job_id,
-#             name=name,
-#             mobile=mobile,
-#             email=email,
-#             client=client,
-#             current_company=current_company,
-#             position=position,
-#             profile=profile,
-#             current_job_location=current_job_location,
-#             preferred_job_location=preferred_job_location,
-#             qualifications=qualifications,
-#             experience=experience,
-#             relevant_experience=relevant_experience,
-#             current_ctc=current_ctc,
-#             expected_ctc=expected_ctc,
-#             linkedin_url=linkedin,
-#             holding_offer=holding_offer,
-#             recruiter=recruiter,
-#             management=management,
-#             status='SCREENING',
-#             remarks=data.get('remarks'),
-#             skills=skills,
-#             resume=resume_binary,
-#             serving_notice_period=serving_notice_period,
-#             period_of_notice=notice_period,
-#             last_working_date=last_working_date,
-#             buyout=buyout,
-#             package_in_lpa=highest_package_lpa,
-#             total=total_offers,
-#             resume_present=resume_present
-#         )
-        
-#         # Set created date and time
-#         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
-#         new_candidate.date_created = current_datetime.date()
-#         new_candidate.time_created = current_datetime.time()
-
-#         db.session.add(new_candidate)
-#         db.session.commit()
-
-#         return jsonify({'status': 'success', 'message': 'Candidate Added Successfully', 'candidate_id': new_candidate.id})
-
-#     except Exception as e:
-#         return jsonify({'status': 'error', 'message': 'Candidate unable to add'})
-
 @app.route('/add_candidate', methods=['POST'])
 def add_candidate():
     try:
@@ -2923,13 +2808,7 @@ def add_candidate():
         current_ctc = data.get('current_ctc')
         expected_ctc = data.get('expected_ctc')
         linkedin = data.get('linkedin')
-        serving_notice_period = data.get('serving_notice_period')
-        notice_period = data.get('notice_period')
-        holding_offer = data.get('holding_offer')
-        buyout=data.get('buyout')
-        last_working_date=data.get('last_working_date')
-        total_offers=data.get('total_offers')
-        highest_package_lpa=data.get('highest_package')
+        
         resume = data.get('resume')
         resume_binary = base64.b64decode(resume)
         print("Resume : ",type(resume_binary))
@@ -2939,6 +2818,35 @@ def add_candidate():
             resume_present = True
         else:
             resume_present = False
+
+        serving_notice_period = data.get('serving_notice_period')
+        last_working_date = None
+        buyout = False
+        notice_period = None
+        if serving_notice_period == 'yes':
+            last_working_date=data.get('last_working_date')
+            buyout=data.get('buyout')
+        elif serving_notice_period == 'no':
+            notice_period = data.get('notice_period')
+            buyout=data.get('buyout')
+        elif serving_notice_period == 'completed':
+            last_working_date=data.get('last_working_date')
+
+        holding_offer = data.get('holding_offer')
+        if holding_offer == 'yes':
+            total_offers=data.get('total_offers')
+            if total_offers == '':
+                total_offers = 0
+            else:
+                total_offers=data.get('total_offers')
+            highest_package_lpa=data.get('highest_package')
+            if highest_package_lpa == '':
+                highest_package_lpa = 0
+            else:
+                highest_package_lpa=data.get('highest_package')
+        else:
+            total_offers = None
+            highest_package_lpa = None
 
         # # Check if the user is logged in
         if request.method == 'POST':
@@ -3018,6 +2926,134 @@ def add_candidate():
     except Exception as e:
         print(e)
         return jsonify({'status': 'error',"message": "Candidate unable to add"})
+        
+
+# @app.route('/add_candidate', methods=['POST'])
+# def add_candidate():
+#     try:
+        
+#         # Retrieve request data from JSON
+#         data = request.json
+#         user_id = data['user_id']
+#         user = User.query.filter_by(id=user_id).first()
+#         user_type = user.user_type
+#         user_name = user.username
+
+#         job_id = data.get('job_id')
+#         client = data.get('client')
+#         name = data.get('name')
+#         mobile = data.get('mobile')
+#         email = data.get('email')
+#         profile = data.get('profile')
+#         skills = data.get('skills')
+#         current_company = data.get('current_company')
+#         position = data.get('position')
+#         current_job_location = data.get('current_job_location')
+#         preferred_job_location = data.get('preferred_job_location')
+#         qualifications = data.get('qualifications')
+#         experience = data.get('experience')
+#         experience_months=data.get('experience')
+#         relevant_experience = data.get('relevant_experience')
+#         relevant_experience_months=data.get('relevant_experience_months')
+#         reason_for_job_change=data.get('reason_for_job_change')
+#         current_ctc = data.get('current_ctc')
+#         expected_ctc = data.get('expected_ctc')
+#         linkedin = data.get('linkedin')
+#         serving_notice_period = data.get('serving_notice_period')
+#         notice_period = data.get('notice_period')
+#         holding_offer = data.get('holding_offer')
+#         buyout=data.get('buyout')
+#         last_working_date=data.get('last_working_date')
+#         total_offers=data.get('total_offers')
+#         highest_package_lpa=data.get('highest_package')
+#         resume = data.get('resume')
+#         resume_binary = base64.b64decode(resume)
+#         print("Resume : ",type(resume_binary))
+
+#         # Set jd_pdf_present based on the presence of jd_pdf
+#         if resume_binary is not None:
+#             resume_present = True
+#         else:
+#             resume_present = False
+
+#         # # Check if the user is logged in
+#         if request.method == 'POST':
+#             # Retrieve the recruiter and management names based on user type
+#             if user_type == 'recruiter':
+#                 # recruiter = User.query.get(user_id).name
+#                 recruiter=user_name
+#                 management = None
+#             elif user_type == 'management':
+#                 recruiter = None
+#                 # management = User.query.get(user_id).name
+#                 management=user_name
+#             else:
+#                 recruiter = None
+#                 management = None
+
+#             # Check if the job_id is provided and job is active
+#             matching_job_post = JobPost.query.filter(and_(JobPost.id == job_id, JobPost.job_status == 'Active')).first()
+#             if not matching_job_post:
+#                 return jsonify({'status': 'error',"message": "Job on hold"})
+
+#             # Create new candidate object
+#             new_candidate = Candidate(
+#                 user_id=user_id,
+#                 job_id=job_id,
+#                 name=name,
+#                 mobile=mobile,
+#                 email=email,
+#                 client=client,
+#                 current_company=current_company,
+#                 position=position,
+#                 profile=profile,
+#                 current_job_location=current_job_location,
+#                 preferred_job_location=preferred_job_location,
+#                 qualifications=qualifications,
+#                 experience=experience,
+#                 relevant_experience=relevant_experience,
+#                 current_ctc=current_ctc,
+#                 expected_ctc=expected_ctc,
+#                 linkedin_url=linkedin,
+#                 holding_offer=holding_offer,
+#                 recruiter=recruiter,
+#                 management=management,
+#                 status='SCREENING',
+#                 remarks=data.get('remarks'),
+#                 skills=skills,
+#                 resume=resume_binary,
+#                 serving_notice_period=serving_notice_period,
+#                 period_of_notice=notice_period,
+#                 # last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
+#                 last_working_date=last_working_date,
+#                 buyout=buyout,
+#                 package_in_lpa=highest_package_lpa,
+#                 total=total_offers,
+#                 resume_present=resume_present
+#                 # buyout='buyout' in data
+#             )
+
+#             print("Hello !!")
+            
+#             # new_candidate.date_created = date.today()
+#             # new_candidate.time_created = datetime.now().time()
+    
+#             # Created data and time
+#             current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+#             new_candidate.date_created = current_datetime.date()
+#             new_candidate.time_created = current_datetime.time()
+
+
+#             db.session.add(new_candidate)
+#             db.session.commit()
+
+#             return jsonify({'status': 'success',"message": "Candidate Added Successfully", "candidate_id": new_candidate.id})
+
+#         return jsonify({"error_message": "Method not found"})
+
+#     except Exception as e:
+#         print(e)
+#         return jsonify({'status': 'error',"message": "Candidate unable to add"})
         
         
         
