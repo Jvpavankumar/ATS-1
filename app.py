@@ -784,14 +784,7 @@ def get_recruiters_list():
     })
 
 
-# @app.route('/get_recruiters', methods=['GET'])   
-# def get_recruiters_list():
-#     recruiters = User.query.filter_by(user_type='recruiter').all()
-    
-#     # Extracting only usernames
-#     usernames = [recruiter.username for recruiter in recruiters]
-    
-#     return jsonify(usernames)
+
 
 
 @app.route('/get_recruiters_candidate', methods=['POST'])
@@ -1440,7 +1433,7 @@ def dashboard():
         if recruiter is None:
             return jsonify({"message": "Recruiter not found"}), 404
         
-        candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.name, Candidate.reference.is_(None)))\
+        candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.username, Candidate.reference.is_(None)))\
             .order_by(
                 desc(conditional_order_date),
                 desc(conditional_order_time),
@@ -1453,7 +1446,7 @@ def dashboard():
         response_data = {
             'user': {
                 'id': recruiter.id,
-                'name': recruiter.name,
+                'name': recruiter.username,
                 'user_type': recruiter.user_type,
                 'email': recruiter.email
                 # Add more attributes as needed
