@@ -825,72 +825,7 @@ def get_recruiters_candidate():
         return jsonify({'status': 'error', 'message': 'User not found or not authorized'}), 404
 
 
-
-# @app.route('/get_recruiters_candidate', methods=['POST'])
-# def get_recruiters_candidate():
-#     data = request.json
-    
-#     if not data or 'user_name' not in data:
-#         return jsonify({'status': 'error','message': 'Invalid input'}), 400
-    
-#     username = data['user_name']
-    
-#     # Find the user with the given username who is either a recruiter or in management
-#     user = User.query.filter((User.username == username) & (User.user_type.in_(['recruiter', 'management']))).first()
-    
-#     if user:
-#         # Find all candidates linked with the user's username
-#         candidates = Candidate.query.filter_by(recruiter=username).all()
-        
-#         # Prepare response data
-#         candidates_list = [
-#             {
-#                 'id': candidate.id,
-#                 'username': candidate.name,
-#                 'status': candidate.status,
-#                 'profile': candidate.profile,
-#                 'recruiter': candidate.recruiter
-#             } 
-#             for candidate in candidates
-#         ]
-#         return jsonify(candidates_list)
-#     else:
-#         return jsonify({'status': 'error','message': 'User not found or not authorized'})
-
-# @app.route('/get_recruiters_candidate', methods=['POST'])
-# def recruiter_candidate_list():
-#     data = request.json
-    
-#     if not data or 'user_name' not in data:
-#         return jsonify({'error': 'Invalid input'}), 400
-    
-#     username = data['user_name']
-    
-#     # Find the recruiter with the given username
-#     recruiter = User.query.filter_by(username=username, user_type='recruiter').first()
-#     print("recruiter:",recruiter)
-    
-#     if recruiter:
-#         # Find all candidates linked with the recruiter's username
-#         candidates = Candidate.query.filter_by(recruiter=username).all()
-        
-#         # Prepare response data
-#         candidates_list = [
-#             {
-#                 'id': candidate.id,
-#                 'username': candidate.name,
-#                 'status': candidate.status,
-#                 'profile': candidate.profile,
-#                 'recruiter': candidate.recruiter
-#             } 
-#             for candidate in candidates
-#         ]
-#         return jsonify(candidates_list)
-#     else:
-#         return jsonify({'error': 'Recruiter not found'}), 404
-
-
-@app.route('/assign_candidate_new_recruiter', methods=['POST']) 
+@app.route('/assign_candidate_new_recuriter', methods=['POST'])
 def assign_candidate_to_a_new_recruiter():
     data = request.json
 
@@ -907,18 +842,24 @@ def assign_candidate_to_a_new_recruiter():
                 return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
 
             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
-            candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
-            current_recruiter = User.query.filter_by(username=current_recruiter_username).first()  # Modified line
-            new_recruiter = User.query.filter_by(username=new_recruiter_username).first()  # Modified line
+            candidate = Candidate.query.filter(
+                Candidate.id == candidate_id,
+                or_(
+                    Candidate.recruiter == current_recruiter_username,
+                    Candidate.management == current_recruiter_username
+                )
+            ).first()
+            current_recruiter = User.query.filter_by(username=current_recruiter_username).first()
+            new_recruiter = User.query.filter_by(username=new_recruiter_username).first()
 
             if candidate is None:
-                return jsonify({"error": "Candidate not found or not assigned to current recruiter"}), 404
+                return jsonify({"error": f"Candidate with ID {candidate_id} not found or not assigned to current recruiter/management {current_recruiter_username}"}), 404
 
             if current_recruiter is None:
-                return jsonify({"error": "Current recruiter not found"}), 404  # Modified line
+                return jsonify({"error": f"Current recruiter {current_recruiter_username} not found"}), 404
 
             if new_recruiter is None:
-                return jsonify({"error": "New recruiter not found"}), 404  # Modified line
+                return jsonify({"error": f"New recruiter {new_recruiter_username} not found"}), 404
 
             # Update the candidate record to point to the new recruiter and set the updated date/time
             candidate.recruiter = new_recruiter_username
@@ -936,7 +877,56 @@ def assign_candidate_to_a_new_recruiter():
         })
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
+        return jsonify({"error": f"Error assigning candidates: {str(e)}"}), 500
+
+
+# @app.route('/assign_candidate_new_recruiter', methods=['POST']) 
+# def assign_candidate_to_a_new_recruiter():
+#     data = request.json
+
+#     try:
+#         candidates_data = []
+#         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+
+#         for candidate_data in data['candidates']:
+#             candidate_id = candidate_data.get('candidate_id')
+#             new_recruiter_username = candidate_data.get('new_recruiter')
+#             current_recruiter_username = candidate_data.get('current_recruiter')
+
+#             if not candidate_id or not new_recruiter_username or not current_recruiter_username:
+#                 return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
+
+#             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
+#             candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
+#             current_recruiter = User.query.filter_by(username=current_recruiter_username).first()  # Modified line
+#             new_recruiter = User.query.filter_by(username=new_recruiter_username).first()  # Modified line
+
+#             if candidate is None:
+#                 return jsonify({"error": "Candidate not found or not assigned to current recruiter"})
+
+#             if current_recruiter is None:
+#                 return jsonify({"error": "Current recruiter not found"}), 404  # Modified line
+
+#             if new_recruiter is None:
+#                 return jsonify({"error": "New recruiter not found"}), 404  # Modified line
+
+#             # Update the candidate record to point to the new recruiter and set the updated date/time
+#             candidate.recruiter = new_recruiter_username
+#             candidate.data_updated_date = current_datetime.date()
+#             candidate.data_updated_time = current_datetime.time()
+
+#             candidates_data.append({'id': candidate.id, 'name': candidate.name})
+
+#         # Commit all updates in a single transaction
+#         db.session.commit()
+
+#         return jsonify({
+#             "message": "Candidates assigned successfully.",
+#             "candidates": candidates_data
+#         })
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
 
 
 # @app.route('/assign_candidate_new_recruiter', methods=['POST'])
