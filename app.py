@@ -2792,11 +2792,11 @@ def add_candidate():
               
             # Retrieve the recruiter and management names based on user type
             if user_type == 'recruiter':
-                recruiter = User.query.get(user_id).name
+                recruiter = User.query.get(user_id).username
                 management = None
             elif user_type == 'management':
                 recruiter = None
-                management = User.query.get(user_id).name
+                management = User.query.get(user_id).username
             else:
                 recruiter = None
                 management = None
