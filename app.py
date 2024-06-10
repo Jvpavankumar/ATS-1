@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+afrom flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 import os
@@ -3017,7 +3017,7 @@ def add_candidate():
 
     except Exception as e:
         print(e)
-        return jsonify({'status': 'error',"message": "Candidate unable to add")
+        return jsonify({'status': 'error',"message": "Candidate unable to add"})
         
         
         
