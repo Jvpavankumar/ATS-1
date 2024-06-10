@@ -2824,7 +2824,6 @@ def add_candidate():
                 relevant_experience=relevant_experience,
                 current_ctc=current_ctc,
                 expected_ctc=expected_ctc,
-                notice_period=notice_period,
                 linkedin_url=linkedin,
                 holding_offer=holding_offer,
                 recruiter=recruiter,
