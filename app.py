@@ -6899,7 +6899,7 @@ def edit_job_post(job_post_id):
                             new_notification.num_notification = 1
                 
                 # Update candidate details if job_post_id is present in the Candidate table
-                candidates = Candidate.query.filter_by(job_post_id=job_post_id).all()
+                candidates = Candidate.query.filter_by(job_id=job_post_id).all()
                 for candidate in candidates:
                     candidate.client = job_post.client
                     candidate.profile = job_post.role
