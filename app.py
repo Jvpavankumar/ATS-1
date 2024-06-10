@@ -769,30 +769,45 @@ def management_login():
 #     return jsonify(recruiters_list)
 
 
-@app.route('/get_recruiters', methods=['GET'])   
+@app.route('/get_recruiters', methods=['GET'])
 def get_recruiters_list():
     recruiters = User.query.filter_by(user_type='recruiter').all()
-    
+    management = User.query.filter_by(user_type='management').all()
+
     # Extracting only usernames
-    usernames = [recruiter.username for recruiter in recruiters]
+    recruiter_usernames = [recruiter.username for recruiter in recruiters]
+    management_usernames = [manager.username for manager in management]
+
+    return jsonify({
+        'recruiters': recruiter_usernames,
+        'management': management_usernames
+    })
+
+
+# @app.route('/get_recruiters', methods=['GET'])   
+# def get_recruiters_list():
+#     recruiters = User.query.filter_by(user_type='recruiter').all()
     
-    return jsonify(usernames)
+#     # Extracting only usernames
+#     usernames = [recruiter.username for recruiter in recruiters]
+    
+#     return jsonify(usernames)
+
 
 @app.route('/get_recruiters_candidate', methods=['POST'])
-def recruiter_candidate_list():
+def get_recruiters_candidate():
     data = request.json
     
     if not data or 'user_name' not in data:
-        return jsonify({'error': 'Invalid input'}), 400
+        return jsonify({'status': 'error','message': 'Invalid input'}), 400
     
     username = data['user_name']
     
-    # Find the recruiter with the given username
-    recruiter = User.query.filter_by(username=username, user_type='recruiter').first()
-    print("recruiter:",recruiter)
+    # Find the user with the given username who is either a recruiter or in management
+    user = User.query.filter((User.username == username) & (User.user_type.in_(['recruiter', 'management']))).first()
     
-    if recruiter:
-        # Find all candidates linked with the recruiter's username
+    if user:
+        # Find all candidates linked with the user's username
         candidates = Candidate.query.filter_by(recruiter=username).all()
         
         # Prepare response data
@@ -808,28 +823,42 @@ def recruiter_candidate_list():
         ]
         return jsonify(candidates_list)
     else:
-        return jsonify({'error': 'Recruiter not found'}), 404
+        return jsonify({'status': 'error','message': 'User not found or not authorized'})
 
-# @app.route('/get_recruiters_candidate', methods=['POST']) 
+# @app.route('/get_recruiters_candidate', methods=['POST'])
 # def recruiter_candidate_list():
 #     data = request.json
+    
+#     if not data or 'user_name' not in data:
+#         return jsonify({'error': 'Invalid input'}), 400
+    
 #     username = data['user_name']
     
 #     # Find the recruiter with the given username
 #     recruiter = User.query.filter_by(username=username, user_type='recruiter').first()
+#     print("recruiter:",recruiter)
     
 #     if recruiter:
 #         # Find all candidates linked with the recruiter's username
-#         candidates = Candidate.query.filter_by(recruiter=recruiter.username).all()
+#         candidates = Candidate.query.filter_by(recruiter=username).all()
         
 #         # Prepare response data
-#         candidates_list = [{'id': candidate.id, 'username': candidate.name, 'status':candidate.status, 'profile':candidate.profile, 'recruiter':candidate.recruiter} for candidate in candidates]
+#         candidates_list = [
+#             {
+#                 'id': candidate.id,
+#                 'username': candidate.name,
+#                 'status': candidate.status,
+#                 'profile': candidate.profile,
+#                 'recruiter': candidate.recruiter
+#             } 
+#             for candidate in candidates
+#         ]
 #         return jsonify(candidates_list)
 #     else:
-#         return jsonify({'error': 'Recruiter not found'})
+#         return jsonify({'error': 'Recruiter not found'}), 404
 
 
-@app.route('/assign_candidate_new_recuriter', methods=['POST'])
+@app.route('/assign_candidate_new_recruiter', methods=['POST'])
 def assign_candidate_to_a_new_recruiter():
     data = request.json
 
@@ -846,14 +875,14 @@ def assign_candidate_to_a_new_recruiter():
 
             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
             candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
-            current_recruiter = User.query.filter_by(username=current_recruiter_username, user_type='recruiter').first()
+            current_recruiter = User.query.filter((User.username == current_recruiter_username) & (User.user_type.in_(['recruiter', 'management']))).first()
             new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
 
             if candidate is None:
                 return jsonify({"error": "Candidate not found or not assigned to current recruiter"}), 404
 
             if current_recruiter is None:
-                return jsonify({"error": "Current recruiter not found or not a recruiter"}), 404
+                return jsonify({"error": "Current recruiter not found or not authorized"}), 404
 
             if new_recruiter is None:
                 return jsonify({"error": "New recruiter not found or not a recruiter"}), 404
@@ -870,12 +899,63 @@ def assign_candidate_to_a_new_recruiter():
         db.session.commit()
 
         return jsonify({
+            'status': 'success',
             "message": "Candidates assigned successfully.",
             "candidates": candidates_data
         })
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
+        return jsonify({'status': 'error',"message": "Error assigning candidates: " + str(e)})
+
+
+
+# @app.route('/assign_candidate_new_recuriter', methods=['POST'])
+# def assign_candidate_to_a_new_recruiter():
+#     data = request.json
+
+#     try:
+#         candidates_data = []
+
+#         for candidate_data in data['candidates']:
+#             candidate_id = candidate_data.get('candidate_id')
+#             new_recruiter_username = candidate_data.get('new_recruiter')
+#             current_recruiter_username = candidate_data.get('current_recruiter')
+
+#             if not candidate_id or not new_recruiter_username or not current_recruiter_username:
+#                 return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
+
+#             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
+#             candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
+#             current_recruiter = User.query.filter_by(username=current_recruiter_username, user_type='recruiter').first()
+#             new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
+
+#             if candidate is None:
+#                 return jsonify({"error": "Candidate not found or not assigned to current recruiter"}), 404
+
+#             if current_recruiter is None:
+#                 return jsonify({"error": "Current recruiter not found or not a recruiter"}), 404
+
+#             if new_recruiter is None:
+#                 return jsonify({"error": "New recruiter not found or not a recruiter"}), 404
+
+#             # Update the candidate record to point to the new recruiter and set the updated date/time
+#             current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+#             candidate.recruiter = new_recruiter_username
+#             candidate.data_updated_date = current_datetime.date()
+#             candidate.data_updated_time = current_datetime.time()
+
+#             candidates_data.append({'id': candidate.id, 'name': candidate.name})
+
+#         # Commit all updates in a single transaction
+#         db.session.commit()
+
+#         return jsonify({
+#             "message": "Candidates assigned successfully.",
+#             "candidates": candidates_data
+#         })
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
 
 
 # @app.route('/assign_candidate_new_recuriter', methods=['POST']) 
@@ -2685,7 +2765,7 @@ def add_candidate():
         current_ctc = data.get('current_ctc')
         expected_ctc = data.get('expected_ctc')
         linkedin = data.get('linkedin')
-        # serving_notice_period = data.get('serving_notice_period')
+        serving_notice_period = data.get('serving_notice_period')
         notice_period = data.get('notice_period')
         holding_offer = data.get('holding_offer')
         buyout=data.get('buyout')
@@ -2722,7 +2802,7 @@ def add_candidate():
             # Check if the job_id is provided and job is active
             matching_job_post = JobPost.query.filter(and_(JobPost.id == job_id, JobPost.job_status == 'Active')).first()
             if not matching_job_post:
-                return jsonify({"error_message": "Job on hold"})
+                return jsonify({'status': 'error',"message": "Job on hold"})
 
             # Create new candidate object
             new_candidate = Candidate(
@@ -2751,6 +2831,7 @@ def add_candidate():
                 remarks=data.get('remarks'),
                 skills=skills,
                 resume=resume_binary,
+                serving_notice_period=serving_notice_period,
                 period_of_notice=notice_period,
                 # last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
                 last_working_date=last_working_date,
@@ -2773,12 +2854,13 @@ def add_candidate():
             db.session.add(new_candidate)
             db.session.commit()
 
-            return jsonify({"message": "Candidate Added Successfully", "candidate_id": new_candidate.id})
+            return jsonify({'status': 'success',"message": "Candidate Added Successfully", "candidate_id": new_candidate.id})
 
         return jsonify({"error_message": "Method not found"})
 
     except Exception as e:
-        return jsonify({"error_message": str(e)}),500
+        return jsonify({'status': 'error',"message": "Candidate unable to add: " + str(e)})
+        
         
         
 # from flask import jsonify
@@ -2924,7 +3006,7 @@ def delete_candidate(candidate_id):
                 Candidate.query.filter_by(id=candidate_id).delete()
                 db.session.commit()
 
-                return jsonify({"message": "Candidate details deleted successfully"})
+                return jsonify({'status': 'success',"message": "Candidate details deleted successfully"})
 
             return jsonify({
                 "candidate": {
@@ -2939,9 +3021,9 @@ def delete_candidate(candidate_id):
             })
 
         else:
-            return jsonify({"message": "Candidate not found"}), 404
+            return jsonify({'status': 'error',"message": "Candidate not found"}), 404
 
-    return jsonify({"message": "Unauthorized: Only management can delete candidates"}), 401
+    return jsonify({'status': 'error',"message": "Unauthorized: Only management can delete candidates"}), 401
 
 
 @app.route('/delete_candidate_recruiter/<int:candidate_id>', methods=["GET", "POST"])
@@ -3029,7 +3111,7 @@ def update_candidate(candidate_id):
 
     candidate = Candidate.query.filter_by(id=candidate_id).first()
     if not candidate:
-        return jsonify({"error_message": "Candidate not found"}), 500
+        return jsonify({'status': 'error',"message": "Candidate not found"})
     
     previous_status = candidate.status
 
@@ -3077,6 +3159,7 @@ def update_candidate(candidate_id):
         candidate_email = ""
 
     return jsonify({
+        'status': 'success',
         "message": "Candidate Status Updated Successfully",
         "user_id": user_id,
         "user_type": user_type,
@@ -3537,6 +3620,7 @@ def edit_candidate(candidate_id):
         candidate.relevant_experience = data.get('relevant_experience')
         candidate.current_ctc = data.get('current_ctc')
         candidate.expected_ctc = data.get('expected_ctc')
+        candidate.serving_notice_period = data.get('serving_notice_period')
         candidate.notice_period = data.get('notice_period')
         candidate.reason_for_job_change = data.get('reason_for_job_change')
         candidate.linkedin_url = data.get('linkedin')
@@ -3998,7 +4082,7 @@ def post_job():
                         jd_binary = base64.b64decode(jd_pdf)
                         jd_pdf_present = bool(jd_binary)  # If jd_binary is not None, set jd_pdf_present to True
                     except Exception as e:
-                        return jsonify({"error": "Error decoding base64 PDF file", "details": str(e)}), 400
+                        return jsonify({'status': 'error',"message": "Error decoding base64 PDF file", "details": str(e)})
                         
                 recruiter_names = data.get('recruiter', [])
                 joined_recruiters = ', '.join(recruiter_names)
@@ -4051,11 +4135,11 @@ def post_job():
                 db.session.commit()
 
                 # Return the job_id along with the success message
-                return jsonify({"message": "Job posted successfully", "job_id": job_post_id}), 200
+                return jsonify({'status': 'success',"message": "Job posted successfully", "job_id": job_post_id}), 200
             else:
-                return jsonify({"error": "Invalid user type"}), 400
+                return jsonify({'status': 'error',"message": "Job post are not add successfully"})
         else:
-            return jsonify({"error": "User not found"}), 400
+            return jsonify({'status': 'error',"message": "User not found"}), 400
 
     except KeyError as e:
         return jsonify({"error": f"KeyError: {e}"}), 400
@@ -4573,7 +4657,7 @@ def update_job_status(job_id):
     user = User.query.filter_by(id=user_id).first()
 
     if not user:
-        return jsonify({"success": False, "error": "User not found"}), 404
+        return jsonify({'status': 'error', "message": "User not found"}), 404
 
     user_type = user.user_type
     username = user.username
@@ -4598,19 +4682,19 @@ def update_job_status(job_id):
             db.session.commit()
 
             # Return a JSON response indicating success
-            return jsonify({"success": True, "message": "Job status updated successfully"})
+            return jsonify({'status': 'success', "message": "Job status updated successfully"})
         
         except KeyError:
             # If 'new_job_status' key is missing in form data
-            return jsonify({"success": False, "error": "Missing 'new_job_status' in form data"}), 400
+            return jsonify({'status': 'error', "message": "Missing 'new_job_status' in form data"})
         
         except Exception as e:
             # Handle other exceptions
             db.session.rollback()  # Rollback any changes made to the session
-            return jsonify({"success": False, "error": str(e)}), 500
+            return jsonify({'status': 'error', "message": str(e)})
 
     # If job_post is None (job not found)
-    return jsonify({"success": False, "error": "Job post not found"}), 404
+    return jsonify({'status': 'error', "message": "Job post not found"})
 
 
 
@@ -5773,14 +5857,14 @@ def assign_job(job_id):
     user = User.query.filter_by(id=user_id).first()
 
     if not user:
-        return jsonify({"error_message": "User not found"}), 404
+        return jsonify({'status': 'error',"message": "User not found"})
 
     user_type = user.user_type
     username = user.username
     job_post = JobPost.query.get(job_id)  # Retrieve the job post by its ID
 
     if not job_post:
-        return jsonify({"error_message": "Job not found"}), 404
+        return jsonify({'status': 'success',"message": "Job not found"})
 
     current_recruiters = job_post.recruiter.split(', ') if job_post.recruiter else []
 
@@ -5826,7 +5910,7 @@ def assign_job(job_id):
         db.session.add_all(notifications)
         db.session.commit()
 
-        return jsonify({"message": "Job re-assigned successfully"}), 200
+        return jsonify({'status': 'success',"message": "Job re-assigned successfully"}), 200
 
     recruiter_names = [recruiter.name for recruiter in User.query.filter_by(user_type='recruiter')]
     return jsonify({
@@ -6328,7 +6412,7 @@ def delete_job_post(job_id):
     job_post = JobPost.query.get(job_id)
     
     if not job_post:
-        return jsonify({"error": "Job Post not found"}), 404
+        return jsonify({'status': 'error',"message": "Job Post not found"}), 404
 
     # Fetch all notifications related to the job post
     notifications = Notification.query.filter_by(job_post_id=job_id).all()
@@ -6344,17 +6428,17 @@ def delete_job_post(job_id):
             db.session.delete(job_post)
             db.session.commit()
             
-            return jsonify({"message": "Job Post and Notifications Deleted Successfully"}), 200
+            return jsonify({'status': 'success',"message": "Job Post and Notifications Deleted Successfully"})
         except Exception as e:
             # Handle any potential exceptions
             db.session.rollback()
-            return jsonify({"error": "An error occurred while deleting job post and notifications"}), 500
+            return jsonify({'status': 'error',"message": "An error occurred while deleting job post and notifications"})
     else:
         # No notifications found for the job post
         # Delete only the job post
         db.session.delete(job_post)
         db.session.commit()
-        return jsonify({"message": "Job Post Deleted Successfully. No associated notifications found."}), 200
+        return jsonify({'status': 'success',"message": "Job Post Deleted Successfully. No associated notifications found."}), 200
 
 
 # @app.route('/delete_job_post/<int:job_id>', methods=['POST'])
@@ -6808,11 +6892,11 @@ def edit_job_post(job_post_id):
                 db.session.commit()
                 
                 # Return success message
-                return jsonify({"message": "Job post updated successfully"}), 200
+                return jsonify({'status': 'success',"message": "Job post updated successfully"})
             else:
-                return jsonify({"error": "Job post not found"}), 404
+                return jsonify({'status': 'error',"message": "Job post are not updated successfully"})
         else:
-            return jsonify({"error": "Unauthorized"}), 401
+            return jsonify({'status': 'error',"message": "Unauthorized"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
