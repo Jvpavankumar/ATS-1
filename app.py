@@ -3016,7 +3016,8 @@ def add_candidate():
         return jsonify({"error_message": "Method not found"})
 
     except Exception as e:
-        return jsonify({'status': 'error',"message": "Candidate unable to add"})
+        print(e)
+        return jsonify({'status': 'error',"message": "Candidate unable to add","error_message": str(e})
         
         
         
