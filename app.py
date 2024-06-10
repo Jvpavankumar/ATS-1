@@ -784,15 +784,12 @@ def get_recruiters_list():
     })
 
 
-
-
-
 @app.route('/get_recruiters_candidate', methods=['POST'])
 def get_recruiters_candidate():
     data = request.json
     
     if not data or 'user_name' not in data:
-        return jsonify({'status': 'error','message': 'Invalid input'}), 400
+        return jsonify({'status': 'error', 'message': 'Invalid input'}), 400
     
     username = data['user_name']
     
@@ -800,8 +797,16 @@ def get_recruiters_candidate():
     user = User.query.filter((User.username == username) & (User.user_type.in_(['recruiter', 'management']))).first()
     
     if user:
-        # Find all candidates linked with the user's username
-        candidates = Candidate.query.filter_by(recruiter=username).all()
+        # If the user is a recruiter, find all candidates linked with the user's username
+        if user.user_type == 'recruiter':
+            candidates = Candidate.query.filter_by(recruiter=username).all()
+        # If the user is in management, find all candidates where recruiter matches the username
+        elif user.user_type == 'management':
+            candidates = Candidate.query.filter(
+                (Candidate.recruiter == username) | (Candidate.management == username)
+            ).all()
+        else:
+            return jsonify({'status': 'error', 'message': 'User type not authorized'}), 403
         
         # Prepare response data
         candidates_list = [
@@ -810,13 +815,47 @@ def get_recruiters_candidate():
                 'username': candidate.name,
                 'status': candidate.status,
                 'profile': candidate.profile,
-                'recruiter': candidate.recruiter
+                'recruiter': candidate.recruiter,
+                'management': candidate.management
             } 
             for candidate in candidates
         ]
         return jsonify(candidates_list)
     else:
-        return jsonify({'status': 'error','message': 'User not found or not authorized'})
+        return jsonify({'status': 'error', 'message': 'User not found or not authorized'}), 404
+
+
+
+# @app.route('/get_recruiters_candidate', methods=['POST'])
+# def get_recruiters_candidate():
+#     data = request.json
+    
+#     if not data or 'user_name' not in data:
+#         return jsonify({'status': 'error','message': 'Invalid input'}), 400
+    
+#     username = data['user_name']
+    
+#     # Find the user with the given username who is either a recruiter or in management
+#     user = User.query.filter((User.username == username) & (User.user_type.in_(['recruiter', 'management']))).first()
+    
+#     if user:
+#         # Find all candidates linked with the user's username
+#         candidates = Candidate.query.filter_by(recruiter=username).all()
+        
+#         # Prepare response data
+#         candidates_list = [
+#             {
+#                 'id': candidate.id,
+#                 'username': candidate.name,
+#                 'status': candidate.status,
+#                 'profile': candidate.profile,
+#                 'recruiter': candidate.recruiter
+#             } 
+#             for candidate in candidates
+#         ]
+#         return jsonify(candidates_list)
+#     else:
+#         return jsonify({'status': 'error','message': 'User not found or not authorized'})
 
 # @app.route('/get_recruiters_candidate', methods=['POST'])
 # def recruiter_candidate_list():
@@ -898,7 +937,7 @@ def assign_candidate_to_a_new_recruiter():
         })
     except Exception as e:
         db.session.rollback()
-        return jsonify({'status': 'error',"message": "Error assigning candidates: " + str(e)})
+        return jsonify({'status': 'error',"message": "Error assigning candidates"})
 
 
 
