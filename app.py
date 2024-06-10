@@ -2861,7 +2861,7 @@ def add_candidate():
         return jsonify({"error_message": "Method not found"})
 
     except Exception as e:
-        return jsonify({'status': 'error',"message": "Candidate unable to add: " + str(e)})
+        return jsonify({'status': 'error',"message": "Candidate unable to add"})
         
         
         
@@ -6440,7 +6440,8 @@ def delete_job_post(job_id):
         # Delete only the job post
         db.session.delete(job_post)
         db.session.commit()
-        return jsonify({'status': 'success',"message": "Job Post Deleted Successfully. No associated notifications found."}), 200
+         return jsonify({'status': 'success',"message": "Job Post and Notifications Deleted Successfully"})
+        # return jsonify({'status': 'success',"message": "Job Post Deleted Successfully. No associated notifications found."}), 200
 
 
 # @app.route('/delete_job_post/<int:job_id>', methods=['POST'])
