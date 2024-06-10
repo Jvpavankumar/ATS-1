@@ -6440,7 +6440,7 @@ def delete_job_post(job_id):
         # Delete only the job post
         db.session.delete(job_post)
         db.session.commit()
-         return jsonify({'status': 'success',"message": "Job Post and Notifications Deleted Successfully"})
+        return jsonify({'status': 'success',"message": "Job Post and Notifications Deleted Successfully"})
         # return jsonify({'status': 'success',"message": "Job Post Deleted Successfully. No associated notifications found."}), 200
 
 
