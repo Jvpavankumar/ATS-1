@@ -1488,8 +1488,11 @@ def dashboard():
                 'resume': candidate.resume if candidate.resume is not None else "",
                 # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                 # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                'serving_notice_period' :candidate.serving_notice_period,
                 'period_of_notice': candidate.period_of_notice,
                 'last_working_date': candidate.last_working_date,
+                'total_offers': candidate.total,
+                'highest_package_in_lpa = candidate.package_in_lpa,
                 'buyout': candidate.buyout,
                 'date_created': candidate.date_created,
                 'time_created': candidate.time_created,
@@ -1581,8 +1584,11 @@ def dashboard():
                 'resume': candidate.resume if candidate.resume is not None else "",
                 # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                 # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                'serving_notice_period' :candidate.serving_notice_period,
                 'period_of_notice': candidate.period_of_notice,
                 'last_working_date': candidate.last_working_date,
+                'total_offers': candidate.total,
+                'highest_package_in_lpa = candidate.package_in_lpa,
                 'buyout': candidate.buyout,
                 'date_created': candidate.date_created,
                 'time_created': candidate.time_created,
@@ -1673,9 +1679,12 @@ def dashboard():
                 'resume': candidate.resume if candidate.resume is not None else "",
                 # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                 # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
+                'serving_notice_period' :candidate.serving_notice_period,
                 'period_of_notice': candidate.period_of_notice,
                 'last_working_date': candidate.last_working_date,
                 'buyout': candidate.buyout,
+                'total_offers': candidate.total,
+                'highest_package_in_lpa = candidate.package_in_lpa,
                 'date_created': candidate.date_created,
                 'time_created': candidate.time_created,
                 'data_updated_date': candidate.data_updated_date,
@@ -6889,16 +6898,111 @@ def edit_job_post(job_post_id):
                             db.session.add(new_notification)
                             new_notification.num_notification = 1
                 
+                # Update candidate details if job_post_id is present in the Candidate table
+                candidates = Candidate.query.filter_by(job_post_id=job_post_id).all()
+                for candidate in candidates:
+                    candidate.client = job_post.client
+                    candidate.profile = job_post.role
+                    # Add more fields if necessary
+
                 db.session.commit()
                 
                 # Return success message
-                return jsonify({'status': 'success',"message": "Job post updated successfully"})
+                return jsonify({'status': 'success', "message": "Job post details updated successfully"})
             else:
                 return jsonify({'status': 'error',"message": "Job post are not updated successfully"})
         else:
-            return jsonify({'status': 'error',"message": "Unauthorized"})
+            return jsonify({'status': 'error', "message": "Unauthorized"})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# @app.route('/edit_job_post/<int:job_post_id>', methods=['POST'])
+# def edit_job_post(job_post_id):
+#     try:
+#         # Accessing the JSON data from the request
+#         data = request.json
+#         user_id = data.get('user_id')
+        
+#         # Retrieve the user
+#         user = User.query.filter_by(id=user_id).first()
+        
+#         # Check if the user exists and has the right permissions
+#         if user and user.user_type == 'management':
+#             # Retrieve the job post to be edited
+#             job_post = JobPost.query.get(job_post_id)
+            
+#             if job_post:
+#                 # Update job post fields
+#                 job_post.client = data.get('client', job_post.client)
+#                 job_post.experience_min = data.get('experience_min', job_post.experience_min)
+#                 job_post.experience_max = data.get('experience_max', job_post.experience_max)
+#                 job_post.budget_min = data.get('budget_min', job_post.budget_min)
+#                 job_post.budget_max = data.get('budget_max', job_post.budget_max)
+#                 job_post.location = data.get('location', job_post.location)
+#                 job_post.shift_timings = data.get('shift_timings', job_post.shift_timings)
+#                 job_post.notice_period = data.get('notice_period', job_post.notice_period)
+#                 job_post.role = data.get('role', job_post.role)
+#                 job_post.detailed_jd = data.get('detailed_jd', job_post.detailed_jd)
+#                 job_post.mode = data.get('mode', job_post.mode)
+#                 job_post.job_status = data.get('job_status', job_post.job_status)
+#                 job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
+#                 job_post.skills = data.get('skills', job_post.skills)
+#                 # job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
+                
+#                 # Handle jd_pdf field
+#                 jd_pdf = data.get('jd_pdf')
+#                 if jd_pdf is not None:
+#                     # Decode the base64 encoded PDF file
+#                     jd_binary = base64.b64decode(jd_pdf)
+#                     # Update job_post with the decoded binary data
+#                     job_post.jd_pdf = jd_binary
+#                     # Set jd_pdf_present to True since PDF is present
+#                     job_post.jd_pdf_present = True
+#                 else:
+#                     # If jd_pdf is None, set jd_pdf_present to False
+#                     job_post.jd_pdf_present = False
+                    
+#                 recruiters = data.get('recruiter', job_post.recruiter)
+#                 if recruiters:
+#                     # Ensure recruiters are unique
+#                     unique_recruiters = list(set(recruiters))
+#                     job_post.recruiter = ', '.join(unique_recruiters)
+                    
+#                 # Update data_updated_date and data_updated_time
+#                 current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
+#                 job_post.data_updated_date = current_datetime.date()
+#                 job_post.data_updated_time = current_datetime.time()
+                
+#                 # Update job post in the database
+#                 db.session.commit()
+                
+#                 # Iterate over recruiters and create notification records for each
+#                 recruiters = data.get('recruiter', job_post.recruiter)
+#                 if recruiters:
+#                     unique_recruiters = list(set(recruiters))
+#                     for recruiter in unique_recruiters:
+#                         # Check if a notification exists for the job post and recruiter combination
+#                         notification = Notification.query.filter_by(job_post_id=job_post_id, recruiter_name=recruiter).first()
+#                         if notification:
+#                             # If notification exists, increment num_notification by 1
+#                             notification.num_notification += 1
+#                         else:
+#                             # If notification does not exist, create a new record with num_notification set to 1
+#                             new_notification = Notification(job_post_id=job_post_id, recruiter_name=recruiter)
+#                             db.session.add(new_notification)
+#                             new_notification.num_notification = 1
+                
+#                 db.session.commit()
+                
+#                 # Return success message
+#                 return jsonify({'status': 'success',"message": "Job post updated successfully"})
+#             else:
+#                 return jsonify({'status': 'error',"message": "Job post are not updated successfully"})
+#         else:
+#             return jsonify({'status': 'error',"message": "Unauthorized"})
+#     except Exception as e:
+#         return jsonify({"error": str(e)}), 500
 
 
 
