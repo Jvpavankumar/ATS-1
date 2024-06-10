@@ -3017,7 +3017,7 @@ def add_candidate():
 
     except Exception as e:
         print(e)
-        return jsonify({'status': 'error',"message": "Candidate unable to add","error_message": str(e})
+        return jsonify({'status': 'error',"message": "Candidate unable to add")
         
         
         
