@@ -890,6 +890,55 @@ def get_recruiters_candidate():
 #         return jsonify({'error': 'Recruiter not found'}), 404
 
 
+@app.route('/assign_candidate_new_recruiter', methods=['POST']) 
+def assign_candidate_to_a_new_recruiter():
+    data = request.json
+
+    try:
+        candidates_data = []
+        current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+
+        for candidate_data in data['candidates']:
+            candidate_id = candidate_data.get('candidate_id')
+            new_recruiter_username = candidate_data.get('new_recruiter')
+            current_recruiter_username = candidate_data.get('current_recruiter')
+
+            if not candidate_id or not new_recruiter_username or not current_recruiter_username:
+                return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
+
+            # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
+            candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
+            current_recruiter = User.query.filter_by(username=current_recruiter_username).first()  # Modified line
+            new_recruiter = User.query.filter_by(username=new_recruiter_username).first()  # Modified line
+
+            if candidate is None:
+                return jsonify({"error": "Candidate not found or not assigned to current recruiter"}), 404
+
+            if current_recruiter is None:
+                return jsonify({"error": "Current recruiter not found"}), 404  # Modified line
+
+            if new_recruiter is None:
+                return jsonify({"error": "New recruiter not found"}), 404  # Modified line
+
+            # Update the candidate record to point to the new recruiter and set the updated date/time
+            candidate.recruiter = new_recruiter_username
+            candidate.data_updated_date = current_datetime.date()
+            candidate.data_updated_time = current_datetime.time()
+
+            candidates_data.append({'id': candidate.id, 'name': candidate.name})
+
+        # Commit all updates in a single transaction
+        db.session.commit()
+
+        return jsonify({
+            "message": "Candidates assigned successfully.",
+            "candidates": candidates_data
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
+
+
 # @app.route('/assign_candidate_new_recruiter', methods=['POST'])
 # def assign_candidate_to_a_new_recruiter():
 #     data = request.json
@@ -992,53 +1041,53 @@ def get_recruiters_candidate():
 #         return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
 
 
-@app.route('/assign_candidate_new_recuriter', methods=['POST']) 
-def assign_candidate_to_a_new_recruiter():
-    data = request.json
+# @app.route('/assign_candidate_new_recuriter', methods=['POST']) 
+# def assign_candidate_to_a_new_recruiter():
+#     data = request.json
 
-    try:
-        candidates_data = []
-        current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+#     try:
+#         candidates_data = []
+#         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
 
-        for candidate_data in data['candidates']:
-            candidate_id = candidate_data.get('candidate_id')
-            new_recruiter_username = candidate_data.get('new_recruiter')
-            current_recruiter_username = candidate_data.get('current_recruiter')
+#         for candidate_data in data['candidates']:
+#             candidate_id = candidate_data.get('candidate_id')
+#             new_recruiter_username = candidate_data.get('new_recruiter')
+#             current_recruiter_username = candidate_data.get('current_recruiter')
 
-            if not candidate_id or not new_recruiter_username or not current_recruiter_username:
-                return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
+#             if not candidate_id or not new_recruiter_username or not current_recruiter_username:
+#                 return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
 
-            # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
-            candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
-            current_recruiter = User.query.filter_by(username=current_recruiter_username, user_type='recruiter').first()
-            new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
+#             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
+#             candidate = Candidate.query.filter_by(id=candidate_id, recruiter=current_recruiter_username).first()
+#             current_recruiter = User.query.filter_by(username=current_recruiter_username, user_type='recruiter').first()
+#             new_recruiter = User.query.filter_by(username=new_recruiter_username, user_type='recruiter').first()
 
-            if candidate is None:
-                return jsonify({"error": "Candidate not found or not assigned to current recruiter"}), 404
+#             if candidate is None:
+#                 return jsonify({"error": "Candidate not found or not assigned to current recruiter"}), 404
 
-            if current_recruiter is None:
-                return jsonify({"error": "Current recruiter not found or not a recruiter"}), 404
+#             if current_recruiter is None:
+#                 return jsonify({"error": "Current recruiter not found or not a recruiter"}), 404
 
-            if new_recruiter is None:
-                return jsonify({"error": "New recruiter not found or not a recruiter"}), 404
+#             if new_recruiter is None:
+#                 return jsonify({"error": "New recruiter not found or not a recruiter"}), 404
 
-            # Update the candidate record to point to the new recruiter and set the updated date/time
-            candidate.recruiter = new_recruiter_username
-            candidate.data_updated_date = current_datetime.date()
-            candidate.data_updated_time = current_datetime.time()
+#             # Update the candidate record to point to the new recruiter and set the updated date/time
+#             candidate.recruiter = new_recruiter_username
+#             candidate.data_updated_date = current_datetime.date()
+#             candidate.data_updated_time = current_datetime.time()
 
-            candidates_data.append({'id': candidate.id, 'name': candidate.name})
+#             candidates_data.append({'id': candidate.id, 'name': candidate.name})
 
-        # Commit all updates in a single transaction
-        db.session.commit()
+#         # Commit all updates in a single transaction
+#         db.session.commit()
 
-        return jsonify({
-            "message": "Candidates assigned successfully.",
-            "candidates": candidates_data
-        })
-    except Exception as e:
-        db.session.rollback()
-        return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
+#         return jsonify({
+#             "message": "Candidates assigned successfully.",
+#             "candidates": candidates_data
+#         })
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({"error": "Error assigning candidates: " + str(e)}), 500
 
 # @app.route('/assign_candidate_new_recuriter', methods=['POST']) 
 # def assign_candidate_to_a_new_recruiter():
@@ -3815,7 +3864,8 @@ def edit_candidate(candidate_id):
         candidate.current_ctc = data.get('current_ctc')
         candidate.expected_ctc = data.get('expected_ctc')
         candidate.serving_notice_period = data.get('serving_notice_period')
-        candidate.notice_period = data.get('notice_period')
+        # candidate.notice_period = data.get('notice_period')
+        candidate.period_of_notice = data.get('period_of_notice')
         candidate.reason_for_job_change = data.get('reason_for_job_change')
         candidate.linkedin_url = data.get('linkedin')
         candidate.remarks = data.get('remarks')
