@@ -898,7 +898,6 @@ def assign_candidates_notification(recruiter_email, new_recruiter_name, candidat
             <table>
                 <tr>
                     <th>Job ID</th>
-                    <th>Candidate ID</th>
                     <th>Client</th>
                     <th>Profile</th>
                     <th>Candidate Name</th>
