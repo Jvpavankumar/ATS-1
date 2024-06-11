@@ -271,8 +271,8 @@ class JobPost(db.Model):
     time_created = db.Column(db.Time)
     job_status = db.Column(db.String(20))
     job_type = db.Column(db.String(100))
-    # contract_in_months = db.Column(db.String(100))
-    contract_in_months = db.Column(db.Integer, nullable=True)
+    contract_in_months = db.Column(db.String(100))
+    # contract_in_months = db.Column(db.Integer, nullable=True)
     skills = db.Column(db.String(500))
     notification = db.Column(db.String(20))
     data_updated_date = db.Column(db.Date)
@@ -4424,15 +4424,15 @@ def post_job():
         data = request.json
         user_id = data['user_id']
         user = User.query.filter_by(id=user_id).first()
-        
+
         # Check if the user exists
         if not user:
             return jsonify({'status': 'error', 'message': 'User not found'}), 400
-        
+
         user_type = user.user_type
         if user_type != 'management':
-            return jsonify({'status': 'error', 'message': 'Job post not added successfully'})
-        
+            return jsonify({'status': 'error', 'message': 'Job post not added successfully'}), 400
+
         # Extracting job details from the request
         job_details = {
             'client': data.get('client'),
@@ -4451,7 +4451,7 @@ def post_job():
             'job_type': data.get('Job_Type'),
             'contract_in_months': data.get('Job_Type_details') if data.get('Job_Type') == 'Contract' else None
         }
-        
+
         # Decode the base64 encoded PDF file
         jd_pdf = data.get('jd_pdf')
         jd_binary = None
@@ -4462,7 +4462,7 @@ def post_job():
                 jd_pdf_present = bool(jd_binary)  # If jd_binary is not None, set jd_pdf_present to True
             except Exception as e:
                 return jsonify({'status': 'error', 'message': 'Error decoding base64 PDF file', 'details': str(e)})
-        
+
         # Create a new job post instance
         new_job_post = JobPost(
             client=job_details['client'],
@@ -4490,14 +4490,14 @@ def post_job():
         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
         new_job_post.date_created = current_datetime.date()
         new_job_post.time_created = current_datetime.time()
-        
+
         # Add the new job post to the session and commit
         db.session.add(new_job_post)
         db.session.commit()
-        
+
         # Generate job_post_id after committing the new_job_post
         job_post_id = new_job_post.id
-        
+
         # Add notifications for each recruiter
         for recruiter_name in data.get('recruiter', []):
             notification = Notification(
@@ -4506,7 +4506,7 @@ def post_job():
                 notification_status=False
             )
             db.session.add(notification)
-        
+
         db.session.commit()
 
         # Send notifications to recruiters
@@ -4514,15 +4514,125 @@ def post_job():
             recruiter = User.query.filter_by(username=recruiter_name.strip()).first()
             if recruiter:
                 send_notification(recruiter.email)
-        
+
         # Return the job_id along with the success message
         return jsonify({'status': 'success', 'message': 'Job posted successfully', 'job_id': job_post_id}), 200
 
     except KeyError as e:
+        print("e1",e)
         return jsonify({"status": "error", "message": f"KeyError: {e}"})
 
     except Exception as e:
+        print("e2",e)
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+# @app.route('/post_job', methods=['POST'])
+# def post_job():
+#     try:
+#         # Accessing the JSON data from the request
+#         data = request.json
+#         user_id = data['user_id']
+#         user = User.query.filter_by(id=user_id).first()
+        
+#         # Check if the user exists
+#         if not user:
+#             return jsonify({'status': 'error', 'message': 'User not found'}), 400
+        
+#         user_type = user.user_type
+#         if user_type != 'management':
+#             return jsonify({'status': 'error', 'message': 'Job post not added successfully'})
+        
+#         # Extracting job details from the request
+#         job_details = {
+#             'client': data.get('client'),
+#             'experience_min': data.get('experience_min'),
+#             'experience_max': data.get('experience_max'),
+#             'budget_min': f"{data.get('currency_type_min')} {data.get('budget_min')}",
+#             'budget_max': f"{data.get('currency_type_max')} {data.get('budget_max')}",
+#             'location': data.get('location'),
+#             'shift_timings': data.get('shift_timings'),
+#             'notice_period': data.get('notice_period'),
+#             'role': data.get('role'),
+#             'detailed_jd': data.get('detailed_jd'),
+#             'mode': data.get('mode'),
+#             'job_status': data.get('job_status'),
+#             'skills': data.get('skills'),
+#             'job_type': data.get('Job_Type'),
+#             'contract_in_months': data.get('Job_Type_details') if data.get('Job_Type') == 'Contract' else None
+#         }
+        
+#         # Decode the base64 encoded PDF file
+#         jd_pdf = data.get('jd_pdf')
+#         jd_binary = None
+#         jd_pdf_present = False  # Default value
+#         if jd_pdf:
+#             try:
+#                 jd_binary = base64.b64decode(jd_pdf)
+#                 jd_pdf_present = bool(jd_binary)  # If jd_binary is not None, set jd_pdf_present to True
+#             except Exception as e:
+#                 return jsonify({'status': 'error', 'message': 'Error decoding base64 PDF file', 'details': str(e)})
+        
+#         # Create a new job post instance
+#         new_job_post = JobPost(
+#             client=job_details['client'],
+#             experience_min=job_details['experience_min'],
+#             experience_max=job_details['experience_max'],
+#             budget_min=job_details['budget_min'],
+#             budget_max=job_details['budget_max'],
+#             location=job_details['location'],
+#             shift_timings=job_details['shift_timings'],
+#             notice_period=job_details['notice_period'],
+#             role=job_details['role'],
+#             detailed_jd=job_details['detailed_jd'],
+#             recruiter=', '.join(data.get('recruiter', [])),
+#             management=user.username,
+#             mode=job_details['mode'],
+#             job_status=job_details['job_status'],
+#             job_type=job_details['job_type'],
+#             skills=job_details['skills'],
+#             contract_in_months=job_details['contract_in_months'],
+#             jd_pdf=jd_binary,  # Store the binary data in the database
+#             jd_pdf_present=jd_pdf_present  # Store whether PDF is present
+#         )
+
+#         # Set created date and time
+#         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+#         new_job_post.date_created = current_datetime.date()
+#         new_job_post.time_created = current_datetime.time()
+        
+#         # Add the new job post to the session and commit
+#         db.session.add(new_job_post)
+#         db.session.commit()
+        
+#         # Generate job_post_id after committing the new_job_post
+#         job_post_id = new_job_post.id
+        
+#         # Add notifications for each recruiter
+#         for recruiter_name in data.get('recruiter', []):
+#             notification = Notification(
+#                 job_post_id=job_post_id,
+#                 recruiter_name=recruiter_name.strip(),
+#                 notification_status=False
+#             )
+#             db.session.add(notification)
+        
+#         db.session.commit()
+
+#         # Send notifications to recruiters
+#         for recruiter_name in data.get('recruiter', []):
+#             recruiter = User.query.filter_by(username=recruiter_name.strip()).first()
+#             if recruiter:
+#                 send_notification(recruiter.email)
+        
+#         # Return the job_id along with the success message
+#         return jsonify({'status': 'success', 'message': 'Job posted successfully', 'job_id': job_post_id}), 200
+
+#     except KeyError as e:
+#         return jsonify({"status": "error", "message": f"KeyError: {e}"})
+
+#     except Exception as e:
+#         return jsonify({"status": "error", "message": str(e)}), 500
 
 # @app.route('/post_job', methods=['POST'])
 # def post_job():
@@ -7343,8 +7453,8 @@ def edit_job_post(job_post_id):
                 if job_type == 'Contract':
                     job_post.contract_in_months = data.get('Job_Type_details')
                     # job_type = job_type + '(' + Job_Type_details + ' Months )'
-                # else:
-                #     pass
+                else:
+                    pass
                 
                 # Handle jd_pdf field
                 jd_pdf = data.get('jd_pdf')
