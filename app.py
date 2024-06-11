@@ -271,6 +271,7 @@ class JobPost(db.Model):
     time_created = db.Column(db.Time)
     job_status = db.Column(db.String(20))
     job_type = db.Column(db.String(100))
+    contract_in_months = db.Column(db.String(100))
     skills = db.Column(db.String(500))
     notification = db.Column(db.String(20))
     data_updated_date = db.Column(db.Date)
@@ -1561,7 +1562,7 @@ def dashboard():
                 'resume': candidate.resume if candidate.resume is not None else "",
                 # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                 # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
-                'serving_notice_period' :candidate.serving_notice_period,
+                # 'serving_notice_period' :candidate.serving_notice_period,
                 'period_of_notice': candidate.period_of_notice,
                 'last_working_date': candidate.last_working_date,
                 'total_offers': candidate.total,
@@ -1657,7 +1658,7 @@ def dashboard():
                 'resume': candidate.resume if candidate.resume is not None else "",
                 # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                 # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
-                'serving_notice_period' :candidate.serving_notice_period,
+                # 'serving_notice_period' :candidate.serving_notice_period,
                 'period_of_notice': candidate.period_of_notice,
                 'last_working_date': candidate.last_working_date,
                 'total_offers': candidate.total,
@@ -1752,7 +1753,7 @@ def dashboard():
                 'resume': candidate.resume if candidate.resume is not None else "",
                 # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                 # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
-                'serving_notice_period' :candidate.serving_notice_period,
+                # 'serving_notice_period' :candidate.serving_notice_period,
                 'period_of_notice': candidate.period_of_notice,
                 'last_working_date': candidate.last_working_date,
                 'buyout': candidate.buyout,
@@ -2838,6 +2839,10 @@ def add_candidate():
         position = data.get('position')
         current_job_location = data.get('current_job_location')
         preferred_job_location = data.get('preferred_job_location')
+        
+        # notice_period = data.get('notice_period')  # yes no completed
+        # period_of_notice = data.get('period_of_notice')
+        
         qualifications = data.get('qualifications')
         experience = data.get('experience')
         experience_months=data.get('experience')
@@ -2858,17 +2863,17 @@ def add_candidate():
         else:
             resume_present = False
 
-        serving_notice_period = data.get('serving_notice_period')
+        notice_period = data.get('serving_notice_period')
         last_working_date = None
         buyout = False
-        notice_period = None
-        if serving_notice_period == 'yes':
+        period_of_notice = None
+        if notice_period == 'yes':
             last_working_date=data.get('last_working_date')
             buyout=data.get('buyout')
-        elif serving_notice_period == 'no':
-            notice_period = data.get('notice_period')
+        elif notice_period == 'no':
+            period_of_notice = data.get('notice_period')
             buyout=data.get('buyout')
-        elif serving_notice_period == 'completed':
+        elif notice_period == 'completed':
             last_working_date=data.get('last_working_date')
 
         holding_offer = data.get('holding_offer')
@@ -2933,7 +2938,8 @@ def add_candidate():
                 remarks=data.get('remarks'),
                 skills=skills,
                 resume=resume_binary,
-                serving_notice_period=serving_notice_period,
+                # serving_notice_period=serving_notice_period,
+                notice_period=notice_period,
                 period_of_notice=notice_period,
                 # last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
                 last_working_date=last_working_date,
@@ -3853,19 +3859,18 @@ def edit_candidate(candidate_id):
         candidate.relevant_experience = data.get('relevant_experience')
         candidate.current_ctc = data.get('current_ctc')
         candidate.expected_ctc = data.get('expected_ctc')
-        candidate.serving_notice_period = data.get('serving_notice_period')
-        # candidate.notice_period = data.get('notice_period')
-        candidate.period_of_notice = data.get('period_of_notice')
+        
+        candidate.notice_period = data.get('notice_period')
+        candidate.period_of_notice = data.get('notice_period')  # Update the correct field name
+        
         candidate.reason_for_job_change = data.get('reason_for_job_change')
         candidate.linkedin_url = data.get('linkedin')
         candidate.remarks = data.get('remarks')
         candidate.skills = data.get('skills')
         candidate.holding_offer = data.get('holding_offer')
-        candidate.total = data.get('total')
-        candidate.package_in_lpa = data.get('package_in_lpa')
-        candidate.buyout = data.get('buyout')
         candidate.total = data.get('total_offers')
-        candidate.package_in_lpa =data.get('highest_package')
+        candidate.package_in_lpa = data.get('highest_package')
+        candidate.buyout = data.get('buyout')
         candidate.last_working_date = data.get('last_working_date')
 
         # Handle resume decoding
@@ -3878,16 +3883,119 @@ def edit_candidate(candidate_id):
             except (binascii.Error, TypeError) as e:
                 return jsonify({"error_message": "Invalid resume format"}), 500
 
+        # Serving notice period logic
+        notice_period = data.get('notice_period')
+        if notice_period == 'yes':
+            candidate.last_working_date = data.get('last_working_date')
+            candidate.buyout = data.get('buyout')
+        elif notice_period == 'no':
+            candidate.period_of_notice = data.get('period_of_notice')
+            candidate.buyout = data.get('buyout')
+        elif notice_period == 'completed':
+            candidate.last_working_date = data.get('last_working_date')
+
+        # Holding offer logic
+        holding_offer = data.get('holding_offer')
+        if holding_offer == 'yes':
+            total_offers = data.get('total_offers')
+            candidate.total = 0 if total_offers == '' else total_offers
+            highest_package = data.get('highest_package')
+            candidate.package_in_lpa = 0 if highest_package == '' else highest_package
+        else:
+            candidate.total = None
+            candidate.package_in_lpa = None
+
         # Update data_updated_date and data_updated_time
         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
         candidate.data_updated_date = current_datetime.date()
         candidate.data_updated_time = current_datetime.time()
 
         db.session.commit()
-        return jsonify({'status': 'success',"message": "Candidate Details Edited Successfully"})
+        return jsonify({'status': 'success', "message": "Candidate Details Edited Successfully"})
 
     except Exception as e:
-        return jsonify({'status': 'error',"message": "Candidate Details not Edited Successfully"})
+        print(e)
+        return jsonify({'status': 'error', "message": "Candidate Details not Edited Successfully"})
+
+
+# @app.route('/edit_candidate/<int:candidate_id>', methods=['POST'])
+# def edit_candidate(candidate_id):
+#     try:
+#         data = request.json
+
+#         user_id = data.get('user_id')
+#         if not user_id:
+#             return jsonify({"error_message": "User ID is required"}), 400
+
+#         user = User.query.filter_by(id=user_id).first()
+#         if not user:
+#             return jsonify({"error_message": "User not found"}), 404
+
+#         user_name = user.username
+#         count_notification_no = Notification.query.filter(
+#             Notification.notification_status == 'false',
+#             Notification.recruiter_name == user_name
+#         ).count()
+#         career_count_notification_no = Career_notification.query.filter(
+#             Career_notification.notification_status == 'false',
+#             Career_notification.recruiter_name == user_name
+#         ).count()
+
+#         # Retrieve the candidate object
+#         candidate = Candidate.query.get(candidate_id)
+#         if not candidate:
+#             return jsonify({"error_message": "Candidate not found"}), 404
+
+#         # Update the candidate fields with the new data
+#         candidate.name = data.get('name')
+#         candidate.mobile = data.get('mobile')
+#         candidate.email = data.get('email')
+#         candidate.client = data.get('client')
+#         candidate.current_company = data.get('current_company')
+#         candidate.position = data.get('position')
+#         candidate.profile = data.get('profile')
+#         candidate.current_job_location = data.get('current_job_location')
+#         candidate.preferred_job_location = data.get('preferred_job_location')
+#         candidate.qualifications = data.get('qualifications')
+#         candidate.experience = data.get('experience')
+#         candidate.relevant_experience = data.get('relevant_experience')
+#         candidate.current_ctc = data.get('current_ctc')
+#         candidate.expected_ctc = data.get('expected_ctc')
+#         # candidate.serving_notice_period = data.get('serving_notice_period')
+#         candidate.notice_period = data.get('notice_period')
+#         candidate.period_of_notice = data.get('period_of_notice')
+#         candidate.reason_for_job_change = data.get('reason_for_job_change')
+#         candidate.linkedin_url = data.get('linkedin')
+#         candidate.remarks = data.get('remarks')
+#         candidate.skills = data.get('skills')
+#         candidate.holding_offer = data.get('holding_offer')
+#         candidate.total = data.get('total')
+#         candidate.package_in_lpa = data.get('package_in_lpa')
+#         candidate.buyout = data.get('buyout')
+#         candidate.total = data.get('total_offers')
+#         candidate.package_in_lpa =data.get('highest_package')
+#         candidate.last_working_date = data.get('last_working_date')
+
+#         # Handle resume decoding
+#         resume_data = data.get('resume')
+#         if resume_data is not None:
+#             try:
+#                 resume_binary = base64.b64decode(resume_data)
+#                 candidate.resume = resume_binary
+#                 candidate.resume_present = True  # Update resume_present to True if resume is provided and valid
+#             except (binascii.Error, TypeError) as e:
+#                 return jsonify({"error_message": "Invalid resume format"}), 500
+
+#         # Update data_updated_date and data_updated_time
+#         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+#         candidate.data_updated_date = current_datetime.date()
+#         candidate.data_updated_time = current_datetime.time()
+
+#         db.session.commit()
+#         return jsonify({'status': 'success',"message": "Candidate Details Edited Successfully"})
+
+#     except Exception as e:
+#         return jsonify({'status': 'error',"message": "Candidate Details not Edited Successfully"})
 
 
 # @app.route('/edit_candidate/<int:candidate_id>', methods=['POST'])
@@ -4304,9 +4412,15 @@ def post_job():
                 detailed_jd = data.get('detailed_jd')
                 mode = data.get('mode')
                 job_status = data.get('job_status')
-                job_type = data.get('job_type')
                 skills = data.get('skills')
                 jd_pdf = data.get('jd_pdf')
+
+                job_type = data.get('job_type')
+                # if job_type == 'Contract':
+                #     Job_Type_details = data.get('Job_Type_details')
+                #     # job_type = job_type + '(' + Job_Type_details + ' Months )'
+                # else:
+                #     pass
 
                 # Decode the base64 encoded PDF file
                 jd_binary = None
