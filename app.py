@@ -3705,9 +3705,9 @@ def update_candidate(candidate_id):
     candidate.comments = candidate_comment
 
     # Update data_updated_date and data_updated_time
-    current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
-    candidate.data_updated_date = current_datetime.date()
-    candidate.data_updated_time = current_datetime.time()
+    # current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+    # candidate.data_updated_date = current_datetime.date()
+    # candidate.data_updated_time = current_datetime.time()
 
     db.session.commit()
 
@@ -4250,9 +4250,9 @@ def edit_candidate(candidate_id):
             candidate.package_in_lpa = None
 
         # Update data_updated_date and data_updated_time
-        current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
-        candidate.data_updated_date = current_datetime.date()
-        candidate.data_updated_time = current_datetime.time()
+        # current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+        # candidate.data_updated_date = current_datetime.date()
+        # candidate.data_updated_time = current_datetime.time()
 
         db.session.commit()
         return jsonify({'status': 'success', "message": "Candidate Details Edited Successfully"})
@@ -4726,6 +4726,104 @@ def download_resume(candidate_id):
                      as_attachment=True)
 
 
+
+def send_notification(recruiter_email):
+    msg = Message('New Job Posted', sender='ganesh.s@makonissoft.com', recipients=[recruiter_email])
+    msg.body = 'A new job has been posted. Check your dashboard for more details.'
+    mail.send(msg)
+
+def post_job_send_notification(recruiter_email, new_recruiter_name, job_data):
+    html_body = f"""
+    <html>
+    <head>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                color: #333;
+                line-height: 1.6;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+            }}
+            .container {{
+                padding: 20px;
+                margin: 20px auto;
+                max-width: 600px;
+                background-color: #ffffff;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }}
+            .header {{
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px;
+                text-align: center;
+                font-size: 20px;
+                border-radius: 8px 8px 0 0;
+            }}
+            table {{
+                border-collapse: collapse;
+                width: 100%;
+                margin-top: 10px;
+            }}
+            th, td {{
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }}
+            th {{
+                background-color: #4CAF50;
+                color: white;
+            }}
+            tr:nth-child(even) {{
+                background-color: #f9f9f9;
+            }}
+            p {{
+                margin: 10px 0;
+            }}
+            .footer {{
+                margin-top: 20px;
+                font-size: 12px;
+                color: #777;
+                text-align: center;
+                border-top: 1px solid #ddd;
+                padding-top: 10px;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                New Job Posted
+            </div>
+            <p>Dear {new_recruiter_name},</p>
+            <p>The following job have been assigned to you:</p>
+            <table>
+                <tr>
+                    <th style="width: 20%;">Job ID</th>
+                    <th style="width: 30%;">Client</th>
+                    <th style="width: 30%;">Role</th>
+                    <th style="width: 30%;">Location</th>
+                </tr>
+                {job_data}
+            </table>
+            <p>Check your dashboard for more details.</p>
+            <p>Regards,</p>
+            <p>Your Company</p>
+        </div>
+    </body>
+    </html>
+    """
+
+    msg = Message(
+        'New Job Notification',
+        sender='ganesh.s@makonissoft.com',
+        recipients=[recruiter_email]
+    )
+    msg.html = html_body
+    mail.send(msg)
+
 @app.route('/post_job', methods=['POST'])
 def post_job():
     try:
@@ -4818,22 +4916,141 @@ def post_job():
 
         db.session.commit()
 
+        # Create job data for the email notification
+        job_data = f"<tr><td>{new_job_post.id}</td><td>{new_job_post.client}</td><td>{new_job_post.role}</td><td>{new_job_post.location}</td></tr>"
+
         # Send notifications to recruiters
         for recruiter_name in data.get('recruiter', []):
             recruiter = User.query.filter_by(username=recruiter_name.strip()).first()
             if recruiter:
                 send_notification(recruiter.email)
 
+        # Fetch new recruiter's name
+        new_recruiter_username = data.get('new_recruiter_username')
+        new_recruiter = User.query.filter_by(username=new_recruiter_username).first()
+        new_recruiter_name = new_recruiter.username if new_recruiter else "New Recruiter"
+
+        # Send notification email to the new recruiter
+        post_job_send_notification(new_recruiter.email, new_recruiter_name, job_data)
+
         # Return the job_id along with the success message
         return jsonify({'status': 'success', 'message': 'Job posted successfully', 'job_id': job_post_id}), 200
 
     except KeyError as e:
-        return jsonify({"status": "error", "message": f"KeyError: {e}"})
+        return jsonify({"status": "error", "message": f"KeyError: {e}"}), 400
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+# @app.route('/post_job', methods=['POST'])
+# def post_job():
+#     try:
+#         # Accessing the JSON data from the request
+#         data = request.json
+#         user_id = data['user_id']
+#         user = User.query.filter_by(id=user_id).first()
+
+#         # Check if the user exists
+#         if not user:
+#             return jsonify({'status': 'error', 'message': 'User not found'}), 400
+
+#         user_type = user.user_type
+#         if user_type != 'management':
+#             return jsonify({'status': 'error', 'message': 'Job post not added successfully'}), 400
+
+#         # Extracting job details from the request
+#         job_details = {
+#             'client': data.get('client'),
+#             'experience_min': data.get('experience_min'),
+#             'experience_max': data.get('experience_max'),
+#             'budget_min': f"{data.get('currency_type_min')} {data.get('budget_min')}",
+#             'budget_max': f"{data.get('currency_type_max')} {data.get('budget_max')}",
+#             'location': data.get('location'),
+#             'shift_timings': data.get('shift_timings'),
+#             'notice_period': data.get('notice_period'),
+#             'role': data.get('role'),
+#             'detailed_jd': data.get('detailed_jd'),
+#             'mode': data.get('mode'),
+#             'job_status': data.get('job_status'),
+#             'skills': data.get('skills'),
+#             'job_type': data.get('Job_Type'),
+#             'contract_in_months': data.get('Job_Type_details') if data.get('Job_Type') == 'Contract' else None
+#         }
+
+#         # Decode the base64 encoded PDF file
+#         jd_pdf = data.get('jd_pdf')
+#         jd_binary = None
+#         jd_pdf_present = False  # Default value
+#         if jd_pdf:
+#             try:
+#                 jd_binary = base64.b64decode(jd_pdf)
+#                 jd_pdf_present = bool(jd_binary)  # If jd_binary is not None, set jd_pdf_present to True
+#             except Exception as e:
+#                 return jsonify({'status': 'error', 'message': 'Error decoding base64 PDF file', 'details': str(e)}), 400
+
+#         # Create a new job post instance
+#         new_job_post = JobPost(
+#             client=job_details['client'],
+#             experience_min=job_details['experience_min'],
+#             experience_max=job_details['experience_max'],
+#             budget_min=job_details['budget_min'],
+#             budget_max=job_details['budget_max'],
+#             location=job_details['location'],
+#             shift_timings=job_details['shift_timings'],
+#             notice_period=job_details['notice_period'],
+#             role=job_details['role'],
+#             detailed_jd=job_details['detailed_jd'],
+#             recruiter=', '.join(data.get('recruiter', [])),
+#             management=user.username,
+#             mode=job_details['mode'],
+#             job_status=job_details['job_status'],
+#             job_type=job_details['job_type'],
+#             skills=job_details['skills'],
+#             contract_in_months=job_details['contract_in_months'],
+#             jd_pdf=jd_binary,  # Store the binary data in the database
+#             jd_pdf_present=jd_pdf_present  # Store whether PDF is present
+#         )
+
+#         # Set created date and time
+#         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+#         new_job_post.date_created = current_datetime.date()
+#         new_job_post.time_created = current_datetime.time()
+
+#         # Add the new job post to the session and commit
+#         db.session.add(new_job_post)
+#         db.session.commit()
+
+#         # Generate job_post_id after committing the new_job_post
+#         job_post_id = new_job_post.id
+
+#         # Add notifications for each recruiter
+#         for recruiter_name in data.get('recruiter', []):
+#             notification = Notification(
+#                 job_post_id=job_post_id,
+#                 recruiter_name=recruiter_name.strip(),
+#                 notification_status=False
+#             )
+#             db.session.add(notification)
+
+#         db.session.commit()
+
+#         # Send notifications to recruiters
+#         for recruiter_name in data.get('recruiter', []):
+#             recruiter = User.query.filter_by(username=recruiter_name.strip()).first()
+#             if recruiter:
+#                 send_notification(recruiter.email)
+
+#         # Return the job_id along with the success message
+#         return jsonify({'status': 'success', 'message': 'Job posted successfully', 'job_id': job_post_id}), 200
+
+#     except KeyError as e:
+#         return jsonify({"status": "error", "message": f"KeyError: {e}"})
+
+#     except Exception as e:
+#         return jsonify({"status": "error", "message": str(e)}), 500
+
+################################################################################################
 
 # @app.route('/post_job', methods=['POST'])
 # def post_job():
@@ -5584,9 +5801,9 @@ def update_job_status(job_id):
             job_post.job_status = new_job_status
             
             # Update data_updated_date and data_updated_time
-            current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
-            job_post.data_updated_date = current_datetime.date()
-            job_post.data_updated_time = current_datetime.time()
+            # current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
+            # job_post.data_updated_date = current_datetime.date()
+            # job_post.data_updated_time = current_datetime.time()
             
             # Commit the changes to the database
             db.session.commit()
@@ -5975,10 +6192,10 @@ def view_all_jobs():
 
 
 
-def send_notification(recruiter_email):
-    msg = Message('New Job Posted', sender='ganesh.s@makonissoft.com', recipients=[recruiter_email])
-    msg.body = 'A new job has been posted. Check your dashboard for more details.'
-    mail.send(msg)
+# def send_notification(recruiter_email):
+#     msg = Message('New Job Posted', sender='ganesh.s@makonissoft.com', recipients=[recruiter_email])
+#     msg.body = 'A new job has been posted. Check your dashboard for more details.'
+#     mail.send(msg)
 
 @app.route('/other_job_posts', methods=['GET'])
 def other_job_posts():
@@ -6791,9 +7008,9 @@ def assign_job(job_id):
         job_post.recruiter = joined_recruiters
         
         # Update data_updated_date and data_updated_time
-        current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
-        job_post.data_updated_date = current_datetime.date()
-        job_post.data_updated_time = current_datetime.time()
+        # current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+        # job_post.data_updated_date = current_datetime.date()
+        # job_post.data_updated_time = current_datetime.time()
 
         db.session.commit()
 
@@ -7786,9 +8003,9 @@ def edit_job_post(job_post_id):
                     job_post.recruiter = ', '.join(unique_recruiters)
                     
                 # Update data_updated_date and data_updated_time
-                current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
-                job_post.data_updated_date = current_datetime.date()
-                job_post.data_updated_time = current_datetime.time()
+                # current_datetime = datetime.now(pytz.timezone('Asia/Kolkata')) 
+                # job_post.data_updated_date = current_datetime.date()
+                # job_post.data_updated_time = current_datetime.time()
                 
                 # Update job post in the database
                 db.session.commit()
