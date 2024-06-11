@@ -1145,7 +1145,7 @@ def assign_candidates_notification(recruiter_email, new_recruiter_name, candidat
 #     msg.html = html_body
 #     mail.send(msg)
 
-@app.route('/assign_candidate_new_recruiter', methods=['POST'])
+@app.route('/assign_candidate_new_recuriter', methods=['POST'])
 def assign_candidate_to_a_new_recruiter():
     data = request.json
 
@@ -1186,7 +1186,7 @@ def assign_candidate_to_a_new_recruiter():
 
         # Fetch new recruiter's name
         new_recruiter = User.query.filter_by(username=new_recruiter_username).first()
-        new_recruiter_name = new_recruiter.name if new_recruiter else "New Recruiter"
+        new_recruiter_name = new_recruiter.username if new_recruiter else "New Recruiter"
 
         # Send notification email to the new recruiter
         if candidates_data:
