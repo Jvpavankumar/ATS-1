@@ -279,7 +279,7 @@ class JobPost(db.Model):
     data_updated_time = db.Column(db.Time)
     jd_pdf_present = db.Column(db.Boolean, default=False)
     # jd_pdf_present = db.Column(db.Boolean, default=True)
-    def __init__(self, client, experience_min, experience_max, budget_min, budget_max, location, shift_timings, notice_period, role, detailed_jd, mode, recruiter, management, job_status, job_type, skills, jd_pdf, jd_pdf_present):
+    def __init__(self, client, experience_min, experience_max, budget_min, budget_max, location, shift_timings, notice_period, role, detailed_jd, mode, recruiter, management, job_status, job_type, skills, jd_pdf, jd_pdf_present,contract_in_months):
         self.client = client
         self.experience_min = experience_min
         self.experience_max = experience_max
@@ -297,6 +297,7 @@ class JobPost(db.Model):
         self.job_type = job_type
         self.skills = skills
         self.jd_pdf = jd_pdf
+        self.contract_in_months = contract_in_months
         self.jd_pdf_present = jd_pdf_present
 
 class Deletedcandidate(db.Model):
