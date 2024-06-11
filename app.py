@@ -3161,8 +3161,8 @@ def add_candidate():
         elif notice_period == 'no':
             period_of_notice = data.get('notice_period')
             buyout=data.get('buyout')
-        elif notice_period == 'completed':
-            last_working_date=data.get('last_working_date')
+        # elif notice_period == 'completed':
+        #     last_working_date=data.get('last_working_date')
 
         holding_offer = data.get('holding_offer')
         if holding_offer == 'yes':
@@ -8961,7 +8961,7 @@ def extract_name(text):
 @app.route('/parse_resume', methods=['POST'])
 def parse_resume():
     if 'resume' not in request.json:
-        return jsonify({"error": "No resume data provided"}), 400
+        return jsonify({'status':'error',"message": "No resume data provided"})
     
     data = request.json
     resume_data = data['resume']
@@ -8969,13 +8969,13 @@ def parse_resume():
     try:
         decoded_resume = base64.b64decode(resume_data)
     except Exception as e:
-        return jsonify({"error": "Invalid resume data"}), 400
+        return jsonify({'status':'error',"message": "Invalid resume data"})
     
     resume_file = io.BytesIO(decoded_resume)
     resume_text = extract_text(resume_file)
     
     if not resume_text:
-        return jsonify({"error": "No text found in the resume data"}), 400
+        return jsonify({'status':'error',"message": "No text found in the resume data"})
 
     it_skills = [ 
         'Data Analysis', 'Machine Learning', 'Communication', 'Project Management',
@@ -9024,6 +9024,8 @@ def parse_resume():
     name_text = extract_name(resume_text)
 
     return jsonify({
+        'status':'success',
+        'message':'resume parsed successfully'
         "name": name_text,
         "mail": email_text,
         "phone": phone_text,
