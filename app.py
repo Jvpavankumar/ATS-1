@@ -829,20 +829,84 @@ def get_recruiters_candidate():
 def assign_candidates_notification(recruiter_email, candidate_data):
     html_body = """
     <html>
-    <head></head>
+    <head>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                color: #333;
+                line-height: 1.6;
+                background-color: #f8f8f8;
+                margin: 0;
+                padding: 0;
+            }
+            .container {
+                padding: 20px;
+                margin: 20px auto;
+                max-width: 600px;
+                background-color: #ffffff;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+                background-color: #007BFF;
+                color: white;
+                padding: 10px;
+                text-align: center;
+                font-size: 24px;
+                border-radius: 8px 8px 0 0;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin-top: 20px;
+            }
+            th, td {
+                border: 1px solid #ddd;
+                padding: 12px;
+                text-align: left;
+            }
+            th {
+                background-color: #007BFF;
+                color: white;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+            p {
+                margin: 10px 0;
+            }
+            .footer {
+                margin-top: 20px;
+                font-size: 12px;
+                color: #777;
+                text-align: center;
+                border-top: 1px solid #ddd;
+                padding-top: 10px;
+            }
+        </style>
+    </head>
     <body>
-        <p>Dear Recruiter,</p>
-        <p>The following candidates have been assigned to you:</p>
-        <table border="1">
-            <tr>
-                <th>Candidate ID</th>
-                <th>Name</th>
-            </tr>
-            {}
-        </table>
-        <p>Check your dashboard for more details.</p>
-        <p>Regards,</p>
-        <p>Your Company</p>
+        <div class="container">
+            <div class="header">
+                Candidate Assignment Notification
+            </div>
+            <p>Dear Recruiter,</p>
+            <p>The following candidates have been assigned to you:</p>
+            <table>
+                <tr>
+                    <th>Candidate ID</th>
+                    <th>Name</th>
+                </tr>
+                {}
+            </table>
+            <p>Check your dashboard for more details.</p>
+            <p>Regards,</p>
+            <p>Your Company</p>
+            # <div class="footer">
+            #     &copy; 2024 Your Company. All rights reserved.
+            # </div>
+        </div>
     </body>
     </html>
     """.format(candidate_data)
@@ -854,6 +918,36 @@ def assign_candidates_notification(recruiter_email, candidate_data):
     )
     msg.html = html_body
     mail.send(msg)
+
+
+# def assign_candidates_notification(recruiter_email, candidate_data):
+#     html_body = """
+#     <html>
+#     <head></head>
+#     <body>
+#         <p>Dear Recruiter,</p>
+#         <p>The following candidates have been assigned to you:</p>
+#         <table border="1">
+#             <tr>
+#                 <th>Candidate ID</th>
+#                 <th>Name</th>
+#             </tr>
+#             {}
+#         </table>
+#         <p>Check your dashboard for more details.</p>
+#         <p>Regards,</p>
+#         <p>Your Company</p>
+#     </body>
+#     </html>
+#     """.format(candidate_data)
+
+#     msg = Message(
+#         'Candidate Assignment Notification',
+#         sender='ganesh.s@makonissoft.com',
+#         recipients=[recruiter_email]
+#     )
+#     msg.html = html_body
+#     mail.send(msg)
 
 @app.route('/assign_candidate_new_recuriter', methods=['POST'])
 def assign_candidate_to_a_new_recruiter():
