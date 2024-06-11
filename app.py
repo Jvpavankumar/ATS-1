@@ -828,16 +828,16 @@ def get_recruiters_candidate():
         return jsonify({'status': 'error', 'message': 'User not found or not authorized'}), 404
 
 
-def assign_candidates_notification(recruiter_email, candidate_data):
+def assign_candidates_notification(recruiter_email, new_recruiter_name, candidates_data):
     html_body = f"""
     <html>
     <head>
         <style>
             body {{
-                font-family: Arial, sans-serif;
-                color: #333;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                color: #444;
                 line-height: 1.6;
-                background-color: #f4f4f4;
+                background-color: #f8f8f8;
                 margin: 0;
                 padding: 0;
             }}
@@ -845,38 +845,40 @@ def assign_candidates_notification(recruiter_email, candidate_data):
                 padding: 20px;
                 margin: 20px auto;
                 max-width: 600px;
-                background-color: #ffffff;
+                background-color: #fff;
                 border: 1px solid #ddd;
                 border-radius: 8px;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             }}
             .header {{
-                background-color: #4CAF50;
-                color: white;
-                padding: 10px;
+                background-color: #007BFF;
+                color: #fff;
+                padding: 20px;
                 text-align: center;
-                font-size: 20px;
-                border-radius: 8px 8px 0 0;
+                font-size: 24px;
+                border-top-left-radius: 8px;
+                border-top-right-radius: 8px;
             }}
             table {{
                 border-collapse: collapse;
                 width: 100%;
-                margin-top: 10px;
+                margin-top: 20px;
             }}
             th, td {{
                 border: 1px solid #ddd;
-                padding: 8px;
+                padding: 12px;
                 text-align: left;
             }}
             th {{
-                background-color: #4CAF50;
-                color: white;
+                background-color: #007BFF;
+                color: #fff;
             }}
             tr:nth-child(even) {{
-                background-color: #f9f9f9;
+                background-color: #f2f2f2;
             }}
             p {{
                 margin: 10px 0;
+                text-align: justify;
             }}
             .footer {{
                 margin-top: 20px;
@@ -893,14 +895,17 @@ def assign_candidates_notification(recruiter_email, candidate_data):
             <div class="header">
                 Candidate Assignment Notification
             </div>
-            <p>Dear Recruiter,</p>
+            <p>Dear {new_recruiter_name},</p>
             <p>The following candidates have been assigned to you:</p>
             <table>
                 <tr>
+                    <th>Job ID</th>
                     <th>Candidate ID</th>
-                    <th>Name</th>
+                    <th>Client</th>
+                    <th>Profile</th>
+                    <th>Candidate Name</th>
                 </tr>
-                {candidate_data}
+                {candidates_data}
             </table>
             <p>Check your dashboard for more details.</p>
             <p>Regards,</p>
@@ -920,6 +925,100 @@ def assign_candidates_notification(recruiter_email, candidate_data):
     )
     msg.html = html_body
     mail.send(msg)
+
+
+# def assign_candidates_notification(recruiter_email, candidate_data):
+#     html_body = f"""
+#     <html>
+#     <head>
+#         <style>
+#             body {{
+#                 font-family: Arial, sans-serif;
+#                 color: #333;
+#                 line-height: 1.6;
+#                 background-color: #f4f4f4;
+#                 margin: 0;
+#                 padding: 0;
+#             }}
+#             .container {{
+#                 padding: 20px;
+#                 margin: 20px auto;
+#                 max-width: 600px;
+#                 background-color: #ffffff;
+#                 border: 1px solid #ddd;
+#                 border-radius: 8px;
+#                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+#             }}
+#             .header {{
+#                 background-color: #4CAF50;
+#                 color: white;
+#                 padding: 10px;
+#                 text-align: center;
+#                 font-size: 20px;
+#                 border-radius: 8px 8px 0 0;
+#             }}
+#             table {{
+#                 border-collapse: collapse;
+#                 width: 100%;
+#                 margin-top: 10px;
+#             }}
+#             th, td {{
+#                 border: 1px solid #ddd;
+#                 padding: 8px;
+#                 text-align: left;
+#             }}
+#             th {{
+#                 background-color: #4CAF50;
+#                 color: white;
+#             }}
+#             tr:nth-child(even) {{
+#                 background-color: #f9f9f9;
+#             }}
+#             p {{
+#                 margin: 10px 0;
+#             }}
+#             .footer {{
+#                 margin-top: 20px;
+#                 font-size: 12px;
+#                 color: #777;
+#                 text-align: center;
+#                 border-top: 1px solid #ddd;
+#                 padding-top: 10px;
+#             }}
+#         </style>
+#     </head>
+#     <body>
+#         <div class="container">
+#             <div class="header">
+#                 Candidate Assignment Notification
+#             </div>
+#             <p>Dear Recruiter,</p>
+#             <p>The following candidates have been assigned to you:</p>
+#             <table>
+#                 <tr>
+#                     <th>Candidate ID</th>
+#                     <th>Name</th>
+#                 </tr>
+#                 {candidate_data}
+#             </table>
+#             <p>Check your dashboard for more details.</p>
+#             <p>Regards,</p>
+#             <p>Your Company</p>
+#             <div class="footer">
+#                 &copy; 2024 Your Company. All rights reserved.
+#             </div>
+#         </div>
+#     </body>
+#     </html>
+#     """
+
+#     msg = Message(
+#         'Candidate Assignment Notification',
+#         sender='ganesh.s@makonissoft.com',
+#         recipients=[recruiter_email]
+#     )
+#     msg.html = html_body
+#     mail.send(msg)
 
 
 # def assign_candidates_notification(recruiter_email, candidate_data):
@@ -1046,13 +1145,12 @@ def assign_candidates_notification(recruiter_email, candidate_data):
 #     msg.html = html_body
 #     mail.send(msg)
 
-@app.route('/assign_candidate_new_recuriter', methods=['POST'])
+@app.route('/assign_candidate_new_recruiter', methods=['POST'])
 def assign_candidate_to_a_new_recruiter():
     data = request.json
 
     try:
-        candidates_data = []
-        candidate_table_data = ""
+        candidates_data = ""
         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
 
         for candidate_data in data['candidates']:
@@ -1063,7 +1161,7 @@ def assign_candidate_to_a_new_recruiter():
             if not candidate_id or not new_recruiter_username or not current_recruiter_username:
                 return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
 
-            # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
+            # Fetch candidate details from the database
             candidate = Candidate.query.filter(
                 Candidate.id == candidate_id,
                 or_(
@@ -1071,40 +1169,98 @@ def assign_candidate_to_a_new_recruiter():
                     Candidate.management == current_recruiter_username
                 )
             ).first()
-            current_recruiter = User.query.filter_by(username=current_recruiter_username).first()
-            new_recruiter = User.query.filter_by(username=new_recruiter_username).first()
 
             if candidate is None:
                 return jsonify({"error": f"Candidate with ID {candidate_id} not found or not assigned to current recruiter/management {current_recruiter_username}"}), 404
 
-            if current_recruiter is None:
-                return jsonify({"error": f"Current recruiter {current_recruiter_username} not found"}), 404
+            # Append candidate details to the candidates_data string
+            candidates_data += f"<tr><td>{candidate.job_id}</td><td>{candidate.id}</td><td>{candidate.client}</td><td>{candidate.profile}</td><td>{candidate.name}</td></tr>"
 
-            if new_recruiter is None:
-                return jsonify({"error": f"New recruiter {new_recruiter_username} not found"}), 404
-
-            # Update the candidate record to point to the new recruiter and set the updated date/time
+            # Update the recruiter for the candidate
             candidate.recruiter = new_recruiter_username
             candidate.data_updated_date = current_datetime.date()
             candidate.data_updated_time = current_datetime.time()
 
-            candidates_data.append({'id': candidate.id, 'name': candidate.name})
-            candidate_table_data += "<tr><td>{}</td><td>{}</td></tr>".format(candidate.id, candidate.name)
-
-        # Commit all updates in a single transaction
+        # Commit changes to the database
         db.session.commit()
 
-        # Send notification email to the new recruiter
-        if candidate_table_data:
-            assign_candidates_notification(new_recruiter.email, candidate_table_data)
+        # Fetch new recruiter's name
+        new_recruiter = User.query.filter_by(username=new_recruiter_username).first()
+        new_recruiter_name = new_recruiter.name if new_recruiter else "New Recruiter"
 
-        return jsonify({
-            "message": "Candidates assigned successfully.",
-            "candidates": candidates_data
-        })
+        # Send notification email to the new recruiter
+        if candidates_data:
+            assign_candidates_notification(new_recruiter.email, new_recruiter_name, candidates_data)
+
+        return jsonify({'status': 'success',"message": "Candidates assigned successfully."})
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": f"Error assigning candidates: {str(e)}"}), 500
+        return jsonify({'status': 'error',"error": f"Error assigning candidates: {str(e)}"}), 500
+
+
+# @app.route('/assign_candidate_new_recuriter', methods=['POST'])
+# def assign_candidate_to_a_new_recruiter():
+#     data = request.json
+
+#     try:
+#         candidates_data = []
+#         candidate_table_data = ""
+#         current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+
+#         for candidate_data in data['candidates']:
+#             candidate_id = candidate_data.get('candidate_id')
+#             new_recruiter_username = candidate_data.get('new_recruiter')
+#             current_recruiter_username = candidate_data.get('current_recruiter')
+
+#             if not candidate_id or not new_recruiter_username or not current_recruiter_username:
+#                 return jsonify({"error": "Candidate ID, new recruiter username, or current recruiter username not provided"}), 400
+
+#             # Get the candidate, current recruiter, and the new recruiter from the database using their usernames
+#             candidate = Candidate.query.filter(
+#                 Candidate.id == candidate_id,
+#                 or_(
+#                     Candidate.recruiter == current_recruiter_username,
+#                     Candidate.management == current_recruiter_username
+#                 )
+#             ).first()
+#             current_recruiter = User.query.filter_by(username=current_recruiter_username).first()
+#             new_recruiter = User.query.filter_by(username=new_recruiter_username).first()
+
+#             if candidate is None:
+#                 return jsonify({"error": f"Candidate with ID {candidate_id} not found or not assigned to current recruiter/management {current_recruiter_username}"}), 404
+
+#             if current_recruiter is None:
+#                 return jsonify({"error": f"Current recruiter {current_recruiter_username} not found"}), 404
+
+#             if new_recruiter is None:
+#                 return jsonify({"error": f"New recruiter {new_recruiter_username} not found"}), 404
+
+#             # Update the candidate record to point to the new recruiter and set the updated date/time
+#             candidate.recruiter = new_recruiter_username
+#             candidate.data_updated_date = current_datetime.date()
+#             candidate.data_updated_time = current_datetime.time()
+
+#             candidates_data.append({'id': candidate.id, 'name': candidate.name})
+#             candidate_table_data += "<tr><td>{}</td><td>{}</td></tr>".format(candidate.id, candidate.name)
+
+#         # Commit all updates in a single transaction
+#         db.session.commit()
+
+#         # Send notification email to the new recruiter
+#         if candidate_table_data:
+#             assign_candidates_notification(new_recruiter.email, candidate_table_data)
+
+#         return jsonify({
+#             "message": "Candidates assigned successfully.",
+#             "candidates": candidates_data
+#         })
+#     except Exception as e:
+#         db.session.rollback()
+#         return jsonify({"error": f"Error assigning candidates: {str(e)}"}), 500
+
+
+
+
 
 # @app.route('/assign_candidate_new_recuriter', methods=['POST'])
 # def assign_candidate_to_a_new_recruiter():
@@ -1631,6 +1787,7 @@ def dashboard():
                 'time_created': job.time_created,
                 'job_status': job.job_status,
                 'job_type': job.job_type,
+                'contract_in_months': job.contract_in_months,
                 'skills': job.skills,
                 'notification': job.notification,
                 'date_created': job.date_created,
@@ -1727,6 +1884,7 @@ def dashboard():
                 'time_created': job.time_created,
                 'job_status': job.job_status,
                 'job_type': job.job_type,
+                'contract_in_months': job.contract_in_months,
                 'skills': job.skills,
                 'notification': job.notification,
                 'date_created': job.date_created,
@@ -5360,6 +5518,7 @@ def view_all_jobs():
                 "management": job_post.management,
                 "job_status": job_post.job_status,
                 "job_type": job_post.job_type,
+                "contract_in_months": job_post.contract_in_months,
                 "skills": job_post.skills,
                 "date_created": str(job_post.date_created),
                 "time_created": str(job_post.time_created),
@@ -5388,6 +5547,7 @@ def view_all_jobs():
                 "management": job_post.management,
                 "job_status": job_post.job_status,
                 "job_type": job_post.job_type,
+                "contract_in_months": job_post.contract_in_months,
                 "skills": job_post.skills,
                 "date_created": str(job_post.date_created),
                 "time_created": str(job_post.time_created),
