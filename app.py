@@ -4461,7 +4461,7 @@ def post_job():
                 jd_binary = base64.b64decode(jd_pdf)
                 jd_pdf_present = bool(jd_binary)  # If jd_binary is not None, set jd_pdf_present to True
             except Exception as e:
-                return jsonify({'status': 'error', 'message': 'Error decoding base64 PDF file', 'details': str(e)})
+                return jsonify({'status': 'error', 'message': 'Error decoding base64 PDF file', 'details': str(e)}), 400
 
         # Create a new job post instance
         new_job_post = JobPost(
@@ -4519,12 +4519,11 @@ def post_job():
         return jsonify({'status': 'success', 'message': 'Job posted successfully', 'job_id': job_post_id}), 200
 
     except KeyError as e:
-        print("e1",e)
         return jsonify({"status": "error", "message": f"KeyError: {e}"})
 
     except Exception as e:
-        print("e2",e)
         return jsonify({"status": "error", "message": str(e)}), 500
+
 
 
 # @app.route('/post_job', methods=['POST'])
