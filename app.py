@@ -827,19 +827,19 @@ def get_recruiters_candidate():
 
 
 def assign_candidates_notification(recruiter_email, candidate_data):
-    html_body = """
+    html_body = f"""
     <html>
     <head>
         <style>
-            body {
+            body {{
                 font-family: Arial, sans-serif;
                 color: #333;
                 line-height: 1.6;
                 background-color: #f8f8f8;
                 margin: 0;
                 padding: 0;
-            }
-            .container {
+            }}
+            .container {{
                 padding: 20px;
                 margin: 20px auto;
                 max-width: 600px;
@@ -847,43 +847,43 @@ def assign_candidates_notification(recruiter_email, candidate_data):
                 border: 1px solid #ddd;
                 border-radius: 8px;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            }
-            .header {
+            }}
+            .header {{
                 background-color: #007BFF;
                 color: white;
                 padding: 10px;
                 text-align: center;
                 font-size: 24px;
                 border-radius: 8px 8px 0 0;
-            }
-            table {
+            }}
+            table {{
                 border-collapse: collapse;
                 width: 100%;
                 margin-top: 20px;
-            }
-            th, td {
+            }}
+            th, td {{
                 border: 1px solid #ddd;
                 padding: 12px;
                 text-align: left;
-            }
-            th {
+            }}
+            th {{
                 background-color: #007BFF;
                 color: white;
-            }
-            tr:nth-child(even) {
+            }}
+            tr:nth-child(even) {{
                 background-color: #f9f9f9;
-            }
-            p {
+            }}
+            p {{
                 margin: 10px 0;
-            }
-            .footer {
+            }}
+            .footer {{
                 margin-top: 20px;
                 font-size: 12px;
                 color: #777;
                 text-align: center;
                 border-top: 1px solid #ddd;
                 padding-top: 10px;
-            }
+            }}
         </style>
     </head>
     <body>
@@ -898,18 +898,18 @@ def assign_candidates_notification(recruiter_email, candidate_data):
                     <th>Candidate ID</th>
                     <th>Name</th>
                 </tr>
-                {}
+                {candidate_data}
             </table>
             <p>Check your dashboard for more details.</p>
             <p>Regards,</p>
             <p>Your Company</p>
-            # <div class="footer">
-            #     &copy; 2024 Your Company. All rights reserved.
-            # </div>
+            <div class="footer">
+                &copy; 2024 Your Company. All rights reserved.
+            </div>
         </div>
     </body>
     </html>
-    """.format(candidate_data)
+    """
 
     msg = Message(
         'Candidate Assignment Notification',
@@ -918,6 +918,7 @@ def assign_candidates_notification(recruiter_email, candidate_data):
     )
     msg.html = html_body
     mail.send(msg)
+
 
 
 # def assign_candidates_notification(recruiter_email, candidate_data):
@@ -4352,8 +4353,8 @@ def post_job():
             'mode': data.get('mode'),
             'job_status': data.get('job_status'),
             'skills': data.get('skills'),
-            'job_type': data.get('job_type'),
-            'contract_in_months': data.get('Job_Type_details') if data.get('job_type') == 'Contract' else None
+            'job_type': data.get('Job_Type'),
+            'contract_in_months': data.get('Job_Type_details') if data.get('Job_Type') == 'Contract' else None
         }
         
         # Decode the base64 encoded PDF file
@@ -7239,11 +7240,11 @@ def edit_job_post(job_post_id):
                 job_post.detailed_jd = data.get('detailed_jd', job_post.detailed_jd)
                 job_post.mode = data.get('mode', job_post.mode)
                 job_post.job_status = data.get('job_status', job_post.job_status)
-                job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
+                # job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
                 job_post.skills = data.get('skills', job_post.skills)
                 # job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
 
-                job_type = data.get('job_type')
+                job_type = data.get('Job_Type')
                 if job_type == 'Contract':
                     job_post.contract_in_months = data.get('Job_Type_details')
                     # job_type = job_type + '(' + Job_Type_details + ' Months )'
