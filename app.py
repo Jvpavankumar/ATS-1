@@ -4923,15 +4923,7 @@ def post_job():
         for recruiter_name in data.get('recruiter', []):
             recruiter = User.query.filter_by(username=recruiter_name.strip()).first()
             if recruiter:
-                send_notification(recruiter.email)
-
-        # Fetch new recruiter's name
-        new_recruiter_username = data.get('new_recruiter_username')
-        new_recruiter = User.query.filter_by(username=new_recruiter_username).first()
-        new_recruiter_name = new_recruiter.username if new_recruiter else "New Recruiter"
-
-        # Send notification email to the new recruiter
-        post_job_send_notification(new_recruiter.email, new_recruiter_name, job_data)
+                post_job_send_notification(recruiter.email, recruiter.username, job_data)
 
         # Return the job_id along with the success message
         return jsonify({'status': 'success', 'message': 'Job posted successfully', 'job_id': job_post_id}), 200
