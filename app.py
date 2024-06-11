@@ -873,7 +873,7 @@ def assign_candidates_notification(recruiter_email, new_recruiter_name, candidat
                 color: white;
             }}
             th.job-id-column {{
-                width: 130px; /* Increase the width for the Job ID column */
+                width: 120px; /* Increase the width for the Job ID column */
             }}
             tr:nth-child(even) {{
                 background-color: #f9f9f9;
