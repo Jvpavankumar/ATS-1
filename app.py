@@ -4416,11 +4416,11 @@ def post_job():
                 jd_pdf = data.get('jd_pdf')
 
                 job_type = data.get('job_type')
-                # if job_type == 'Contract':
-                #     Job_Type_details = data.get('Job_Type_details')
-                #     # job_type = job_type + '(' + Job_Type_details + ' Months )'
-                # else:
-                #     pass
+                if job_type == 'Contract':
+                    contract_in_months = data.get('Job_Type_details')
+                    # job_type = job_type + '(' + Job_Type_details + ' Months )'
+                else:
+                    pass
 
                 # Decode the base64 encoded PDF file
                 jd_binary = None
@@ -4453,6 +4453,7 @@ def post_job():
                     job_status=job_status,
                     job_type=job_type,
                     skills=skills,
+                    contract_in_months = contract_in_months,
                     jd_pdf=jd_binary,  # Store the binary data in the database
                     jd_pdf_present=jd_pdf_present  # Store whether PDF is present
                 )
@@ -7194,6 +7195,13 @@ def edit_job_post(job_post_id):
                 job_post.job_type = data.get('Job_Type', job_post.job_type)  # Updated key 'job_type' to 'Job_Type'
                 job_post.skills = data.get('skills', job_post.skills)
                 # job_post.jd_pdf = data.get('jd_pdf', job_post.jd_pdf)
+
+                job_type = data.get('job_type')
+                if job_type == 'Contract':
+                    job_post.contract_in_months = data.get('Job_Type_details')
+                    # job_type = job_type + '(' + Job_Type_details + ' Months )'
+                else:
+                    pass
                 
                 # Handle jd_pdf field
                 jd_pdf = data.get('jd_pdf')
