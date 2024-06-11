@@ -9025,7 +9025,7 @@ def parse_resume():
 
     return jsonify({
         'status':'success',
-        'message':'resume parsed successfully'
+        'message':'resume parsed successfully',
         "name": name_text,
         "mail": email_text,
         "phone": phone_text,
