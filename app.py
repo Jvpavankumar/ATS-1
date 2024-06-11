@@ -834,10 +834,10 @@ def assign_candidates_notification(recruiter_email, new_recruiter_name, candidat
     <head>
         <style>
             body {{
-                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                color: #444;
+                font-family: Arial, sans-serif;
+                color: #333;
                 line-height: 1.6;
-                background-color: #f8f8f8;
+                background-color: #f4f4f4;
                 margin: 0;
                 padding: 0;
             }}
@@ -845,40 +845,38 @@ def assign_candidates_notification(recruiter_email, new_recruiter_name, candidat
                 padding: 20px;
                 margin: 20px auto;
                 max-width: 600px;
-                background-color: #fff;
+                background-color: #ffffff;
                 border: 1px solid #ddd;
                 border-radius: 8px;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             }}
             .header {{
-                background-color: #007BFF;
-                color: #fff;
-                padding: 20px;
+                background-color: #4CAF50;
+                color: white;
+                padding: 10px;
                 text-align: center;
-                font-size: 24px;
-                border-top-left-radius: 8px;
-                border-top-right-radius: 8px;
+                font-size: 20px;
+                border-radius: 8px 8px 0 0;
             }}
             table {{
                 border-collapse: collapse;
                 width: 100%;
-                margin-top: 20px;
+                margin-top: 10px;
             }}
             th, td {{
                 border: 1px solid #ddd;
-                padding: 12px;
+                padding: 8px;
                 text-align: left;
             }}
             th {{
-                background-color: #007BFF;
-                color: #fff;
+                background-color: #4CAF50;
+                color: white;
             }}
             tr:nth-child(even) {{
-                background-color: #f2f2f2;
+                background-color: #f9f9f9;
             }}
             p {{
                 margin: 10px 0;
-                text-align: justify;
             }}
             .footer {{
                 margin-top: 20px;
@@ -910,9 +908,6 @@ def assign_candidates_notification(recruiter_email, new_recruiter_name, candidat
             <p>Check your dashboard for more details.</p>
             <p>Regards,</p>
             <p>Your Company</p>
-            <div class="footer">
-                &copy; 2024 Your Company. All rights reserved.
-            </div>
         </div>
     </body>
     </html>
@@ -925,6 +920,105 @@ def assign_candidates_notification(recruiter_email, new_recruiter_name, candidat
     )
     msg.html = html_body
     mail.send(msg)
+
+
+# def assign_candidates_notification(recruiter_email, new_recruiter_name, candidates_data):
+#     html_body = f"""
+#     <html>
+#     <head>
+#         <style>
+#             body {{
+#                 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+#                 color: #444;
+#                 line-height: 1.6;
+#                 background-color: #f8f8f8;
+#                 margin: 0;
+#                 padding: 0;
+#             }}
+#             .container {{
+#                 padding: 20px;
+#                 margin: 20px auto;
+#                 max-width: 600px;
+#                 background-color: #fff;
+#                 border: 1px solid #ddd;
+#                 border-radius: 8px;
+#                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+#             }}
+#             .header {{
+#                 background-color: #007BFF;
+#                 color: #fff;
+#                 padding: 20px;
+#                 text-align: center;
+#                 font-size: 24px;
+#                 border-top-left-radius: 8px;
+#                 border-top-right-radius: 8px;
+#             }}
+#             table {{
+#                 border-collapse: collapse;
+#                 width: 100%;
+#                 margin-top: 20px;
+#             }}
+#             th, td {{
+#                 border: 1px solid #ddd;
+#                 padding: 12px;
+#                 text-align: left;
+#             }}
+#             th {{
+#                 background-color: #007BFF;
+#                 color: #fff;
+#             }}
+#             tr:nth-child(even) {{
+#                 background-color: #f2f2f2;
+#             }}
+#             p {{
+#                 margin: 10px 0;
+#                 text-align: justify;
+#             }}
+#             .footer {{
+#                 margin-top: 20px;
+#                 font-size: 12px;
+#                 color: #777;
+#                 text-align: center;
+#                 border-top: 1px solid #ddd;
+#                 padding-top: 10px;
+#             }}
+#         </style>
+#     </head>
+#     <body>
+#         <div class="container">
+#             <div class="header">
+#                 Candidate Assignment Notification
+#             </div>
+#             <p>Dear {new_recruiter_name},</p>
+#             <p>The following candidates have been assigned to you:</p>
+#             <table>
+#                 <tr>
+#                     <th>Job ID</th>
+#                     <th>Candidate ID</th>
+#                     <th>Client</th>
+#                     <th>Profile</th>
+#                     <th>Candidate Name</th>
+#                 </tr>
+#                 {candidates_data}
+#             </table>
+#             <p>Check your dashboard for more details.</p>
+#             <p>Regards,</p>
+#             <p>Your Company</p>
+#             # <div class="footer">
+#             #     &copy; 2024 Your Company. All rights reserved.
+#             # </div>
+#         </div>
+#     </body>
+#     </html>
+#     """
+
+#     msg = Message(
+#         'Candidate Assignment Notification',
+#         sender='ganesh.s@makonissoft.com',
+#         recipients=[recruiter_email]
+#     )
+#     msg.html = html_body
+#     mail.send(msg)
 
 
 # def assign_candidates_notification(recruiter_email, candidate_data):
