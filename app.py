@@ -1952,7 +1952,19 @@ def dashboard():
         }
         
     elif user_type == 'management':
+        # Define case statements for conditional ordering
+        conditional_order_date = case(
+        (Candidate.date_created != None, Candidate.date_created),
+        else_=Candidate.date_created
+        )
+
+        conditional_order_time = case(
+        (Candidate.time_created != None, Candidate.time_created),
+        else_=Candidate.time_created
+        )
+
         users = User.query.all()
+        
         candidates = Candidate.query.filter(Candidate.reference.is_(None))\
             .order_by(
                 desc(conditional_order_date),
