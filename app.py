@@ -510,84 +510,88 @@ def verify(token):
             return redirect("https://ats-makonis.netlify.app/RecruitmentLogin")
 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    # <title>Verify Your ATS Makonis Account</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            background-color: #ffffff;
-            padding: 40px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-            border-radius: 8px;
-            max-width: 500px;
-            width: 100%;
-            text-align: center;
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-        form {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        label {
-            font-size: 18px;
-            margin-bottom: 30px;
-        }
-        input[type="checkbox"] {
-            margin-right: 10px;
-            transform: scale(1.5);
-        }
-        button {
-            padding: 12px 24px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        .info {
-            margin-top: 30px;
-            font-size: 16px;
-            color: #666;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Verify Your ATS Makonis Account</h1>
-        <form id="verificationForm" method="POST">
-            <label>
-                <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" required> Verify the account for username: {{ user.username }}
-            </label>
-            <button type="submit">Verify</button>
-        </form>
-        <div class="info">
-            <p>By verifying your account, you agree to our <a href="#">terms and conditions</a>.</p>
-            <p>If you need assistance, please contact our support team at support@example.com.</p>
+    # Render verification form with CSS
+    html = '''
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Verify Your ATS Makonis Account</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+            }
+            .container {
+                background-color: #ffffff;
+                padding: 40px;
+                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+                max-width: 500px;
+                width: 100%;
+                text-align: center;
+            }
+            h1 {
+                color: #333;
+                margin-bottom: 20px;
+            }
+            form {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            label {
+                font-size: 18px;
+                margin-bottom: 30px;
+            }
+            input[type="checkbox"] {
+                margin-right: 10px;
+                transform: scale(1.5);
+            }
+            button {
+                padding: 12px 24px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: background-color 0.3s;
+            }
+            button:hover {
+                background-color: #45a049;
+            }
+            .info {
+                margin-top: 30px;
+                font-size: 16px;
+                color: #666;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>Verify Your ATS Makonis Account</h1>
+            <form id="verificationForm" method="POST">
+                <label>
+                    <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" required> Verify the account for username: ''' + user['username'] + '''
+                </label>
+                <button type="submit">Verify</button>
+            </form>
+            <div class="info">
+                <p>By verifying your account, you agree to our <a href="#">terms and conditions</a>.</p>
+                <p>If you need assistance, please contact our support team at support@example.com.</p>
+            </div>
         </div>
-    </div>
-</body>
-</html>
+    </body>
+    </html>
+    '''
+    return render_template_string(html)
 
     # # Render verification form with CSS
     # html = '''
