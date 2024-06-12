@@ -490,22 +490,54 @@ def reset_password():
 
     return jsonify({'status': 'error', 'message': 'Invalid request method.'})
 
-    
 
-@app.route('/verify/<token>')
+@app.route('/verify/<token>', methods=['GET', 'POST'])
 def verify(token):
     user_id = verify_token(token)
-    if user_id:
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
+
+    if request.method == 'POST':
         user = User.query.get(user_id)
-        user.is_verified = True
+        user.verified = True
         db.session.commit()
         if user.user_type == 'management':
-            return jsonify({'status': 'success', 'message': 'Account verified successfully!', 'redirect': url_for('management_login', verification_msg_manager='Your Account has been Successfully Verified. Please Login.')})
+            return redirect("https://ats-makonis.netlify.app/ManagementLogin")
         elif user.user_type == 'recruiter':
-            return jsonify({'status': 'success', 'message': 'Account verified successfully!', 'redirect': url_for('recruiter_index')})
-    else:
-        return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
-    return jsonify({'status': 'error', 'message': 'An error occurred while verifying your account.'})
+            return redirect("https://ats-makonis.netlify.app/RecruitmentLogin")
+
+    # Render verification form with checkbox
+    html = '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Account Verification</title>
+    </head>
+    <body>
+        <form id="verificationForm" method="POST">
+            <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" required> I verify my account
+            <button type="submit">Verify</button>
+        </form>
+    </body>
+    </html>
+    '''
+    return render_template_string(html)
+
+
+@app.route('/verify/<token>')
+# def verify(token):
+#     user_id = verify_token(token)
+#     if user_id:
+#         user = User.query.get(user_id)
+#         user.is_verified = True
+#         db.session.commit()
+#         if user.user_type == 'management':
+#             return jsonify({'status': 'success', 'message': 'Account verified successfully!', 'redirect': url_for('management_login', verification_msg_manager='Your Account has been Successfully Verified. Please Login.')})
+#         elif user.user_type == 'recruiter':
+#             return jsonify({'status': 'success', 'message': 'Account verified successfully!', 'redirect': url_for('recruiter_index')})
+#     else:
+#         return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
+#     return jsonify({'status': 'error', 'message': 'An error occurred while verifying your account.'})
 
 
 import hashlib
