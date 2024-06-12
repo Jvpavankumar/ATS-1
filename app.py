@@ -1940,9 +1940,12 @@ def dashboard():
                 desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
             )\
             .all()
-        jobs = JobPost.query.filter(recruiter = recruiters).all()
+         # Check if recruiters list is correct and if jobs exist in the database for those recruiters
+        jobs_query = JobPost.query.filter(JobPost.recruiter.in_(recruiters))
+        jobs = jobs_query.all()
 
-        print("Jobs retrieved:", jobs)  # Debugging statement to check the jobs retrieved
+        print("Jobs query executed:", jobs_query)
+        print("Jobs retrieved:", jobs)
 
         # jobs = JobPost.query.filter_by(recruiter=user_name).all()
         # jobs = JobPost.query.filter(JobPost.recruiter.in_(recruiters)).all()
@@ -1985,7 +1988,7 @@ def dashboard():
                 'resume': candidate.resume if candidate.resume is not None else "",
                 # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                 # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
-                # 'serving_notice_period' :candidate.serving_notice_period,
+                'serving_notice_period' :candidate.notice_period,
                 'period_of_notice': candidate.period_of_notice,
                 'last_working_date': candidate.last_working_date,
                 'total_offers': candidate.total,
@@ -2094,7 +2097,7 @@ def dashboard():
                 'resume': candidate.resume if candidate.resume is not None else "",
                 # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                 # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
-                # 'serving_notice_period' :candidate.serving_notice_period,
+                'serving_notice_period' :candidate.notice_period,
                 'period_of_notice': candidate.period_of_notice,
                 'last_working_date': candidate.last_working_date,
                 'total_offers': candidate.total,
@@ -2190,7 +2193,7 @@ def dashboard():
                 'resume': candidate.resume if candidate.resume is not None else "",
                 # 'period_of_notice': candidate.period_of_notice if candidate.notice_period == 'no' else None,
                 # 'last_working_date': candidate.last_working_date if candidate.notice_period in {'yes', 'completed'} else None,
-                # 'serving_notice_period' :candidate.serving_notice_period,
+                'serving_notice_period' :candidate.notice_period,
                 'period_of_notice': candidate.period_of_notice,
                 'last_working_date': candidate.last_working_date,
                 'buyout': candidate.buyout,
@@ -3308,7 +3311,7 @@ def add_candidate():
             last_working_date=data.get('last_working_date')
             buyout=data.get('buyout')
         elif notice_period == 'no':
-            period_of_notice = data.get('notice_period')
+            period_of_notice = data.get('period_of_notice')
             buyout=data.get('buyout')
         # elif notice_period == 'completed':
         #     last_working_date=data.get('last_working_date')
@@ -3377,7 +3380,7 @@ def add_candidate():
                 resume=resume_binary,
                 # serving_notice_period=serving_notice_period,
                 notice_period=notice_period,
-                period_of_notice=notice_period,
+                period_of_notice=period_of_notice,
                 # last_working_date=data.get('last_working_date') if notice_period in {'yes', 'completed'} else None,
                 last_working_date=last_working_date,
                 buyout=buyout,
@@ -4295,20 +4298,14 @@ def edit_candidate(candidate_id):
         candidate.experience = data.get('experience')
         candidate.relevant_experience = data.get('relevant_experience')
         candidate.current_ctc = data.get('current_ctc')
-        candidate.expected_ctc = data.get('expected_ctc')
-        
-        candidate.notice_period = data.get('notice_period')
-        candidate.period_of_notice = data.get('notice_period')  # Update the correct field name
-        
+        candidate.expected_ctc = data.get('expected_ctc')    
         candidate.reason_for_job_change = data.get('reason_for_job_change')
         candidate.linkedin_url = data.get('linkedin')
         candidate.remarks = data.get('remarks')
         candidate.skills = data.get('skills')
-        candidate.holding_offer = data.get('holding_offer')
+        # candidate.holding_offer = data.get('holding_offer')
         candidate.total = data.get('total_offers')
         candidate.package_in_lpa = data.get('highest_package')
-        candidate.buyout = data.get('buyout')
-        candidate.last_working_date = data.get('last_working_date')
 
         # Handle resume decoding
         resume_data = data.get('resume')
@@ -4321,15 +4318,15 @@ def edit_candidate(candidate_id):
                 return jsonify({"error_message": "Invalid resume format"}), 500
 
         # Serving notice period logic
-        notice_period = data.get('notice_period')
+        notice_period = data.get('serving_notice_period')
         if notice_period == 'yes':
             candidate.last_working_date = data.get('last_working_date')
             candidate.buyout = data.get('buyout')
         elif notice_period == 'no':
             candidate.period_of_notice = data.get('period_of_notice')
             candidate.buyout = data.get('buyout')
-        elif notice_period == 'completed':
-            candidate.last_working_date = data.get('last_working_date')
+        # elif notice_period == 'completed':
+        #     candidate.last_working_date = data.get('last_working_date')
 
         # Holding offer logic
         holding_offer = data.get('holding_offer')
