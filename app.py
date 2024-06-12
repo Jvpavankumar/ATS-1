@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, render_template_string
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 import os
@@ -509,22 +509,85 @@ def verify(token):
         elif user.user_type == 'recruiter':
             return redirect("https://ats-makonis.netlify.app/RecruitmentLogin")
 
-    # Render verification form with checkbox
+    # Render verification form with CSS
     html = '''
     <!DOCTYPE html>
     <html>
     <head>
         <title>Account Verification</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+            }
+            .container {
+                background-color: #ffffff;
+                padding: 20px;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                border-radius: 8px;
+                max-width: 400px;
+                width: 100%;
+                text-align: center;
+            }
+            h1 {
+                color: #333;
+            }
+            form {
+                display: flex;
+                flex-direction: column;
+            }
+            input[type="checkbox"] {
+                margin: 20px 0;
+            }
+            button {
+                padding: 10px 20px;
+                background-color: #4CAF50;
+                color: white;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+            }
+            button:hover {
+                background-color: #45a049;
+            }
+        </style>
     </head>
     <body>
-        <form id="verificationForm" method="POST">
-            <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" required> I verify my account
-            <button type="submit">Verify</button>
-        </form>
+        <div class="container">
+            <h1>Account Verification</h1>
+            <form id="verificationForm" method="POST">
+                <label>
+                    <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" required> I verify my account
+                </label>
+                <button type="submit">Verify</button>
+            </form>
+        </div>
     </body>
     </html>
     '''
     return render_template_string(html)
+    # # Render verification form with checkbox
+    # html = '''
+    # <!DOCTYPE html>
+    # <html>
+    # <head>
+    #     <title>Account Verification</title>
+    # </head>
+    # <body>
+    #     <form id="verificationForm" method="POST">
+    #         <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" required> I verify my account
+    #         <button type="submit">Verify</button>
+    #     </form>
+    # </body>
+    # </html>
+    # '''
+    # return render_template_string(html)
 
 
 @app.route('/verify/<token>')
