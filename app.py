@@ -8612,7 +8612,12 @@ def edit_job_post(job_post_id):
                     job_post.mode = data.get('mode', job_post.mode)
                     job_post.job_status = data.get('job_status', job_post.job_status)
                     job_post.skills = data.get('skills', job_post.skills)
-
+                    recruiters = data.get('recruiter', job_post.recruiter)
+                    if recruiters:
+                        # Ensure recruiters are unique
+                        unique_recruiters = list(set(recruiters))
+                        job_post.recruiter = ', '.join(unique_recruiters)
+                    
                     job_type = data.get('Job_Type')
                     if job_type == 'Contract':
                         job_post.contract_in_months = data.get('Job_Type_details')
@@ -8625,6 +8630,8 @@ def edit_job_post(job_post_id):
                         job_post.jd_pdf_present = True
                     else:
                         job_post.jd_pdf_present = False
+
+                    
 
                     # Update job post in the database
                     db.session.commit()
@@ -8721,7 +8728,7 @@ def edit_job_post(job_post_id):
 #                     job_post.mode = data.get('mode', job_post.mode)
 #                     job_post.job_status = data.get('job_status', job_post.job_status)
 #                     job_post.skills = data.get('skills', job_post.skills)
-
+            
 #                     job_type = data.get('Job_Type')
 #                     if job_type == 'Contract':
 #                         job_post.contract_in_months = data.get('Job_Type_details')
