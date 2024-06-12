@@ -494,7 +494,7 @@ def reset_password():
     return jsonify({'status': 'error', 'message': 'Invalid request method.'})
 
 
-def render_verification_form(user):
+def render_verification_form(user, is_verified=False):
     html = f'''
     <!DOCTYPE html>
     <html lang="en">
@@ -563,7 +563,7 @@ def render_verification_form(user):
             <h1>Verify Your ATS Makonis Account</h1>
             <form id="verificationForm" method="POST">
                 <label>
-                    <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" required> Verify the account for username: {user.username}
+                    <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" {'checked' if is_verified else ''} required> Verify the account for username: {user.username}
                 </label>
                 <button type="submit">Verify</button>
             </form>
@@ -591,6 +591,7 @@ def verify(token):
         if 'verifyCheckbox' in request.form:
             user.verified = True
             db.session.commit()
+            return render_verification_form(user, True)  # Update the form with checkbox checked
         else:
             return jsonify({'status': 'error', 'message': 'Please check the verification checkbox.'})
 
@@ -599,7 +600,34 @@ def verify(token):
         elif user.user_type == 'recruiter':
             return redirect("https://ats-makonis.netlify.app/RecruitmentLogin")
 
-    return render_verification_form(user)
+    return render_verification_form(user)  # Render the form with checkbox unchecked initially
+
+
+
+@app.route('/verify/<token>', methods=['GET', 'POST'])
+def verify(token):
+    user_id = verify_token(token)
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'status': 'error', 'message': 'Invalid user ID or user does not exist.'})
+
+    if request.method == 'POST':
+        if 'verifyCheckbox' in request.form:
+            user.verified = True
+            db.session.commit()
+            return render_verification_form(user, True)  # Update the form with checkbox checked
+        else:
+            return jsonify({'status': 'error', 'message': 'Please check the verification checkbox.'})
+
+        if user.user_type == 'management':
+            return redirect("https://ats-makonis.netlify.app/ManagementLogin")
+        elif user.user_type == 'recruiter':
+            return redirect("https://ats-makonis.netlify.app/RecruitmentLogin")
+
+    return render_verification_form(user)  # Render the form with checkbox unchecked initially
 
     # # Render verification form with CSS
     # html = '''
