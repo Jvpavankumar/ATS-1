@@ -1940,7 +1940,7 @@ def dashboard():
                 desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
             )\
             .all()
-        jobs = JobPost.query.filter(JobPost.recruiter.in_(recruiters)).all()
+        jobs = JobPost.query.filter(recruiter = recruiters).all()
 
         print("Jobs retrieved:", jobs)  # Debugging statement to check the jobs retrieved
 
