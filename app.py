@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, render_template_string
+from flask import Flask, render_template, request, redirect, url_for, session, render_template_string, escape  
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 import os
