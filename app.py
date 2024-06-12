@@ -495,14 +495,8 @@ def reset_password():
 
 
 
-def generate_html_message(message, user_type=None):
-    button_html = ''
-    if user_type == 'management':
-        button_html = '<a href="https://ats-makonis.netlify.app/ManagementLogin" class="button">Login</a>'
-    elif user_type == 'recruiter':
-        button_html = '<a href="https://ats-makonis.netlify.app/RecruitmentLogin" class="button">Login</a>'
-    
-    return f"""
+def generate_html_message(message, redirect_url=None):
+    html_message = f"""
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -515,14 +509,15 @@ def generate_html_message(message, user_type=None):
                 body {{
                     font-family: Arial, sans-serif;
                     background-color: #f4f4f4;
+                    text-align: center;
                 }}
                 .message {{
-                    text-align: center;
                     margin-top: 50px;
                     background-color: #fff;
                     border-radius: 10px;
                     padding: 20px;
                     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                    display: inline-block;
                 }}
                 .message p {{
                     font-size: 20px;
@@ -535,6 +530,7 @@ def generate_html_message(message, user_type=None):
                     text-decoration: none;
                     border-radius: 5px;
                     transition: background-color 0.3s;
+                    margin-top: 20px;
                 }}
                 .button:hover {{
                     background-color: #0056b3;
@@ -544,11 +540,12 @@ def generate_html_message(message, user_type=None):
         <body>
             <div class="message">
                 <p>{message}</p>
-                {button_html}
+                {'' if redirect_url is None else f'<a href="{redirect_url}" class="button">Login</a>'}
             </div>
         </body>
         </html>
     """
+    return html_message
 
 @app.route('/verify/<token>')
 def verify(token):
@@ -559,15 +556,13 @@ def verify(token):
         db.session.commit()
         if user.user_type == 'management':
             message = 'Your Account has been Successfully Verified. Please Login.'
-            return render_template('message.html', message=generate_html_message(message, user_type='management'))
+            return generate_html_message(message, redirect_url='https://ats-makonis.netlify.app/ManagementLogin')
         elif user.user_type == 'recruiter':
             message = 'Your Account has been Successfully Verified.'
-            return render_template('message.html', message=generate_html_message(message, user_type='recruiter'))
+            return generate_html_message(message, redirect_url='https://ats-makonis.netlify.app/RecruitmentLogin')
     else:
         message = 'Your verification link has expired. Please contact management to activate your account.'
-        return render_template('message.html', message=generate_html_message(message))
-    message = 'An error occurred while verifying your account.'
-    return render_template('message.html', message=generate_html_message(message))
+        return generate_html_message(message)
 
 
 # @app.route('/verify/<token>')
@@ -1932,7 +1927,11 @@ def dashboard():
         if recruiter is None:
             return jsonify({"message": "Recruiter not found"}), 404
             
-        recruiters = recruiter.username.split(',')  # Splitting the recruiter usernames separated by commas
+        # recruiters = recruiter.username.split(',')  # Splitting the recruiter usernames separated by commas
+        user_name = recruiter.username
+        recruiters = user_name.split(',')  # Splitting the recruiter usernames separated by commas
+
+        print("Recruiter usernames:", recruiters)  # Debugging statement to check the recruiter usernames
         
         candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.username, Candidate.reference.is_(None)))\
             .order_by(
@@ -1941,9 +1940,12 @@ def dashboard():
                 desc(Candidate.id)  # Ensure newer candidates appear first if dates are equal
             )\
             .all()
+        jobs = JobPost.query.filter(JobPost.recruiter.in_(recruiters)).all()
+
+        print("Jobs retrieved:", jobs)  # Debugging statement to check the jobs retrieved
 
         # jobs = JobPost.query.filter_by(recruiter=user_name).all()
-        jobs = JobPost.query.filter(JobPost.recruiter.in_(recruiters)).all()
+        # jobs = JobPost.query.filter(JobPost.recruiter.in_(recruiters)).all()
         
         response_data = {
             'user': {
