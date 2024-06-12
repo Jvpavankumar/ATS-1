@@ -494,224 +494,83 @@ def reset_password():
     return jsonify({'status': 'error', 'message': 'Invalid request method.'})
 
 
-def render_verification_form(user, is_verified=False):
-    html = f'''
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Verify Your ATS Makonis Account</title>
-        <style>
-            body {{
-                font-family: Arial, sans-serif;
-                background-color: #f4f4f4;
-                margin: 0;
-                padding: 0;
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                min-height: 100vh;
-            }}
-            .container {{
-                background-color: #ffffff;
-                padding: 40px;
-                box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
-                border-radius: 8px;
-                max-width: 500px;
-                width: 100%;
-                text-align: center;
-            }}
-            h1 {{
-                color: #333;
-                margin-bottom: 20px;
-            }}
-            form {{
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }}
-            label {{
-                font-size: 18px;
-                margin-bottom: 30px;
-            }}
-            input[type="checkbox"] {{
-                margin-right: 10px;
-                transform: scale(1.5);
-            }}
-            button {{
-                padding: 12px 24px;
-                background-color: #4CAF50;
-                color: white;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                transition: background-color 0.3s;
-            }}
-            button:hover {{
-                background-color: #45a049;
-            }}
-            .info {{
-                margin-top: 30px;
-                font-size: 16px;
-                color: #666;
-            }}
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Verify Your ATS Makonis Account</h1>
-            <form id="verificationForm" method="POST">
-                <label>
-                    <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" {'checked' if is_verified else ''} required> Verify the account for username: {user.username}
-                </label>
-                <button type="submit">Verify</button>
-            </form>
-            <div class="info">
-                <p>By verifying your account, you agree to our <a href="#">terms and conditions</a>.</p>
-                <p>If you need assistance, please contact our support team at support@example.com.</p>
-            </div>
-        </div>
-    </body>
-    </html>
-    '''
-    return render_template_string(html)
 
-@app.route('/verify/<token>', methods=['GET', 'POST'])
-def verify_account(token):
-    user_id = verify_token(token)
-    if not user_id:
-        return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
-
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'status': 'error', 'message': 'Invalid user ID or user does not exist.'})
-
-    if request.method == 'POST':
-        if 'verifyCheckbox' in request.form:
-            user.verified = True
-            db.session.commit()
-            return render_verification_form(user, True)  # Update the form with checkbox checked
-        else:
-            return jsonify({'status': 'error', 'message': 'Please check the verification checkbox.'})
-
-        if user.user_type == 'management':
-            return redirect("https://ats-makonis.netlify.app/ManagementLogin")
-        elif user.user_type == 'recruiter':
-            return redirect("https://ats-makonis.netlify.app/RecruitmentLogin")
-
-    return render_verification_form(user)  # Render the form with checkbox unchecked initially
-
-
-
-@app.route('/verify/<token>', methods=['GET', 'POST'])
-def verify(token):
-    user_id = verify_token(token)
-    if not user_id:
-        return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
-
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'status': 'error', 'message': 'Invalid user ID or user does not exist.'})
-
-    if request.method == 'POST':
-        if 'verifyCheckbox' in request.form:
-            user.verified = True
-            db.session.commit()
-            return render_verification_form(user, True)  # Update the form with checkbox checked
-        else:
-            return jsonify({'status': 'error', 'message': 'Please check the verification checkbox.'})
-
-        if user.user_type == 'management':
-            return redirect("https://ats-makonis.netlify.app/ManagementLogin")
-        elif user.user_type == 'recruiter':
-            return redirect("https://ats-makonis.netlify.app/RecruitmentLogin")
-
-    return render_verification_form(user)  # Render the form with checkbox unchecked initially
-
-    # # Render verification form with CSS
-    # html = '''
-    # <!DOCTYPE html>
-    # <html>
-    # <head>
-    #     <title>Account Verification</title>
-    #     <style>
-    #         body {
-    #             font-family: Arial, sans-serif;
-    #             background-color: #f4f4f4;
-    #             margin: 0;
-    #             padding: 0;
-    #             display: flex;
-    #             justify-content: center;
-    #             align-items: center;
-    #             height: 100vh;
-    #         }
-    #         .container {
-    #             background-color: #ffffff;
-    #             padding: 20px;
-    #             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    #             border-radius: 8px;
-    #             max-width: 400px;
-    #             width: 100%;
-    #             text-align: center;
-    #         }
-    #         h1 {
-    #             color: #333;
-    #         }
-    #         form {
-    #             display: flex;
-    #             flex-direction: column;
-    #         }
-    #         input[type="checkbox"] {
-    #             margin: 20px 0;
-    #         }
-    #         button {
-    #             padding: 10px 20px;
-    #             background-color: #4CAF50;
-    #             color: white;
-    #             border: none;
-    #             border-radius: 4px;
-    #             cursor: pointer;
-    #         }
-    #         button:hover {
-    #             background-color: #45a049;
-    #         }
-    #     </style>
-    # </head>
-    # <body>
-    #     <div class="container">
-    #         <h1>Account Verification</h1>
-    #         <form id="verificationForm" method="POST">
-    #             <label>
-    #                 <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" required> I verify my account
-    #             </label>
-    #             <button type="submit">Verify</button>
-    #         </form>
-    #     </div>
-    # </body>
-    # </html>
-    # '''
-    # return render_template_string(html)
+def generate_html_message(message, user_type=None):
+    button_html = ''
+    if user_type == 'management':
+        button_html = '<a href="https://ats-makonis.netlify.app/ManagementLogin" class="button">Login</a>'
+    elif user_type == 'recruiter':
+        button_html = '<a href="https://ats-makonis.netlify.app/RecruitmentLogin" class="button">Login</a>'
     
-    # # Render verification form with checkbox
-    # html = '''
-    # <!DOCTYPE html>
-    # <html>
-    # <head>
-    #     <title>Account Verification</title>
-    # </head>
-    # <body>
-    #     <form id="verificationForm" method="POST">
-    #         <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" required> I verify my account
-    #         <button type="submit">Verify</button>
-    #     </form>
-    # </body>
-    # </html>
-    # '''
-    # return render_template_string(html)
-
+    return f"""
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Message</title>
+            <!-- Add CSS styles for your message -->
+            <style>
+                /* Example CSS styles */
+                body {{
+                    font-family: Arial, sans-serif;
+                    background-color: #f4f4f4;
+                }}
+                .message {{
+                    text-align: center;
+                    margin-top: 50px;
+                    background-color: #fff;
+                    border-radius: 10px;
+                    padding: 20px;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                }}
+                .message p {{
+                    font-size: 20px;
+                }}
+                .button {{
+                    display: inline-block;
+                    padding: 10px 20px;
+                    background-color: #007bff;
+                    color: #fff;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    transition: background-color 0.3s;
+                }}
+                .button:hover {{
+                    background-color: #0056b3;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="message">
+                <p>{message}</p>
+                {button_html}
+            </div>
+        </body>
+        </html>
+    """
 
 @app.route('/verify/<token>')
+def verify(token):
+    user_id = verify_token(token)
+    if user_id:
+        user = User.query.get(user_id)
+        user.is_verified = True
+        db.session.commit()
+        if user.user_type == 'management':
+            message = 'Your Account has been Successfully Verified. Please Login.'
+            return render_template('message.html', message=generate_html_message(message, user_type='management'))
+        elif user.user_type == 'recruiter':
+            message = 'Your Account has been Successfully Verified.'
+            return render_template('message.html', message=generate_html_message(message, user_type='recruiter'))
+    else:
+        message = 'Your verification link has expired. Please contact management to activate your account.'
+        return render_template('message.html', message=generate_html_message(message))
+    message = 'An error occurred while verifying your account.'
+    return render_template('message.html', message=generate_html_message(message))
+
+
+# @app.route('/verify/<token>')
 # def verify(token):
 #     user_id = verify_token(token)
 #     if user_id:
@@ -2069,11 +1928,11 @@ def dashboard():
 
     if user_type == 'recruiter':
         recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
-        username = recruiter.username
+        # username = recruiter.username
         if recruiter is None:
             return jsonify({"message": "Recruiter not found"}), 404
             
-        # recruiters = user_name.split(',')  # Splitting the recruiter usernames separated by commas
+        recruiters = recruiter.username.split(',')  # Splitting the recruiter usernames separated by commas
         
         candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.username, Candidate.reference.is_(None)))\
             .order_by(
@@ -2083,8 +1942,8 @@ def dashboard():
             )\
             .all()
 
-        jobs = JobPost.query.filter_by(recruiter=username).all()
-        # jobs = JobPost.query.filter(JobPost.recruiter.in_(recruiters)).all()
+        # jobs = JobPost.query.filter_by(recruiter=user_name).all()
+        jobs = JobPost.query.filter(JobPost.recruiter.in_(recruiters)).all()
         
         response_data = {
             'user': {
