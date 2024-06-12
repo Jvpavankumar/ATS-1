@@ -942,8 +942,11 @@ def assign_candidates_notification(recruiter_email, new_recruiter_name, candidat
                 background-color: #4CAF50;
                 color: white;
             }}
-            th.job-id-column {{
-                width: 120px; /* Increase the width for the Job ID column */
+            # th.job-id-column {{
+            #     width: 120px; /* Increase the width for the Job ID column */
+            # }}
+             th.clientName-column {{
+                width: 100px; /* Increase the width for the Job ID column */
             }}
             tr:nth-child(even) {{
                 background-color: #f9f9f9;
@@ -971,7 +974,7 @@ def assign_candidates_notification(recruiter_email, new_recruiter_name, candidat
             <table>
                 <tr>
                     <th class="job-id-column">Job ID</th>
-                    <th>Client Name</th>
+                    <th class="clientName-column">Client Name</th>
                     <th>Role/Profile</th>
                     <th>Candidate Name</th>
                     <th>Previous Recruiter</th>
