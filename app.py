@@ -500,8 +500,11 @@ def verify(token):
     if not user_id:
         return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
 
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'status': 'error', 'message': 'Invalid user ID or user does not exist.'})
+
     if request.method == 'POST':
-        user = User.query.get(user_id)
         user.verified = True
         db.session.commit()
         if user.user_type == 'management':
@@ -509,9 +512,8 @@ def verify(token):
         elif user.user_type == 'recruiter':
             return redirect("https://ats-makonis.netlify.app/RecruitmentLogin")
 
-
     # Render verification form with CSS
-    html = '''
+    html = f'''
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -519,7 +521,7 @@ def verify(token):
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Verify Your ATS Makonis Account</title>
         <style>
-            body {
+            body {{
                 font-family: Arial, sans-serif;
                 background-color: #f4f4f4;
                 margin: 0;
@@ -528,8 +530,8 @@ def verify(token):
                 justify-content: center;
                 align-items: center;
                 min-height: 100vh;
-            }
-            .container {
+            }}
+            .container {{
                 background-color: #ffffff;
                 padding: 40px;
                 box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
@@ -537,25 +539,25 @@ def verify(token):
                 max-width: 500px;
                 width: 100%;
                 text-align: center;
-            }
-            h1 {
+            }}
+            h1 {{
                 color: #333;
                 margin-bottom: 20px;
-            }
-            form {
+            }}
+            form {{
                 display: flex;
                 flex-direction: column;
                 align-items: center;
-            }
-            label {
+            }}
+            label {{
                 font-size: 18px;
                 margin-bottom: 30px;
-            }
-            input[type="checkbox"] {
+            }}
+            input[type="checkbox"] {{
                 margin-right: 10px;
                 transform: scale(1.5);
-            }
-            button {
+            }}
+            button {{
                 padding: 12px 24px;
                 background-color: #4CAF50;
                 color: white;
@@ -563,15 +565,15 @@ def verify(token):
                 border-radius: 4px;
                 cursor: pointer;
                 transition: background-color 0.3s;
-            }
-            button:hover {
+            }}
+            button:hover {{
                 background-color: #45a049;
-            }
-            .info {
+            }}
+            .info {{
                 margin-top: 30px;
                 font-size: 16px;
                 color: #666;
-            }
+            }}
         </style>
     </head>
     <body>
@@ -579,7 +581,7 @@ def verify(token):
             <h1>Verify Your ATS Makonis Account</h1>
             <form id="verificationForm" method="POST">
                 <label>
-                    <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" required> Verify the account for username: ''' + user['username'] + '''
+                    <input type="checkbox" id="verifyCheckbox" name="verifyCheckbox" required> Verify the account for username: {user.username}
                 </label>
                 <button type="submit">Verify</button>
             </form>
@@ -2035,6 +2037,8 @@ def dashboard():
         recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
         if recruiter is None:
             return jsonify({"message": "Recruiter not found"}), 404
+            
+        recruiters = user_name.split(',')  # Splitting the recruiter usernames separated by commas
         
         candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.username, Candidate.reference.is_(None)))\
             .order_by(
@@ -2044,7 +2048,8 @@ def dashboard():
             )\
             .all()
 
-        jobs = JobPost.query.filter_by(recruiter=user_name).all()
+        # jobs = JobPost.query.filter_by(recruiter=user_name).all()
+        jobs = JobPost.query.filter(JobPost.recruiter.in_(recruiters)).all()
         
         response_data = {
             'user': {
