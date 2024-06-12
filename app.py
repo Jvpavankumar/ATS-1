@@ -1492,8 +1492,11 @@ def assign_candidate_to_a_new_recruiter():
             if candidate is None:
                 return jsonify({"error": f"Candidate with ID {candidate_id} not found or not assigned to current recruiter/management {current_recruiter_username}"}), 404
 
+            # # Append candidate details to the candidates_data string
+            # candidates_data += f"<tr><td>{candidate.job_id}</td><td>{candidate.client}</td><td>{candidate.profile}</td><td>{candidate.name}</td></tr>"
+
             # Append candidate details to the candidates_data string
-            candidates_data += f"<tr><td>{candidate.job_id}</td><td>{candidate.client}</td><td>{candidate.profile}</td><td>{candidate.name}</td></tr>"
+            candidates_data += f"<tr><td>{candidate.job_id}</td><td>{candidate.client}</td><td>{candidate.profile}</td><td>{candidate.name}</td><td>{escape(current_recruiter_username)}</td></tr>"
 
             # Update the recruiter for the candidate
             candidate.recruiter = new_recruiter_username
@@ -4473,6 +4476,7 @@ def edit_candidate(candidate_id):
 
         # Serving notice period logic
         notice_period = data.get('serving_notice_period')
+        candidate.notice_period = notice_period
         if notice_period == 'yes':
             candidate.last_working_date = data.get('last_working_date')
             candidate.buyout = data.get('buyout')
