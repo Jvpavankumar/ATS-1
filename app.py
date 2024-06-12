@@ -494,25 +494,7 @@ def reset_password():
     return jsonify({'status': 'error', 'message': 'Invalid request method.'})
 
 
-@app.route('/verify/<token>', methods=['GET', 'POST'])
-def verify(token):
-    user_id = verify_token(token)
-    if not user_id:
-        return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
-
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'status': 'error', 'message': 'Invalid user ID or user does not exist.'})
-
-    if request.method == 'POST':
-        user.verified = True
-        db.session.commit()
-        if user.user_type == 'management':
-            return redirect("https://ats-makonis.netlify.app/ManagementLogin")
-        elif user.user_type == 'recruiter':
-            return redirect("https://ats-makonis.netlify.app/RecruitmentLogin")
-
-    # Render verification form with CSS
+def render_verification_form(user):
     html = f'''
     <!DOCTYPE html>
     <html lang="en">
@@ -594,6 +576,30 @@ def verify(token):
     </html>
     '''
     return render_template_string(html)
+
+@app.route('/verify/<token>', methods=['GET', 'POST'])
+def verify(token):
+    user_id = verify_token(token)
+    if not user_id:
+        return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
+
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({'status': 'error', 'message': 'Invalid user ID or user does not exist.'})
+
+    if request.method == 'POST':
+        if 'verifyCheckbox' in request.form:
+            user.verified = True
+            db.session.commit()
+        else:
+            return jsonify({'status': 'error', 'message': 'Please check the verification checkbox.'})
+
+        if user.user_type == 'management':
+            return redirect("https://ats-makonis.netlify.app/ManagementLogin")
+        elif user.user_type == 'recruiter':
+            return redirect("https://ats-makonis.netlify.app/RecruitmentLogin")
+
+    return render_verification_form(user)
 
     # # Render verification form with CSS
     # html = '''
