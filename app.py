@@ -39,6 +39,9 @@ from datetime import datetime
 import pytz 
 from sqlalchemy import case, desc
 from sqlalchemy.orm import aliased
+import hashlib
+import random
+import string
 
 app = Flask(__name__)
 cors = CORS(app)
@@ -540,9 +543,6 @@ def verify(token):
 #     return jsonify({'status': 'error', 'message': 'An error occurred while verifying your account.'})
 
 
-import hashlib
-import random
-import string
 
 # Function to generate a random password
 def generate_random_password(length=8):
