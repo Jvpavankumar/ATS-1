@@ -578,7 +578,7 @@ def render_verification_form(user, is_verified=False):
     return render_template_string(html)
 
 @app.route('/verify/<token>', methods=['GET', 'POST'])
-def verify(token):
+def verify_account(token):
     user_id = verify_token(token)
     if not user_id:
         return jsonify({'status': 'error', 'message': 'Your verification link has expired. Please contact management to activate your account.'})
@@ -2069,10 +2069,11 @@ def dashboard():
 
     if user_type == 'recruiter':
         recruiter = User.query.filter_by(id=user_id, user_type='recruiter').first()
+        username = recruiter.username
         if recruiter is None:
             return jsonify({"message": "Recruiter not found"}), 404
             
-        recruiters = user_name.split(',')  # Splitting the recruiter usernames separated by commas
+        # recruiters = user_name.split(',')  # Splitting the recruiter usernames separated by commas
         
         candidates = Candidate.query.filter(and_(Candidate.recruiter == recruiter.username, Candidate.reference.is_(None)))\
             .order_by(
@@ -2082,8 +2083,8 @@ def dashboard():
             )\
             .all()
 
-        # jobs = JobPost.query.filter_by(recruiter=user_name).all()
-        jobs = JobPost.query.filter(JobPost.recruiter.in_(recruiters)).all()
+        jobs = JobPost.query.filter_by(recruiter=username).all()
+        # jobs = JobPost.query.filter(JobPost.recruiter.in_(recruiters)).all()
         
         response_data = {
             'user': {
