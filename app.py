@@ -5262,7 +5262,7 @@ def post_job():
         for recruiter_name in data.get('recruiter', []):
             recruiter = User.query.filter_by(username=recruiter_name.strip()).first()
             if recruiter:
-                post_job_send_notification(recruiter.email, recruiter.username, job_data, job_post_id)
+                post_job_send_notification(recruiter.email, recruiter.username, job_data)
 
         return jsonify({'status': 'success', 'message': 'Job posted successfully', 'job_id': job_post_id}), 200
 
@@ -8665,7 +8665,7 @@ def edit_job_post(job_post_id):
                         if email in [r.email for r in User.query.filter(User.username.in_(old_recruiter_usernames))]:
                             job_updated_send_notification(recruiter_email=email, new_recruiter_name=user.username, job_data=job_data, job_post_id=job_post_id)
                         else:
-                            post_job_send_notification(recruiter_email=email, new_recruiter_name=user.username, job_data=job_data, job_post_id=job_post_id)
+                            post_job_send_notification(recruiter_email=email, new_recruiter_name=user.username, job_data=job_data)
                     
                     return jsonify({'status': 'success', "message": "Job post details updated successfully"})
                 else:
