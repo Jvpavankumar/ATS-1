@@ -51,9 +51,9 @@ app.config['MAIL_PORT'] = 587
 app.config['MAIL_USE_TLS'] = True
 # app.config['MAIL_USERNAME'] = 'ganesh.s@makonissoft.com'
 # app.config['MAIL_PASSWORD'] = 'Fol98135'
-app.config['MAIL_USERNAME'] = 'saiganeshkanuparthi582@gmail.com'
-app.config['MAIL_PASSWORD'] = 'Ganesh@2022'
-# app.config['MAIL_PASSWORD'] = 'tozvnmxbcejynxpe'
+app.config['MAIL_USERNAME'] = 'kanuparthisaiganesh582@gmail.com'
+# app.config['MAIL_PASSWORD'] = 'Ganesh@2022'
+app.config['MAIL_PASSWORD'] = 'tozvnmxbcejynxpe'
 mail = Mail(app)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
@@ -5076,7 +5076,7 @@ def post_job_send_notification(recruiter_email, new_recruiter_name, job_data):
     msg = Message(
         # 'New Job Notification',
         f'New Requirement Assigned',
-        sender='saiganeshkanuparthi582@gmail.com',
+        sender='kanuparthisaiganesh582@gmail.com',
         recipients=[recruiter_email]
     )
     msg.html = html_body
