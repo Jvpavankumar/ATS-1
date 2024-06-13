@@ -5174,106 +5174,6 @@ def post_job_send_notification(recruiter_email, new_recruiter_name, job_data):
 #     mail.send(msg)
 
 
-@app.route('/post_job', methods=['POST'])
-def post_job():
-    try:
-        data = request.json
-        user_id = data['user_id']
-        user = User.query.filter_by(id=user_id).first()
-
-        if not user:
-            return jsonify({'status': 'error', 'message': 'User not found'}), 400
-
-        if user.user_type != 'management':
-            return jsonify({'status': 'error', 'message': 'Job post not added successfully'}), 400
-
-        job_details = {
-            'client': data.get('client'),
-            'experience_min': data.get('experience_min'),
-            'experience_max': data.get('experience_max'),
-            'budget_min': f"{data.get('currency_type_min')} {data.get('budget_min')}",
-            'budget_max': f"{data.get('currency_type_max')} {data.get('budget_max')}",
-            'location': data.get('location'),
-            'shift_timings': data.get('shift_timings'),
-            'notice_period': data.get('notice_period'),
-            'role': data.get('role'),
-            'detailed_jd': data.get('detailed_jd'),
-            'mode': data.get('mode'),
-            'job_status': data.get('job_status'),
-            'skills': data.get('skills'),
-            'job_type': data.get('Job_Type'),
-            'contract_in_months': data.get('Job_Type_details') if data.get('Job_Type') == 'Contract' else None
-        }
-
-        jd_pdf = data.get('jd_pdf')
-        jd_binary = None
-        jd_pdf_present = False
-
-        if jd_pdf:
-            try:
-                jd_binary = base64.b64decode(jd_pdf)
-                jd_pdf_present = bool(jd_binary)
-            except Exception as e:
-                return jsonify({'status': 'error', 'message': 'Error decoding base64 PDF file', 'details': str(e)}), 400
-
-        new_job_post = JobPost(
-            client=job_details['client'],
-            experience_min=job_details['experience_min'],
-            experience_max=job_details['experience_max'],
-            budget_min=job_details['budget_min'],
-            budget_max=job_details['budget_max'],
-            location=job_details['location'],
-            shift_timings=job_details['shift_timings'],
-            notice_period=job_details['notice_period'],
-            role=job_details['role'],
-            detailed_jd=job_details['detailed_jd'],
-            recruiter=', '.join(data.get('recruiter', [])),
-            management=user.username,
-            mode=job_details['mode'],
-            job_status=job_details['job_status'],
-            job_type=job_details['job_type'],
-            skills=job_details['skills'],
-            contract_in_months=job_details['contract_in_months'],
-            jd_pdf=jd_binary,
-            jd_pdf_present=jd_pdf_present
-        )
-
-        current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
-        new_job_post.date_created = current_datetime.date()
-        new_job_post.time_created = current_datetime.time()
-
-        db.session.add(new_job_post)
-        db.session.commit()
-
-        job_post_id = new_job_post.id
-
-        for recruiter_name in data.get('recruiter', []):
-            notification = Notification(
-                job_post_id=job_post_id,
-                recruiter_name=recruiter_name.strip(),
-                notification_status=False
-            )
-            db.session.add(notification)
-
-        db.session.commit()
-
-        job_data = f"<tr><td>{job_post_id}</td><td>{new_job_post.client}</td><td>{new_job_post.role}</td><td>{new_job_post.location}</td></tr>"
-
-        for recruiter_name in data.get('recruiter', []):
-            recruiter = User.query.filter_by(username=recruiter_name.strip()).first()
-            if recruiter:
-                post_job_send_notification(recruiter.email, recruiter.username, job_data)
-
-        return jsonify({'status': 'success', 'message': 'Job posted successfully', 'job_id': job_post_id}), 200
-
-    except KeyError as e:
-        return jsonify({"status": "error", "message": f"KeyError: {e}"}), 400
-
-    except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-
-
 # @app.route('/post_job', methods=['POST'])
 # def post_job():
 #     try:
@@ -5357,20 +5257,120 @@ def post_job():
 
 #         db.session.commit()
 
-#         job_data = f"<tr><td>{new_job_post.id}</td><td>{new_job_post.client}</td><td>{new_job_post.role}</td><td>{new_job_post.location}</td></tr>"
+#         job_data = f"<tr><td>{job_post_id}</td><td>{new_job_post.client}</td><td>{new_job_post.role}</td><td>{new_job_post.location}</td></tr>"
 
 #         for recruiter_name in data.get('recruiter', []):
 #             recruiter = User.query.filter_by(username=recruiter_name.strip()).first()
 #             if recruiter:
 #                 post_job_send_notification(recruiter.email, recruiter.username, job_data)
 
-#         return jsonify({'status': 'success', 'message': 'Job posted successfully', 'job_id': job_post_id}), 200
+#         return jsonify({'status': 'success', 'message': 'Job posted successfully', 'job_post_id': job_post_id}), 200
 
 #     except KeyError as e:
 #         return jsonify({"status": "error", "message": f"KeyError: {e}"}), 400
 
 #     except Exception as e:
 #         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+
+@app.route('/post_job', methods=['POST'])
+def post_job():
+    try:
+        data = request.json
+        user_id = data['user_id']
+        user = User.query.filter_by(id=user_id).first()
+
+        if not user:
+            return jsonify({'status': 'error', 'message': 'User not found'}), 400
+
+        if user.user_type != 'management':
+            return jsonify({'status': 'error', 'message': 'Job post not added successfully'}), 400
+
+        job_details = {
+            'client': data.get('client'),
+            'experience_min': data.get('experience_min'),
+            'experience_max': data.get('experience_max'),
+            'budget_min': f"{data.get('currency_type_min')} {data.get('budget_min')}",
+            'budget_max': f"{data.get('currency_type_max')} {data.get('budget_max')}",
+            'location': data.get('location'),
+            'shift_timings': data.get('shift_timings'),
+            'notice_period': data.get('notice_period'),
+            'role': data.get('role'),
+            'detailed_jd': data.get('detailed_jd'),
+            'mode': data.get('mode'),
+            'job_status': data.get('job_status'),
+            'skills': data.get('skills'),
+            'job_type': data.get('Job_Type'),
+            'contract_in_months': data.get('Job_Type_details') if data.get('Job_Type') == 'Contract' else None
+        }
+
+        jd_pdf = data.get('jd_pdf')
+        jd_binary = None
+        jd_pdf_present = False
+
+        if jd_pdf:
+            try:
+                jd_binary = base64.b64decode(jd_pdf)
+                jd_pdf_present = bool(jd_binary)
+            except Exception as e:
+                return jsonify({'status': 'error', 'message': 'Error decoding base64 PDF file', 'details': str(e)}), 400
+
+        new_job_post = JobPost(
+            client=job_details['client'],
+            experience_min=job_details['experience_min'],
+            experience_max=job_details['experience_max'],
+            budget_min=job_details['budget_min'],
+            budget_max=job_details['budget_max'],
+            location=job_details['location'],
+            shift_timings=job_details['shift_timings'],
+            notice_period=job_details['notice_period'],
+            role=job_details['role'],
+            detailed_jd=job_details['detailed_jd'],
+            recruiter=', '.join(data.get('recruiter', [])),
+            management=user.username,
+            mode=job_details['mode'],
+            job_status=job_details['job_status'],
+            job_type=job_details['job_type'],
+            skills=job_details['skills'],
+            contract_in_months=job_details['contract_in_months'],
+            jd_pdf=jd_binary,
+            jd_pdf_present=jd_pdf_present
+        )
+
+        current_datetime = datetime.now(pytz.timezone('Asia/Kolkata'))
+        new_job_post.date_created = current_datetime.date()
+        new_job_post.time_created = current_datetime.time()
+
+        db.session.add(new_job_post)
+        db.session.commit()
+
+        job_post_id = new_job_post.id
+
+        for recruiter_name in data.get('recruiter', []):
+            notification = Notification(
+                job_post_id=job_post_id,
+                recruiter_name=recruiter_name.strip(),
+                notification_status=False
+            )
+            db.session.add(notification)
+
+        db.session.commit()
+
+        job_data = f"<tr><td>{new_job_post.id}</td><td>{new_job_post.client}</td><td>{new_job_post.role}</td><td>{new_job_post.location}</td></tr>"
+
+        for recruiter_name in data.get('recruiter', []):
+            recruiter = User.query.filter_by(username=recruiter_name.strip()).first()
+            if recruiter:
+                post_job_send_notification(recruiter.email, recruiter.username, job_data)
+
+        return jsonify({'status': 'success', 'message': 'Job posted successfully', 'job_id': job_post_id}), 200
+
+    except KeyError as e:
+        return jsonify({"status": "error", "message": f"KeyError: {e}"}), 400
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 # @app.route('/post_job', methods=['POST'])
 # def post_job():
@@ -8591,7 +8591,7 @@ def edit_job_post(job_post_id):
             job_post = JobPost.query.get(job_post_id)
             
             if job_post:
-                old_recruiter_usernames = job_post.recruiter.split(', ') if job_post.recruiter else []
+                old_recruiter_usernames = job_post.recruiter.split(', ') if isinstance(job_post.recruiter, str) else []
 
                 # Check if any field except 'recruiter' is updated
                 fields_updated = set(data.keys()) - {'recruiter'}
@@ -8612,9 +8612,8 @@ def edit_job_post(job_post_id):
                     job_post.skills = data.get('skills', job_post.skills)
                     
                     recruiters = data.get('recruiter', job_post.recruiter)
-                    if recruiters:
-                        unique_recruiters = list(set(recruiters.split(',')))
-                        job_post.recruiter = ', '.join(unique_recruiters)
+                    recruiters = recruiters if isinstance(recruiters, list) else [recruiters]
+                    job_post.recruiter = ', '.join(list(set(recruiters)))
                     
                     job_type = data.get('Job_Type')
                     if job_type == 'Contract':
