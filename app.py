@@ -5273,6 +5273,7 @@ def post_job():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
+
 # @app.route('/post_job', methods=['POST'])
 # def post_job():
 #     try:
@@ -8590,7 +8591,7 @@ def edit_job_post(job_post_id):
             job_post = JobPost.query.get(job_post_id)
             
             if job_post:
-                old_recruiter_usernames = job_post.recruiter.split(',') if job_post.recruiter else []
+                old_recruiter_usernames = job_post.recruiter.split(', ') if job_post.recruiter else []
 
                 # Check if any field except 'recruiter' is updated
                 fields_updated = set(data.keys()) - {'recruiter'}
@@ -8612,7 +8613,7 @@ def edit_job_post(job_post_id):
                     
                     recruiters = data.get('recruiter', job_post.recruiter)
                     if recruiters:
-                        unique_recruiters = list(set(recruiters))
+                        unique_recruiters = list(set(recruiters.split(',')))
                         job_post.recruiter = ', '.join(unique_recruiters)
                     
                     job_type = data.get('Job_Type')
